@@ -13,7 +13,9 @@
     "test:e2e": "playwright test",
     "db:generar": "drizzle-kit generate",
     "db:migrar": "drizzle-kit migrate",
-    "verificar": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
+    "verificar": "pnpm lint && pnpm typecheck && pnpm test && pnpm build",
+    "mapeo:generar": "tsx scripts/generar-mapeo.ts",
+    "test:vivo": "vitest run --config vitest.vivo.config.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.1",
