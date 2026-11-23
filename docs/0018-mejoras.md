@@ -19,3 +19,15 @@ Regla general: **todo abre en lo actual y en lo tuyo**.
 - Solo las lecturas que llegan a Airtable se cuentan en Sistema.
 - Para apagar la caché en una emergencia: `APP_SIN_CACHE=1` en Vercel.
 - En la vitrina de pruebas no hay caché. Su efecto real se ve en producción.
+
+## 3. Acciones de un toque y tablero que se arrastra
+
+- `rapidas` en `DefTabla` pone un valor en un campo editable con un toque. Se ofrece solo si la fila no lo tiene ya y si la persona tiene el módulo en editar:
+  - Limpiezas: Terminada.
+  - Cobros: Pagado.
+  - Contratos: Firmado.
+  - Movimientos: Conciliado.
+- Aparece como botón en el detalle y como ✓ en cada tarjeta de la agenda de Limpiezas.
+- En el tablero, si su columna es un campo editable (Estado), arrastrar una tarjeta a otra columna cambia el valor.
+- Todo pasa por `cambiarRapido`, que valida la opción contra Airtable y escribe por la cola con el valor que se veía: si Airtable cambió, gana Airtable.
+- En celular, arrastrar no está disponible. Se usa el botón del detalle.

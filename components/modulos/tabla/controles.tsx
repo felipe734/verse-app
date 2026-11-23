@@ -222,7 +222,21 @@ export function SelectorVista({ vista, opciones, inicial }: { vista: TipoVista; 
 }
 
 /** Tablero: una columna por valor del campo (normalmente Estado). */
-export function Tablero({ campo, columnas, filas, alAbrir }: { campo: string; columnas: Columna[]; filas: FilaTabla[]; alAbrir: (f: FilaTabla) => void }) {
+export function Tablero({
+  campo,
+  columnas,
+  filas,
+  alAbrir,
+  alMover,
+}: {
+  campo: string;
+  columnas: Columna[];
+  filas: FilaTabla[];
+  alAbrir: (f: FilaTabla) => void;
+  /** Si se puede editar el campo del tablero: mover una tarjeta a otra columna lo cambia. */
+  alMover?: (f: FilaTabla, valor: string) => void;
+}) {
+  const [sobre, setSobre] = useState<string | null>(null);
   const grupos = useMemo(() => {
     const m = new Map<string, FilaTabla[]>();
     for (const f of filas) {
@@ -236,14 +250,36 @@ export function Tablero({ campo, columnas, filas, alAbrir }: { campo: string; co
   return (
     <div className="flex gap-3 overflow-x-auto pb-2" aria-label={`Tablero por ${campo}`}>
       {grupos.map(([valor, items]) => (
-        <section key={valor} aria-label={valor} className="flex w-72 shrink-0 flex-col rounded-lg bg-muted/50 p-2">
+        <section
+          key={valor}
+          aria-label={valor}
+          className={cn("flex w-72 shrink-0 flex-col rounded-lg bg-muted/50 p-2 transition-colors", sobre === valor && "bg-acento-suave ring-1 ring-acento")}
+          onDragOver={alMover && valor !== "Sin valor" ? (e) => (e.preventDefault(), setSobre(valor)) : undefined}
+          onDragLeave={() => setSobre((v) => (v === valor ? null : v))}
+          onDrop={
+            alMover
+              ? (e) => {
+                  setSobre(null);
+                  const id = e.dataTransfer.getData("text/plain");
+                  const f = filas.find((x) => x.id === id);
+                  if (f && (f.celdas[campo] ?? "") !== valor && valor !== "Sin valor") alMover(f, valor);
+                }
+              : undefined
+          }
+        >
           <h3 className="flex items-center justify-between px-1 pb-2 text-sm font-medium">
             {valor} <Badge variant="secondary">{items.length}</Badge>
           </h3>
           <ul className="space-y-2">
             {items.map((f) => (
               <li key={f.id}>
-                <button type="button" onClick={() => alAbrir(f)} className="w-full rounded-md border bg-card p-2.5 text-left text-sm hover:border-foreground/20">
+                <button
+                  type="button"
+                  draggable={Boolean(alMover)}
+                  onDragStart={(e) => e.dataTransfer.setData("text/plain", f.id)}
+                  onClick={() => alAbrir(f)}
+                  className={cn("w-full rounded-md border bg-card p-2.5 text-left text-sm hover:border-foreground/20", alMover && "cursor-grab active:cursor-grabbing")}
+                >
                   <p className="truncate font-medium">{(titulo && f.celdas[titulo.campo]) || "—"}</p>
                   {secundarias.map((c) =>
                     f.celdas[c.campo] ? (

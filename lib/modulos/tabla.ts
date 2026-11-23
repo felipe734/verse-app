@@ -54,6 +54,11 @@ export interface DefTabla {
   vistaInicial?: TipoVista;
   /** Cifras arriba de la vista, calculadas sobre lo filtrado. */
   indicadores?: Indicador[];
+  /**
+   * Acciones de un toque: ponen `valor` en el campo editable `campo`. Se ofrecen cuando la
+   * columna `columna` no tiene ya ese valor (por ejemplo, "Terminada" si no está Terminado).
+   */
+  rapidas?: { etiqueta: string; campo: string; valor: string; columna: string }[];
   /** Campos que se editan desde el detalle, con el módulo en "editar" (lib/modulos/editar.ts). */
   editar?: DefEdicion;
 }

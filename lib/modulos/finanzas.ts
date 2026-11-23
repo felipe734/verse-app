@@ -71,6 +71,7 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
         orden: { campo: "Fecha", desc: true },
         max: 600,
         vacio: "No hay movimientos bancarios en este mes",
+        rapidas: [{ etiqueta: "Conciliado", campo: "estado", valor: "Conciliado", columna: "Estado" }],
         editar: { tabla: "movimientos", campos: [{ campo: "estado", etiqueta: "Estado" }, { campo: "categoria", etiqueta: "Categoría" }, { campo: "comentario", etiqueta: "Comentario" }] },
       },
     },

@@ -54,6 +54,17 @@ function resolver(def: DefEdicion) {
   return { t, campos };
 }
 
+/** El campo editable cuya columna de Airtable se llama así (para mover tarjetas en el tablero). */
+export function campoPorNombre(def: DefEdicion | undefined, nombre: string | undefined): string | null {
+  if (!def || !nombre) return null;
+  return resolver(def).campos.find((c) => c.mapa.nombre === nombre && c.mapa.tipo === "singleSelect")?.campo ?? null;
+}
+
+/** ID de Airtable de un campo editable. */
+export function idDeCampo(def: DefEdicion, campo: string): string | null {
+  return resolver(def).campos.find((c) => c.campo === campo)?.mapa.id ?? null;
+}
+
 /** Los campos que la definición ofrece y que de verdad se pueden editar (por tipo). */
 export const camposEditables = (def: DefEdicion) => resolver(def).campos.map((c) => c.campo);
 

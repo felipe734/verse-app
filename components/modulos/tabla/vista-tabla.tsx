@@ -1,7 +1,9 @@
 "use client";
 
-import { ArrowDown, ArrowUp, EyeOff, Search, Sparkles, Table2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { ArrowDown, ArrowUp, Check, EyeOff, Search, Sparkles, Table2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "sonner";
+import { cambiarRapido } from "@/app/modulos/editar";
 import { useMemo, useState } from "react";
 import { AccionesModulo } from "@/components/shell/barra-superior";
 import { useShell } from "@/components/shell/contexto";
@@ -52,6 +54,8 @@ export function VistaTabla({
   hoy,
   persona,
   tablas,
+  rapidas = [],
+  campoTablero,
 }: {
   titulo: string;
   modulo: string;
@@ -81,7 +85,25 @@ export function VistaTabla({
   persona?: { campo: string; nombre: string; porDefecto: boolean };
   /** IDs de las tablas de Airtable que lee el módulo, para el botón Actualizar. */
   tablas?: string[];
+  /** Acciones de un toque (solo si la persona edita el módulo). */
+  rapidas?: { etiqueta: string; campo: string; valor: string; columna: string }[];
+  /** Campo editable del tablero: mover tarjetas lo cambia. */
+  campoTablero?: string;
 }) {
+  const router = useRouter();
+  const [ocupado, setOcupado] = useState<string | null>(null);
+  async function rapido(f: FilaTabla, campo: string, valor: string, columna: string, etiquetaOk: string) {
+    if (!edicion) return;
+    setOcupado(f.id);
+    const r = await cambiarRapido(edicion, f.id, campo, valor, f.celdas[columna] ?? "");
+    setOcupado(null);
+    if (r.ok) {
+      toast.success(`${etiquetaOk}: ${f.celdas[columnas[0]?.campo ?? ""] ?? ""}`);
+      setAbierta(null);
+      router.refresh();
+    } else toast.error(r.mensaje);
+  }
+  const aplicables = (f: FilaTabla) => (edicion ? rapidas.filter((a) => (f.celdas[a.columna] ?? "") !== a.valor) : []);
   const { abrirAsistente, asistenteHabilitado } = useShell();
   const params = useSearchParams();
   const activos = useMemo(() => filtrosDeUrl(new URLSearchParams(params.toString()), filtros), [params, filtros]);
@@ -177,9 +199,36 @@ export function VistaTabla({
         ) : vista === "calendario" && calendario && periodo ? (
           <Calendario def={calendario} filas={visibles} periodo={periodo} hoy={hoy ?? periodo.inicio} alAbrir={setAbierta} />
         ) : vista === "agenda" && agenda && periodo ? (
-          <Agenda def={agenda} filas={visibles} periodo={periodo} hoy={hoy ?? periodo.inicio} alAbrir={setAbierta} />
+          <Agenda
+            def={agenda}
+            filas={visibles}
+            periodo={periodo}
+            hoy={hoy ?? periodo.inicio}
+            alAbrir={setAbierta}
+            accion={(f) => {
+              const a = aplicables(f)[0];
+              return a ? (
+                <button
+                  type="button"
+                  aria-label={`${a.etiqueta}: ${f.celdas[agenda.titulo] ?? ""}`}
+                  title={a.etiqueta}
+                  disabled={ocupado === f.id}
+                  onClick={() => void rapido(f, a.campo, a.valor, a.columna, a.etiqueta)}
+                  className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                >
+                  <Check className="size-3.5" aria-hidden />
+                </button>
+              ) : null;
+            }}
+          />
         ) : vista === "tablero" && tableroVisible ? (
-          <Tablero campo={tableroVisible} columnas={columnas} filas={visibles} alAbrir={setAbierta} />
+          <Tablero
+            campo={tableroVisible}
+            columnas={columnas}
+            filas={visibles}
+            alAbrir={setAbierta}
+            alMover={edicion && campoTablero ? (f, valor) => void rapido(f, campoTablero, valor, tableroVisible, valor) : undefined}
+          />
         ) : (
           <div className="overflow-x-auto rounded-lg border">
             <Table>
@@ -241,6 +290,15 @@ export function VistaTabla({
                   </div>
                 ))}
               </dl>
+              {aplicables(abierta).length > 0 && (
+                <div className="flex flex-wrap gap-2 border-t p-4">
+                  {aplicables(abierta).map((a) => (
+                    <Button key={a.etiqueta} size="sm" className="gap-1.5" disabled={ocupado === abierta.id} onClick={() => void rapido(abierta, a.campo, a.valor, a.columna, a.etiqueta)}>
+                      <Check className="size-4" aria-hidden /> {a.etiqueta}
+                    </Button>
+                  ))}
+                </div>
+              )}
               {edicion && (
                 <div className="border-t p-4">
                   <Edicion key={abierta.id} refModulo={edicion} recId={abierta.id} alGuardar={() => setAbierta(null)} />
