@@ -70,14 +70,19 @@ export async function GET(request: Request) {
   const todoBien = errores.length === 0 && !respaldoMal;
   await registrarCorrida(base, cliente, {
     proceso: "App",
-    asunto: `Sincronización App ${hoy}`,
+    asunto: todoBien ? "Sincronización de la app al día" : "Sincronización de la app con pendientes",
     estado: todoBien ? "OK" : "Con pendientes",
-    detalle: detalleApp(resultados, { llamadas, neonUsd: neon?.usdTotal ?? null, errores, respaldoAyer: estadoRespaldo }),
+    detalle: detalleApp(resultados, {
+      llamadas,
+      neonUsd: neon?.usdTotal ?? null,
+      errores,
+      respaldoAyer: estadoRespaldo,
+      webhooks: webhooks?.renovados.length ?? 0,
+    }),
     mes: hoy.slice(0, 7),
-    pendiente: {
-      asunto: respaldoMal ? `El respaldo de Airtable del ${ayer} ${estadoRespaldo}` : `Revisar la sincronización de la app del ${hoy}`,
-      fechaLimite: hoy,
-    },
+    pendiente: respaldoMal
+      ? { asunto: "Respaldo de Airtable por revisar", accion: `Revisar el respaldo de Airtable del ${ayer}: ${estadoRespaldo}`, fechaLimite: hoy }
+      : { asunto: "Sincronización de la app por revisar", accion: `Revisar la sincronización de la app del ${hoy}`, fechaLimite: hoy },
   }).catch((e: unknown) => errores.push(`corrida: ${e instanceof Error ? e.message : "error"}`));
 
   await contador.volcar(base);

@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   const base = db();
   const contador = crearContador();
   const { drive, idUnidad } = driveRespaldo();
-  const pendiente = { asunto: `Revisar respaldo de Airtable del ${fecha}`, fechaLimite: diaBogota() };
+  const pendiente = { asunto: "Respaldo de Airtable por revisar", accion: `Revisar el respaldo de Airtable del ${fecha}`, fechaLimite: diaBogota() };
 
   try {
     if (vuelta === 0) await prepararDia(base, fecha, CATALOGO);
@@ -67,7 +67,7 @@ export async function GET(request: Request) {
       if (dia) {
         await registrarCorrida(base, clienteServidor(), {
           proceso: "Respaldo",
-          asunto: `Respaldo Airtable ${fecha}`,
+          asunto: dia.fallidas > 0 ? "Respaldo de Airtable con fallas" : "Respaldo de Airtable completo",
           estado: dia.fallidas > 0 ? "Con pendientes" : "OK",
           detalle: detalleRespaldo(dia, fallidas.map((f) => `${f.base} / ${f.tabla}: ${f.error ?? "error"}`)),
           link: dia.carpetaId ? `https://drive.google.com/drive/folders/${dia.carpetaId}` : undefined,
@@ -83,9 +83,9 @@ export async function GET(request: Request) {
     await auditar(base, { autor: "sistema", accion: "respaldo.error", detalle: mensaje });
     await registrarCorrida(base, clienteServidor(), {
       proceso: "Respaldo",
-      asunto: `Respaldo Airtable ${fecha}`,
+      asunto: "Respaldo de Airtable falló",
       estado: "Falló",
-      detalle: `Vuelta ${vuelta}: ${mensaje}`,
+      detalle: `Encontró: el respaldo del ${fecha} se cayó en la vuelta ${vuelta}: ${mensaje}\nHizo: nada; el respaldo se puede volver a correr`,
       mes: fecha.slice(0, 7),
       pendiente,
     }).catch((err: unknown) => console.error("[cron/respaldo] corrida", errorTexto(err)));

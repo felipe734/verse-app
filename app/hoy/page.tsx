@@ -8,6 +8,7 @@ import { Item } from "@/components/hoy/item";
 import { Button } from "@/components/ui/button";
 import { db } from "@/db/cliente";
 import { sesionActual } from "@/lib/acceso/actual";
+import { puede } from "@/lib/acceso/permisos";
 import { sesionPorId } from "@/lib/acceso/sesion";
 import { TODAS, vistaHoy } from "@/lib/acceso/vista";
 import { auditar } from "@/lib/auditoria";
@@ -120,6 +121,11 @@ async function Panel({ searchParams }: { searchParams: Promise<Parametros> }) {
           {sesion.maestro ? " · Maestro" : ""}
         </span>
         <span className="flex items-center gap-3">
+          {(puede(sesion, "verse", "verse-sistema", "ver") || puede(sesion, "cyc", "cyc-sistema", "ver")) && (
+            <Link href="/sistema" className="text-[var(--verse-azul)] underline">
+              Sistema
+            </Link>
+          )}
           {sesion.maestro && (
             <Link href="/ajustes" className="text-[var(--verse-azul)] underline">
               Ajustes
