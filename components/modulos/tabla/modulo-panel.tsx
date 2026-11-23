@@ -118,6 +118,10 @@ export async function ModuloPanel({ sesion, u, pestana, p }: { sesion: Sesion; u
         filtros={activa.tabla.filtros}
         tablero={activa.tabla.tablero}
         indicadores={activa.tabla.indicadores}
+        calendario={activa.tabla.calendario}
+        agenda={activa.tabla.agenda}
+        vistaInicial={activa.tabla.vistaInicial}
+        hoy={hoy}
         vistas={await vistasDe(db(), sesion.usuarioId, ruta).catch(() => [])}
         edicion={puedeEditar ? { empresa: u.empresa, vertical: u.vertical.segmento, modulo: u.def.segmento, pestana: activa.id } : undefined}
       />

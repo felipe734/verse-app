@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, ChevronDown, ChevronLeft, ChevronRight, Columns3, List, Trash2, X } from "lucide-react";
+import { Bookmark, CalendarDays, CalendarRange, ChevronDown, ChevronLeft, ChevronRight, Columns3, List, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Columna, FilaTabla, Indicador } from "@/lib/modulos/tabla";
+import type { Columna, FilaTabla, Indicador, TipoVista } from "@/lib/modulos/tabla";
 import type { Periodo } from "@/lib/vistas/periodo";
 import { cn } from "@/lib/utils";
 
@@ -164,28 +164,29 @@ export function Indicadores({ indicadores, columnas, filas }: { indicadores: Ind
   );
 }
 
-/** Lista o tablero. */
-export function SelectorVista({ vista, tablero }: { vista: "lista" | "tablero"; tablero?: string }) {
+const VISTAS = { lista: { nombre: "Lista", icono: List }, tablero: { nombre: "Tablero", icono: Columns3 }, calendario: { nombre: "Calendario", icono: CalendarDays }, agenda: { nombre: "Agenda", icono: CalendarRange } } as const;
+
+/** Tipos de vista que el módulo tiene. La inicial no se escribe en la URL. */
+export function SelectorVista({ vista, opciones, inicial }: { vista: TipoVista; opciones: TipoVista[]; inicial: TipoVista }) {
   const { cambiar } = useParametros();
-  if (!tablero) return null;
-  const opciones = [
-    { id: "lista", nombre: "Lista", icono: List },
-    { id: "tablero", nombre: "Tablero", icono: Columns3 },
-  ] as const;
+  if (opciones.length < 2) return null;
   return (
     <div role="radiogroup" aria-label="Tipo de vista" className="flex rounded-md border p-0.5">
-      {opciones.map((o) => (
-        <button
-          key={o.id}
-          type="button"
-          role="radio"
-          aria-checked={vista === o.id}
-          onClick={() => cambiar({ v: o.id === "lista" ? null : o.id })}
-          className={cn("inline-flex items-center gap-1 rounded px-2 py-1 text-xs", vista === o.id ? "bg-muted font-medium" : "text-muted-foreground hover:text-foreground")}
-        >
-          <o.icono className="size-3.5" aria-hidden /> {o.nombre}
-        </button>
-      ))}
+      {opciones.map((id) => {
+        const o = VISTAS[id];
+        return (
+          <button
+            key={id}
+            type="button"
+            role="radio"
+            aria-checked={vista === id}
+            onClick={() => cambiar({ v: id === inicial ? null : id })}
+            className={cn("inline-flex items-center gap-1 rounded px-2 py-1 text-xs", vista === id ? "bg-muted font-medium" : "text-muted-foreground hover:text-foreground")}
+          >
+            <o.icono className="size-3.5" aria-hidden /> {o.nombre}
+          </button>
+        );
+      })}
     </div>
   );
 }

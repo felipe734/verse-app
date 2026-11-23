@@ -43,6 +43,10 @@ export async function ModuloTabla({ sesion, u, p }: { sesion: Sesion; u: Ubicaci
         filtros={def.filtros}
         tablero={def.tablero}
         indicadores={def.indicadores}
+        calendario={def.calendario}
+        agenda={def.agenda}
+        vistaInicial={def.vistaInicial}
+        hoy={hoy}
         vistas={await vistasDe(db(), sesion.usuarioId, ruta).catch(() => [])}
         edicion={puedeEditar ? { empresa: u.empresa, vertical: u.vertical.segmento, modulo: u.def.segmento } : undefined}
       />

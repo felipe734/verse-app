@@ -46,7 +46,9 @@ export function airtableVitrina(): ClienteAirtable {
   const valor = (campo: string, i: number): string => {
     const c = campo.toLowerCase();
     if (DINERO.has(campo)) return `$${(campo === "MARGEN NETO" ? 4_200_000 - i * 310_000 : 38_000_000 - i * 1_250_000).toLocaleString("es-CO")}`;
-    if (/fecha|ingreso|salida|inicio|fin|día|dia|corte/.test(c)) return `${(i % 27) + 1}/11/2026`;
+    if (c === "salida") return `${Math.min(28, (i % 24) + 1 + 2 + (i % 4))}/11/2026`;
+    if (c === "fecha") return `${(i % 7) + 23 > 30 ? (i % 7) - 7 + 23 : (i % 7) + 23}/11/2026 ${["8:30am", "11:00am", "2:00pm"][i % 3]}`;
+    if (/fecha|ingreso|salida|inicio|fin|día|dia|corte/.test(c)) return `${(i % 24) + 1}/11/2026`;
     if (/valor|total|monto|canon|pago|tot|aseo|alojamiento|precio|saldo|costo/.test(c)) return `$${(450000 + i * 37500).toLocaleString("es-CO")}`;
     if (/estado/.test(c)) return ["Activo", "Pendiente", "Hecho"][i % 3]!;
     if (/unidad|apto|apartamento/.test(c)) return ["Torre Norte 603", "Torre Norte 805", "Balcony 302", "Parque 1104"][i % 4]!;
