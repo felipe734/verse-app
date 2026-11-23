@@ -11,6 +11,7 @@ import { sesionActual } from "@/lib/acceso/actual";
 import { sesionPorId } from "@/lib/acceso/sesion";
 import { TODAS, vistaHoy } from "@/lib/acceso/vista";
 import { auditar } from "@/lib/auditoria";
+import { aprobacionesDe } from "@/lib/hoy/aprobar";
 import { hoyDe } from "@/lib/hoy/datos";
 import { accionPendiente } from "./acciones";
 
@@ -36,6 +37,7 @@ async function Panel({ searchParams }: { searchParams: Promise<Parametros> }) {
   const deEmpresas = vista.empresa === TODAS ? vista.empresas.map((e) => e.id) : vista.empresa ? [vista.empresa] : [];
   const hoy = await hoyDe(db(), quien, deEmpresas);
   const conEmpresa = vista.empresa === TODAS;
+  const porAprobar = (await aprobacionesDe(db(), quien, deEmpresas)).filter((a) => !a.aprobadaEnApp).length;
 
   return (
     <>
@@ -64,6 +66,13 @@ async function Panel({ searchParams }: { searchParams: Promise<Parametros> }) {
           );
         })}
       </nav>
+
+      {porAprobar > 0 && !otra && (
+        <Link href="/aprobar" className="flex items-center justify-between rounded-xl bg-[var(--verse-azul-claro)] px-4 py-3 text-[var(--verse-azul)]">
+          <span className="font-display">Para aprobar</span>
+          <span>{porAprobar}</span>
+        </Link>
+      )}
 
       {hoy.secciones.map((sec) =>
         sec.items.length === 0 ? null : (
