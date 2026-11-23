@@ -106,6 +106,82 @@ export const TABLAS_SINCRONIZADAS = {
 
 export type ClaveTabla = keyof typeof TABLAS_SINCRONIZADAS;
 
+/**
+ * Tablas donde la app escribe sin copiarlas a Postgres (se leen en el momento). Entran al
+ * mapeo para tener los IDs de campo, pero no al sincronizador.
+ */
+export const TABLAS_ESCRITURA = {
+  funcionarias: {
+    base: "6. OPERACION 360",
+    tabla: "FUNCIONARIAS",
+    campos: {
+      nombre: "Nombre",
+      activa: "Activa",
+      correo: "Correo",
+      nombreLimpieza: "Nombre en LIMPIEZA",
+      nombreServicios: "Nombre en SERVICIOS",
+      nombreHoras: "Nombre en CONTROL HORAS",
+    },
+  },
+  limpieza: {
+    base: "6. OPERACION 360",
+    tabla: "LIMPIEZA",
+    campos: {
+      id: "ID",
+      unidad: "Unidad",
+      funcionario: "Funcionario",
+      funcionaria: "Funcionaria enlace",
+      estado: "Estado",
+      fecha: "Fecha",
+      comentario: "Comentario",
+    },
+  },
+  servicios: {
+    base: "6. OPERACION 360",
+    tabla: "SERVICIOS",
+    campos: {
+      unidad: "Unidad",
+      tipo: "Tipo",
+      fechaHora: "Fecha - Hora",
+      funcionario: "Funcionario",
+      funcionaria: "Funcionaria enlace",
+      video: "Video",
+      estado: "Estado",
+      danos: "Daños | Faltantes",
+      comentario: "Comentario",
+      necesitaImplementos: "¿Se necesitan implementos para el próximo servicio?",
+      implementosComprar: "Implementos a comprar",
+      lavanderia: "Lavandería",
+    },
+  },
+  controlHoras: {
+    base: "6. OPERACION 360",
+    tabla: "CONTROL HORAS",
+    campos: {
+      funcionaria: "Funcionaria",
+      funcionariaEnlace: "Funcionaria enlace",
+      ingreso: "Ingreso",
+      salida: "Salida",
+      notas: "Notas",
+    },
+  },
+  unidadesOperacion: {
+    base: "6. OPERACION 360",
+    tabla: "UNIDADES",
+    campos: {
+      unidad: "Unidad",
+      edificio: "Edificio",
+      metodo: "Metodo Ingreso",
+      codigo: "Codigo",
+      candado: "Candado",
+      wifiRed: "WIFI Red",
+      wifiClave: "WIFI Contraseña",
+    },
+  },
+} as const satisfies Record<string, TablaDefinida>;
+
+export type ClaveEscritura = keyof typeof TABLAS_ESCRITURA;
+
 /** Bases fuera del alcance de la app (doc del plan). El token de Airtable no las incluye. */
 export const BASES_FUERA_DE_LA_APP = ["FELIPE", "5. VENTAS 54-47", "6. OTROS"] as const;
 

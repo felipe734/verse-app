@@ -1,4 +1,4 @@
-import { TABLAS_SINCRONIZADAS, type TablaDefinida } from "./definicion";
+import { TABLAS_ESCRITURA, TABLAS_SINCRONIZADAS, type TablaDefinida } from "./definicion";
 
 export type Workspace = "Verse" | "C&C";
 
@@ -47,6 +47,8 @@ export interface TablaMapeada {
 export interface Mapeo {
   catalogo: FilaCatalogo[];
   tablas: Record<string, TablaMapeada>;
+  /** Tablas donde la app escribe sin sincronizarlas (TABLAS_ESCRITURA). */
+  escritura?: Record<string, TablaMapeada>;
 }
 
 const PATRON_BASE = /^app[A-Za-z0-9]{14}$/;
@@ -60,6 +62,7 @@ export function construirMapeo(
   catalogo: FilaCatalogo[],
   esquemas: EsquemasPorBase,
   definicion: Record<string, TablaDefinida> = TABLAS_SINCRONIZADAS,
+  escritura: Record<string, TablaDefinida> = TABLAS_ESCRITURA,
 ): Mapeo {
   for (const fila of catalogo) {
     if (!PATRON_BASE.test(fila.idBase) || !PATRON_TABLA.test(fila.idTabla)) {
@@ -67,6 +70,17 @@ export function construirMapeo(
     }
   }
 
+  const tablas = mapearTablas(catalogo, esquemas, definicion);
+  const escrituraMapeada = mapearTablas(catalogo, esquemas, escritura);
+
+  const ordenado = [...catalogo].sort(
+    (a, b) => a.base.localeCompare(b.base, "es") || a.tabla.localeCompare(b.tabla, "es"),
+  );
+  return { catalogo: ordenado, tablas, ...(Object.keys(escrituraMapeada).length ? { escritura: escrituraMapeada } : {}) };
+}
+
+
+function mapearTablas(catalogo: FilaCatalogo[], esquemas: EsquemasPorBase, definicion: Record<string, TablaDefinida>): Record<string, TablaMapeada> {
   const tablas: Record<string, TablaMapeada> = {};
   for (const [clave, def] of Object.entries(definicion)) {
     const filas = catalogo.filter((f) => f.base === def.base && f.tabla === def.tabla);
@@ -103,10 +117,7 @@ export function construirMapeo(
     };
   }
 
-  const ordenado = [...catalogo].sort(
-    (a, b) => a.base.localeCompare(b.base, "es") || a.tabla.localeCompare(b.tabla, "es"),
-  );
-  return { catalogo: ordenado, tablas };
+  return tablas;
 }
 
 export function escribirModulo(mapeo: Mapeo, fecha: string): string {
@@ -119,6 +130,7 @@ export function escribirModulo(mapeo: Mapeo, fecha: string): string {
     "",
     "export const TABLAS = MAPEO.tablas;",
     "export const CATALOGO = MAPEO.catalogo;",
+    ...(mapeo.escritura ? ["export const ESCRITURA = MAPEO.escritura;"] : []),
     "",
   ].join("\n");
 }
