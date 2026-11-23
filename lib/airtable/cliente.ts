@@ -41,7 +41,7 @@ export interface ClienteAirtable {
    * Lectura para el asistente: campos por NOMBRE y como texto (los vínculos traen el nombre
    * de la fila enlazada). Solo los campos pedidos; como máximo `max` filas.
    */
-  consultar(idBase: string, idTabla: string, opciones: { formula?: string; campos: string[]; max: number }): Promise<RegistroAirtable[]>;
+  consultar(idBase: string, idTabla: string, opciones: { formula?: string; campos: string[]; max: number; orden?: { campo: string; desc?: boolean } }): Promise<RegistroAirtable[]>;
   obtener(idBase: string, idTabla: string, recId: string): Promise<RegistroAirtable | null>;
   actualizar(idBase: string, idTabla: string, recId: string, campos: Record<string, unknown>): Promise<RegistroAirtable>;
   crear(idBase: string, idTabla: string, campos: Record<string, unknown>): Promise<RegistroAirtable>;
@@ -126,18 +126,29 @@ export function crearCliente({
       return (await pedir<{ tables: EsquemaTabla[] }>(idBase, `/meta/bases/${idBase}/tables`)).tables;
     },
     todos: (idBase, idTabla) => listar(idBase, idTabla),
-    async consultar(idBase, idTabla, { formula, campos, max }) {
-      const q = new URLSearchParams({
-        pageSize: String(Math.min(max, 100)),
-        maxRecords: String(max),
-        cellFormat: "string",
-        timeZone: "America/Bogota",
-        userLocale: "es-co",
-      });
-      if (formula) q.set("filterByFormula", formula);
-      for (const c of campos) q.append("fields[]", c);
-      const r = await pedir<{ records: RegistroAirtable[] }>(idBase, `/${idBase}/${idTabla}?${q}`);
-      return r.records;
+    async consultar(idBase, idTabla, { formula, campos, max, orden }) {
+      const filas: RegistroAirtable[] = [];
+      let offset: string | undefined;
+      do {
+        const q = new URLSearchParams({
+          pageSize: String(Math.min(max, 100)),
+          maxRecords: String(max),
+          cellFormat: "string",
+          timeZone: "America/Bogota",
+          userLocale: "es-co",
+        });
+        if (formula) q.set("filterByFormula", formula);
+        if (orden) {
+          q.set("sort[0][field]", orden.campo);
+          q.set("sort[0][direction]", orden.desc ? "desc" : "asc");
+        }
+        for (const c of campos) q.append("fields[]", c);
+        if (offset) q.set("offset", offset);
+        const r = await pedir<{ records: RegistroAirtable[]; offset?: string }>(idBase, `/${idBase}/${idTabla}?${q}`);
+        filas.push(...r.records);
+        offset = r.offset;
+      } while (offset && filas.length < max);
+      return filas.slice(0, max);
     },
     async porIds(idBase, idTabla, recIds) {
       const filas: RegistroAirtable[] = [];

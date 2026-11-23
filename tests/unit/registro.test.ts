@@ -25,16 +25,21 @@ describe("registro de módulos", () => {
 
   it("el Maestro ve los módulos construidos agrupados por vertical, con rutas /empresa/vertical/modulo", () => {
     const g = navegacion(maestro, ESTRUCTURA, "verse");
-    expect(g.map((x) => x.nombre)).toEqual(["General"]);
-    expect(hrefs(maestro, "verse")).toEqual(["/verse/general/hoy", "/verse/general/aprobar", "/verse/general/correo", "/verse/general/sistema"]);
-    expect(hrefs(maestro, "cyc")).toEqual(["/cyc/general/hoy", "/cyc/general/aprobar", "/cyc/general/correo", "/cyc/general/sistema"]);
+    expect(g.map((x) => x.nombre)).toEqual(["General", "Host", "Living"]);
+    expect(hrefs(maestro, "verse")).toEqual([
+      "/verse/general/hoy", "/verse/general/aprobar", "/verse/general/correo", "/verse/general/equipo", "/verse/general/sistema",
+      "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/unidades", "/verse/host/liquidaciones", "/verse/host/alistamiento", "/verse/host/comercial",
+      "/verse/living/unidades", "/verse/living/contratos", "/verse/living/cobros", "/verse/living/comercial",
+    ]);
+    expect(hrefs(maestro, "cyc")).toEqual(["/cyc/general/hoy", "/cyc/general/aprobar", "/cyc/general/correo", "/cyc/general/sistema", "/cyc/obra/actas", "/cyc/obra/pagos", "/cyc/obra/contratistas", "/cyc/obra/calidad"]);
   });
 
   it("un módulo sin construir no aparece en la barra ni se puede abrir, pero sí en Ajustes como no disponible", () => {
-    expect(hrefs(maestro, "verse").some((h) => h.includes("/host/"))).toBe(false);
-    expect(ubicar(maestro, ESTRUCTURA, "verse", "host", "operacion")).toBeNull();
+    expect(hrefs(maestro, "verse")).not.toContain("/verse/host/ruta");
+    expect(ubicar(maestro, ESTRUCTURA, "verse", "host", "ruta")).toBeNull();
     const host = estadoModulos(ESTRUCTURA)[0]!.verticales.find((v) => v.id === "verse-host")!;
-    expect(host.modulos.every((m) => !m.disponible)).toBe(true);
+    expect(host.modulos.find((m) => m.tipo === "ruta")?.disponible).toBe(false);
+    expect(host.modulos.find((m) => m.tipo === "operacion")?.disponible).toBe(true);
   });
 
   it("Todas solo trae Hoy y Para aprobar", () => {
@@ -44,13 +49,18 @@ describe("registro de módulos", () => {
 
   describe("por plantilla, nada fuera de su acceso", () => {
     const esperado: Record<string, string[]> = {
-      "administrador-verse": ["/verse/general/hoy", "/verse/general/correo", "/verse/general/sistema"],
-      "coordinacion-aseo": ["/verse/general/hoy"],
-      living: ["/verse/general/hoy", "/verse/general/correo"],
-      comercial: ["/verse/general/hoy", "/verse/general/correo"],
+      "administrador-verse": [
+        "/verse/general/hoy", "/verse/general/correo", "/verse/general/sistema",
+        "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/unidades", "/verse/host/liquidaciones", "/verse/host/alistamiento", "/verse/host/comercial",
+        "/verse/living/unidades", "/verse/living/contratos", "/verse/living/cobros", "/verse/living/comercial",
+      ],
+      "coordinacion-aseo": ["/verse/general/hoy", "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/unidades"],
+      living: ["/verse/general/hoy", "/verse/general/correo", "/verse/living/unidades", "/verse/living/contratos", "/verse/living/cobros", "/verse/living/comercial"],
+      comercial: ["/verse/general/hoy", "/verse/general/correo", "/verse/host/comercial", "/verse/living/comercial"],
+      // Ruta de aseo (entrega 6) todavía no está construida.
       aseo: [],
       // En C&C, Para aprobar va con Hoy (lib/hoy/aprobar.ts): lo ve, pero solo responde con la casilla Aprobar.
-      obra: ["/cyc/general/hoy", "/cyc/general/aprobar", "/cyc/general/correo"],
+      obra: ["/cyc/general/hoy", "/cyc/general/aprobar", "/cyc/general/correo", "/cyc/obra/actas", "/cyc/obra/pagos", "/cyc/obra/contratistas", "/cyc/obra/calidad"],
     };
     for (const p of PLANTILLAS) {
       it(p.nombre, () => {

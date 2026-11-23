@@ -1,6 +1,8 @@
 import { puede, type Sesion } from "@/lib/acceso/permisos";
 import type { EmpresaBase } from "@/lib/acceso/estructura";
 import { veAprobar } from "@/lib/hoy/aprobar";
+import type { DefTabla } from "./tabla";
+import { TABLAS_EQUIPO } from "./tablas-equipo";
 
 /**
  * Registro central de módulos. Cada tipo de pantalla declara su nombre, icono, segmento de
@@ -27,6 +29,10 @@ export interface DefModulo {
   visible?: (s: Sesion, empresa: string, moduloId: string) => boolean;
   /** Aparece en la vista Todas (cruza empresas). */
   enTodas?: boolean;
+  /** Una línea bajo el título del módulo. */
+  descripcion?: string;
+  /** Módulo de tabla: lista sobre una tabla de Airtable leída en el momento (lib/modulos/tabla.ts). */
+  tabla?: DefTabla;
 }
 
 export const REGISTRO: DefModulo[] = [
@@ -46,24 +52,24 @@ export const REGISTRO: DefModulo[] = [
   { tipo: "correo", nombre: "Correo", icono: "mail", segmento: "correo", fuentes: ["Gmail por Composio"], construido: true },
   { tipo: "sistema", nombre: "Sistema", icono: "activity", segmento: "sistema", fuentes: ["TRAZABILIDAD", "Postgres"], construido: true },
   { tipo: "finanzas", nombre: "Finanzas", icono: "landmark", segmento: "finanzas", fuentes: ["AGREGADO", "CRUCES", "EXTRACTOS", "OVERHEAD"], construido: false },
-  { tipo: "equipo", nombre: "Equipo", icono: "users", segmento: "equipo", fuentes: ["CONTROL HORAS", "OBJETIVOS", "NOMINA"], construido: false },
-  { tipo: "operacion", nombre: "Operación", icono: "calendar-days", segmento: "operacion", fuentes: ["RESERVAS", "HUESPEDES", "ADICIONALES"], construido: false },
-  { tipo: "limpiezas", nombre: "Limpiezas", icono: "sparkles", segmento: "limpiezas", fuentes: ["LIMPIEZA", "SERVICIOS"], construido: false },
+  { tipo: "equipo", nombre: "Equipo", icono: "users", segmento: "equipo", fuentes: ["CONTROL HORAS", "OBJETIVOS", "NOMINA"], construido: true, descripcion: "Control de horas de las últimas dos semanas", tabla: TABLAS_EQUIPO["equipo"] },
+  { tipo: "operacion", nombre: "Operación", icono: "calendar-days", segmento: "operacion", fuentes: ["RESERVAS", "HUESPEDES", "ADICIONALES"], construido: true, descripcion: "Reservas de ayer a dos semanas", tabla: TABLAS_EQUIPO["operacion"] },
+  { tipo: "limpiezas", nombre: "Limpiezas", icono: "sparkles", segmento: "limpiezas", fuentes: ["LIMPIEZA", "SERVICIOS"], construido: true, descripcion: "Limpiezas de las últimas dos semanas y la próxima", tabla: TABLAS_EQUIPO["limpiezas"] },
   { tipo: "ruta", nombre: "Ruta de aseo", icono: "route", segmento: "ruta", fuentes: ["LIMPIEZA", "SERVICIOS", "CONTROL HORAS"], construido: false },
-  { tipo: "unidades-host", nombre: "Unidades Host", icono: "building-2", segmento: "unidades", fuentes: ["UNIDADES", "EDIFICIOS", "PROPIETARIOS"], construido: false },
-  { tipo: "liquidaciones", nombre: "Liquidaciones", icono: "receipt", segmento: "liquidaciones", fuentes: ["F_CORTAS", "F_LIMPIEZA", "POLIZAS", "PAGOS"], construido: false },
-  { tipo: "alistamiento", nombre: "Alistamiento", icono: "package", segmento: "alistamiento", fuentes: ["PROY_AMOB", "ITEMS_AMOB", "COT LENCERIA"], construido: false },
-  { tipo: "comercial-host", nombre: "Comercial Host", icono: "megaphone", segmento: "comercial", fuentes: ["LEADS", "CONJUNTOS"], construido: false },
-  { tipo: "unidades-living", nombre: "Unidades Living", icono: "building", segmento: "unidades", fuentes: ["UNIDADES (7. LIVING)"], construido: false },
-  { tipo: "contratos", nombre: "Contratos", icono: "file-signature", segmento: "contratos", fuentes: ["CONTRATO", "FIRMAS", "ACTAS"], construido: false },
-  { tipo: "cobros", nombre: "Cobros", icono: "wallet", segmento: "cobros", fuentes: ["INGRESOS", "VL"], construido: false },
+  { tipo: "unidades-host", nombre: "Unidades Host", icono: "building-2", segmento: "unidades", fuentes: ["UNIDADES", "EDIFICIOS", "PROPIETARIOS"], construido: true, descripcion: "Unidades de Verse Host con su edificio, propietario y estado", tabla: TABLAS_EQUIPO["unidades-host"] },
+  { tipo: "liquidaciones", nombre: "Liquidaciones", icono: "receipt", segmento: "liquidaciones", fuentes: ["F_CORTAS", "F_LIMPIEZA", "POLIZAS", "PAGOS"], construido: true, descripcion: "Liquidaciones de los últimos tres meses", tabla: TABLAS_EQUIPO["liquidaciones"] },
+  { tipo: "alistamiento", nombre: "Alistamiento", icono: "package", segmento: "alistamiento", fuentes: ["PROY_AMOB", "ITEMS_AMOB", "COT LENCERIA"], construido: true, descripcion: "Pedidos de amoblamiento por unidad", tabla: TABLAS_EQUIPO["alistamiento"] },
+  { tipo: "comercial-host", nombre: "Comercial Host", icono: "megaphone", segmento: "comercial", fuentes: ["LEADS", "CONJUNTOS"], construido: true, descripcion: "Leads de propietarios", tabla: TABLAS_EQUIPO["comercial-host"] },
+  { tipo: "unidades-living", nombre: "Unidades Living", icono: "building", segmento: "unidades", fuentes: ["UNIDADES (7. LIVING)"], construido: true, descripcion: "Unidades de Living y su ocupación", tabla: TABLAS_EQUIPO["unidades-living"] },
+  { tipo: "contratos", nombre: "Contratos", icono: "file-signature", segmento: "contratos", fuentes: ["CONTRATO", "FIRMAS", "ACTAS"], construido: true, descripcion: "Contratos de arriendo", tabla: TABLAS_EQUIPO["contratos"] },
+  { tipo: "cobros", nombre: "Cobros", icono: "wallet", segmento: "cobros", fuentes: ["INGRESOS", "VL"], construido: true, descripcion: "Cánones de los últimos dos meses", tabla: TABLAS_EQUIPO["cobros"] },
   { tipo: "balcony", nombre: "Balcony PH", icono: "hotel", segmento: "balcony", fuentes: ["EDIFICIO BALCONY PH"], construido: false },
-  { tipo: "comercial-living", nombre: "Comercial Living", icono: "megaphone", segmento: "comercial", fuentes: ["WEB LEADS"], construido: false },
+  { tipo: "comercial-living", nombre: "Comercial Living", icono: "megaphone", segmento: "comercial", fuentes: ["WEB LEADS"], construido: true, descripcion: "Leads de la web", tabla: TABLAS_EQUIPO["comercial-living"] },
   { tipo: "finanzas-cyc", nombre: "Finanzas", icono: "landmark", segmento: "finanzas", fuentes: ["EXTRACTOS", "BANCOS", "MOVIMIENTOS C&C"], construido: false },
-  { tipo: "actas", nombre: "Actas", icono: "clipboard-list", segmento: "actas", fuentes: ["ACTAS", "ITEMS ACTAS"], construido: false },
-  { tipo: "pagos-obra", nombre: "Pagos de obra", icono: "banknote", segmento: "pagos", fuentes: ["CONTABILIDAD (12. EDIFICIO 54-47)"], construido: false },
-  { tipo: "contratistas", nombre: "Contratistas", icono: "hard-hat", segmento: "contratistas", fuentes: ["CONTRATISTAS", "ANTICIPOS"], construido: false },
-  { tipo: "calidad", nombre: "Calidad", icono: "flask-conical", segmento: "calidad", fuentes: ["PRUEBAS CONCRETO"], construido: false },
+  { tipo: "actas", nombre: "Actas", icono: "clipboard-list", segmento: "actas", fuentes: ["ACTAS", "ITEMS ACTAS"], construido: true, descripcion: "Actas de corte por contratista", tabla: TABLAS_EQUIPO["actas"] },
+  { tipo: "pagos-obra", nombre: "Pagos de obra", icono: "banknote", segmento: "pagos", fuentes: ["CONTABILIDAD (12. EDIFICIO 54-47)"], construido: true, descripcion: "Pagos de obra de los últimos dos meses", tabla: TABLAS_EQUIPO["pagos-obra"] },
+  { tipo: "contratistas", nombre: "Contratistas", icono: "hard-hat", segmento: "contratistas", fuentes: ["CONTRATISTAS", "ANTICIPOS"], construido: true, descripcion: "Contratistas, contratos y retenciones", tabla: TABLAS_EQUIPO["contratistas"] },
+  { tipo: "calidad", nombre: "Calidad", icono: "flask-conical", segmento: "calidad", fuentes: ["PRUEBAS CONCRETO"], construido: true, descripcion: "Pruebas de concreto", tabla: TABLAS_EQUIPO["calidad"] },
   { tipo: "diseno", nombre: "Diseño y compras", icono: "ruler", segmento: "diseno", fuentes: ["ESPECIFICACION", "FACHADA", "MEDIDAS FINALES"], construido: false },
 ];
 

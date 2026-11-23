@@ -62,7 +62,7 @@ test("coordinación de aseo no ve Correo, Ajustes ni Para aprobar de Verse", asy
 });
 
 test("un módulo sin construir no se abre y una empresa ajena lleva al inicio", async ({ page }) => {
-  await page.goto("/verse/host/operacion");
+  await page.goto("/verse/host/ruta");
   await expect(page.getByText("No encontramos esta página")).toBeVisible();
   await page.goto("/otra/general/hoy");
   await expect(page).toHaveURL(/\/verse\/general\/hoy$/);
@@ -104,4 +104,19 @@ test("Ajustes es solo para el Maestro", async ({ page, baseURL }) => {
   await page.goto("/ajustes");
   await expect(page.getByText("Ajustes es solo para el Maestro.")).toBeVisible();
   await expect(page.getByRole("link", { name: "Ana Prueba" })).toHaveCount(0);
+});
+
+test("un módulo de tabla oculta montos y terceros según la plantilla", async ({ page, baseURL }) => {
+  await page.context().addCookies([{ name: "vitrina_usuario", value: "aseo@vitrina.test", url: baseURL! }]);
+  await page.goto("/verse/host/operacion");
+  await expect(page.getByRole("heading", { name: "Operación", level: 1 })).toBeVisible();
+  await expect(page.getByText(/Tu acceso no incluye montos, datos de terceros/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "Total" })).toHaveCount(0);
+});
+
+test("el Maestro abre el detalle de una fila de tabla", async ({ page }) => {
+  await page.goto("/cyc/obra/actas");
+  await expect(page.getByRole("heading", { name: "Actas", level: 1 })).toBeVisible();
+  await page.locator("tbody tr").first().click();
+  await expect(page.getByRole("dialog").getByText("A pagar", { exact: true })).toBeVisible();
 });

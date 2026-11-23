@@ -1,9 +1,12 @@
 import { crearCliente, type ClienteAirtable } from "@/lib/airtable/cliente";
 import { exigir, leerEntorno } from "@/lib/entorno";
 import type { Contador } from "@/lib/medicion/contador";
+import { airtableVitrina } from "@/lib/vitrina/airtable";
+import { esVitrina } from "@/lib/vitrina/activa";
 
 /** Cliente de Airtable del servidor. Cada llamada se cuenta por base y workspace. */
 export function clienteServidor(contador?: Contador): ClienteAirtable {
+  if (esVitrina()) return airtableVitrina();
   return crearCliente({ token: exigir(leerEntorno(), "AIRTABLE_TOKEN"), alLlamar: contador?.contar });
 }
 

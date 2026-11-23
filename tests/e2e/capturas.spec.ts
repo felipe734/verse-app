@@ -35,7 +35,9 @@ test.describe("capturas", () => {
             await page.getByPlaceholder(/Busca un módulo/).fill("pol");
             await page.waitForTimeout(700);
           } else if (p.accion === "detalle") {
-            await page.locator("main li button").nth(1).click();
+            const filaTabla = page.locator("tbody tr").first();
+            if (await filaTabla.count()) await filaTabla.click();
+            else await page.locator("main li button").nth(1).click();
           } else if (p.accion === "asistente") {
             await page.keyboard.press("ControlOrMeta+j");
           }

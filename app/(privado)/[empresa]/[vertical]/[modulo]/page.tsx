@@ -4,19 +4,22 @@ import { Suspense } from "react";
 import { ModuloAprobar } from "@/components/modulos/aprobar/modulo-aprobar";
 import { ModuloCorreo } from "@/components/modulos/correo/modulo-correo";
 import { ModuloSistema } from "@/components/modulos/sistema/modulo-sistema";
+import { ModuloTabla } from "@/components/modulos/tabla/modulo-tabla";
 import { EsqueletoModulo } from "@/components/modulos/encabezado";
 import { ModuloHoy } from "@/components/modulos/hoy/modulo-hoy";
 import { sesionActual } from "@/lib/acceso/actual";
 import { ESTRUCTURA } from "@/lib/acceso/estructura";
 import { PLATFORM_NAME } from "@/lib/config";
-import { ubicar } from "@/lib/modulos/registro";
+import { REGISTRO, ubicar } from "@/lib/modulos/registro";
+
+const defPorSegmento = (segmento: string) => REGISTRO.find((d) => d.segmento === segmento);
 
 type Params = { empresa: string; vertical: string; modulo: string };
 type Busqueda = { verComo?: string; cuenta?: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { modulo } = await params;
-  const nombre = { hoy: "Hoy", aprobar: "Para aprobar", correo: "Correo", sistema: "Sistema" }[modulo] ?? "Módulo";
+  const nombre = defPorSegmento(modulo)?.nombre ?? "Módulo";
   return { title: `${nombre} · ${PLATFORM_NAME}` };
 }
 
@@ -26,6 +29,7 @@ async function Contenido({ params, searchParams }: { params: Promise<Params>; se
   const busqueda = await searchParams;
   const u = ubicar(sesion, sesion.estructura ?? ESTRUCTURA, empresa, vertical, modulo);
   if (!u) notFound();
+  if (u.def.tabla) return <ModuloTabla sesion={sesion} u={u} />;
   switch (u.def.tipo) {
     case "hoy":
       return <ModuloHoy sesion={sesion} empresa={empresa} verComo={busqueda.verComo} />;
