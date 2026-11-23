@@ -1,23 +1,29 @@
 import { ESTRUCTURA } from "./estructura";
 import { empresasVisibles, modulosVisibles, type Sesion } from "./permisos";
 
+export const TODAS = "todas";
+
 export interface VistaHoy {
   empresas: { id: string; nombre: string }[];
-  /** Empresa elegida; null si la persona no tiene ninguna. */
+  /** Empresa elegida, "todas", o null si la persona no tiene ninguna. */
   empresa: string | null;
+  /** La opción "Todas" solo aparece con más de una empresa. */
+  todas: boolean;
   grupos: { empresa: string; vertical: string; modulos: { id: string; nombre: string; descripcion: string }[] }[];
 }
 
 /**
- * Lo que Hoy muestra para una sesión: empresas que puede abrir y módulos de la elegida.
+ * Lo que Hoy muestra para una sesión: empresas que puede abrir y módulos de la elegida,
+ * o de todas sus empresas juntas con "Todas".
  * Pasa por la función única de permisos; nada fuera de ella llega a la pantalla.
  */
 export function vistaHoy(s: Sesion | null, pedida?: string | null): VistaHoy {
   const estructura = s?.estructura ?? ESTRUCTURA;
   const visibles = empresasVisibles(s);
   const empresas = visibles.map((id) => ({ id, nombre: estructura.find((e) => e.id === id)?.nombre ?? id }));
-  const empresa = pedida && visibles.includes(pedida) ? pedida : (visibles[0] ?? null);
-  const elegidas = empresa ? [empresa] : [];
+  const todas = visibles.length > 1;
+  const empresa = pedida === TODAS && todas ? TODAS : pedida && visibles.includes(pedida) ? pedida : (visibles[0] ?? null);
+  const elegidas = empresa === TODAS ? visibles : empresa ? [empresa] : [];
   const grupos = elegidas.flatMap((id) => {
     const e = estructura.find((x) => x.id === id)!;
     const mios = new Set(modulosVisibles(s, id));
@@ -25,5 +31,5 @@ export function vistaHoy(s: Sesion | null, pedida?: string | null): VistaHoy {
       .map((v) => ({ empresa: e.nombre, vertical: v.nombre, modulos: v.modulos.filter((m) => mios.has(m.id)) }))
       .filter((g) => g.modulos.length > 0);
   });
-  return { empresas, empresa, grupos };
+  return { empresas, empresa, todas, grupos };
 }

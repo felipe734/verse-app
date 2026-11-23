@@ -37,3 +37,7 @@ La estructura vive en Postgres y viaja en la sesión (`sesion.estructura`), así
 Invitaciones: el doc pide un correo con la marca; el envío de correo llega en la entrega 4 (Composio). Mientras tanto Ajustes genera el enlace (vence en 7 días, se muestra una sola vez, en la base solo queda su hash) y Felipe lo envía por WhatsApp. En `/invitacion/<token>` la persona entra con Google; el enlace solo activa la cuenta si el correo de Google coincide con el invitado, y se usa una sola vez.
 
 Ver como: el Maestro abre `/hoy?verComo=<usuario>` y ve exactamente lo que la función de permisos le da a esa persona. Queda en AUDITORIA.
+
+## Vista Todas y cierre de la entrega 2
+
+Hoy tiene selector de empresa y, si la persona tiene más de una, la opción Todas con sus módulos de ambas empresas (`lib/acceso/vista.ts`). La prueba de "listo cuando" (`tests/unit/entrega2.test.ts`) crea en Postgres un usuario Aseo y un Administrador Verse sin C&C por la vía de Ajustes y comprueba, por la misma vista de Hoy y Ver como, que el primero solo ve su ruta y el segundo nada de C&C, ni pidiéndolo por URL.

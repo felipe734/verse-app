@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { db } from "@/db/cliente";
 import { sesionActual } from "@/lib/acceso/actual";
 import { sesionPorId } from "@/lib/acceso/sesion";
-import { vistaHoy } from "@/lib/acceso/vista";
+import { TODAS, vistaHoy } from "@/lib/acceso/vista";
 import { auditar } from "@/lib/auditoria";
 
 export const metadata: Metadata = { title: "Hoy · Verse App" };
@@ -43,7 +43,7 @@ async function Panel({ searchParams }: { searchParams: Promise<Parametros> }) {
       )}
 
       <nav aria-label="Empresa" className="flex flex-wrap gap-2">
-        {vista.empresas.map((e) => {
+        {[...vista.empresas, ...(vista.todas ? [{ id: TODAS, nombre: "Todas" }] : [])].map((e) => {
           const activa = e.id === vista.empresa;
           return (
             <Link
@@ -65,7 +65,9 @@ async function Panel({ searchParams }: { searchParams: Promise<Parametros> }) {
           <p className="text-muted-foreground">Hoy, Para aprobar y Sistema llegan en la entrega 3. Estos son los módulos que abre el acceso.</p>
           {vista.grupos.map((g) => (
             <section key={`${g.empresa}-${g.vertical}`}>
-              <h2 className="font-display text-[11px] tracking-[1.6px] text-muted-foreground">{g.vertical.toUpperCase()}</h2>
+              <h2 className="font-display text-[11px] tracking-[1.6px] text-muted-foreground">
+                {(vista.empresa === TODAS ? `${g.empresa} · ${g.vertical}` : g.vertical).toUpperCase()}
+              </h2>
               <ul className="mt-1 divide-y divide-[var(--verse-filete-suave)]">
                 {g.modulos.map((m) => (
                   <li key={m.id} className="py-2.5">
