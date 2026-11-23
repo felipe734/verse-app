@@ -4,7 +4,7 @@ import { CATALOGO } from "@/lib/airtable/mapeo";
 import { auditar } from "@/lib/auditoria";
 import { crearContador, diaBogota } from "@/lib/medicion/contador";
 import { prepararDia, procesarDia } from "@/lib/respaldo/correr";
-import { clienteServidor, esCronAutorizado } from "@/lib/servidor/airtable";
+import { clienteServidor, esCronAutorizado, urlProduccion } from "@/lib/servidor/airtable";
 import { driveRespaldo } from "@/lib/servidor/google";
 
 export const maxDuration = 300;
@@ -36,12 +36,16 @@ export async function GET(request: Request) {
     console.info("[cron/respaldo]", JSON.stringify({ fecha, vuelta, ...r, llamadas }));
 
     if (!r.terminado && vuelta < MAX_VUELTAS) {
-      const siguiente = new URL(url);
+      // Por el dominio público: la URL del despliegue está detrás del inicio de sesión de Vercel.
+      const siguiente = new URL(urlProduccion("/api/cron/respaldo"));
       siguiente.searchParams.set("vuelta", String(vuelta + 1));
       siguiente.searchParams.set("fecha", fecha);
       const autorizacion = request.headers.get("authorization") ?? "";
       after(async () => {
-        await fetch(siguiente, { headers: { authorization: autorizacion } }).catch(() => undefined);
+        const r = await fetch(siguiente, { headers: { authorization: autorizacion } }).catch((e: unknown) => e);
+        if (!(r instanceof Response) || !r.ok) {
+          console.error("[cron/respaldo] no se pudo encadenar la vuelta", vuelta + 1, r instanceof Response ? r.status : "sin respuesta");
+        }
       });
     }
     if (r.terminado) {

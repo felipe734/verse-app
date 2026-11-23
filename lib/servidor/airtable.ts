@@ -7,10 +7,15 @@ export function clienteServidor(contador?: Contador): ClienteAirtable {
   return crearCliente({ token: exigir(leerEntorno(), "AIRTABLE_TOKEN"), alLlamar: contador?.contar });
 }
 
-export function urlWebhook(): string {
+/** Dominio público de producción (app.verseliving.com). Las URL de despliegue piden inicio de sesión de Vercel. */
+export function urlProduccion(ruta: string): string {
   const host = process.env.APP_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL;
-  if (!host) throw new Error("No se sabe la URL de producción para los webhooks.");
-  return `${host.startsWith("http") ? host : `https://${host}`}/api/airtable/webhook`;
+  if (!host) throw new Error("No se sabe la URL de producción.");
+  return `${host.startsWith("http") ? host : `https://${host}`}${ruta}`;
+}
+
+export function urlWebhook(): string {
+  return urlProduccion("/api/airtable/webhook");
 }
 
 /** Vercel Cron manda `Authorization: Bearer CRON_SECRET`. */
