@@ -1,5 +1,5 @@
 import type { Casillas, NivelModulo } from "./casillas";
-import { ESTRUCTURA } from "./estructura";
+import { ESTRUCTURA, type EmpresaBase } from "./estructura";
 
 /**
  * Función única de permisos (regla 2 del CLAUDE.md). Toda consulta de la app pasa por aquí:
@@ -15,23 +15,29 @@ export interface Sesion {
   nombreAirtable: string | null;
   /** Casillas por empresa. Sin entrada = sin acceso a esa empresa. */
   accesos: Record<string, Casillas>;
+  /** Estructura vigente (Postgres, editable en Ajustes). Sin ella se usa la de arranque. */
+  estructura?: EmpresaBase[];
 }
 
 export class ErrorAcceso extends Error {
   override name = "ErrorAcceso";
 }
 
-const verticalDe = new Map<string, { empresa: string; vertical: string }>(
-  ESTRUCTURA.flatMap((e) => e.verticales.flatMap((v) => v.modulos.map((m) => [m.id, { empresa: e.id, vertical: v.id }] as const))),
-);
+const estructuraDe = (s: Sesion | null): EmpresaBase[] => s?.estructura ?? ESTRUCTURA;
+
+function ubicacionDe(s: Sesion | null, modulo: string): { empresa: string; vertical: string } | undefined {
+  for (const e of estructuraDe(s)) for (const v of e.verticales) if (v.modulos.some((m) => m.id === modulo)) return { empresa: e.id, vertical: v.id };
+  return undefined;
+}
 
 const activa = (s: Sesion | null): s is Sesion => Boolean(s && s.estado === "activo");
 
 /** Empresas que la persona puede abrir. */
 export function empresasVisibles(s: Sesion | null): string[] {
   if (!activa(s)) return [];
-  if (s.maestro) return ESTRUCTURA.map((e) => e.id);
-  return ESTRUCTURA.map((e) => e.id).filter((id) => {
+  const ids = estructuraDe(s).map((e) => e.id);
+  if (s.maestro) return ids;
+  return ids.filter((id) => {
     const c = s.accesos[id];
     return c && Object.values(c.modulos).some((n) => n !== "sin");
   });
@@ -39,7 +45,7 @@ export function empresasVisibles(s: Sesion | null): string[] {
 
 /** Nivel en un módulo. El módulo debe pertenecer a la empresa pedida. */
 export function nivel(s: Sesion | null, empresa: string, modulo: string): NivelModulo {
-  const ubicacion = verticalDe.get(modulo);
+  const ubicacion = ubicacionDe(s, modulo);
   if (!activa(s) || !ubicacion || ubicacion.empresa !== empresa) return "sin";
   if (s.maestro) return "editar";
   return s.accesos[empresa]?.modulos[modulo] ?? "sin";
@@ -57,7 +63,7 @@ export function exigir(s: Sesion | null, empresa: string, modulo: string, accion
 }
 
 export function modulosVisibles(s: Sesion | null, empresa: string): string[] {
-  const e = ESTRUCTURA.find((x) => x.id === empresa);
+  const e = estructuraDe(s).find((x) => x.id === empresa);
   if (!e) return [];
   return e.verticales.flatMap((v) => v.modulos.map((m) => m.id)).filter((m) => puede(s, empresa, m, "ver"));
 }
@@ -74,7 +80,7 @@ export function puedeAprobar(s: Sesion | null, empresa: string): boolean {
 
 export function nivelCorreo(s: Sesion | null, empresa: string, cuenta: string): "sin" | "leer" | "redactar" | "enviar" {
   if (!activa(s)) return "sin";
-  const e = ESTRUCTURA.find((x) => x.id === empresa);
+  const e = estructuraDe(s).find((x) => x.id === empresa);
   if (!e?.cuentas.some((c) => c.id === cuenta)) return "sin";
   if (s.maestro) return "enviar";
   return s.accesos[empresa]?.correo[cuenta] ?? "sin";

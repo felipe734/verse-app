@@ -27,3 +27,13 @@ Prueba por plantilla (`tests/unit/permisos.test.ts`): cada plantilla contra cada
 Auth.js 5 con Google (`auth.ts`). Solo entra un usuario que existe en `usuarios` con estado activo y correo verificado (`lib/acceso/entrada.ts`); una cuenta de Google sin invitación no entra. El token de Auth.js solo guarda el correo: las casillas se leen de Postgres en cada petición con `sesionActual()` (`lib/acceso/actual.ts`), así suspender corta el acceso en la siguiente acción. Cada entrada queda en `auditoria`.
 
 Páginas: `/entrar` (pública) y `/hoy` (privada, con selector de empresa y los módulos que abre el acceso). Las rutas de API con su propia clave (cron, webhook, restauración) no pasan por la entrada.
+
+## Ajustes, invitaciones y Ver como
+
+Ajustes (`/ajustes`) es solo del Maestro (`exigirMaestro`); cada cambio queda en AUDITORIA con antes y después (`lib/acceso/admin.ts`): crear y editar usuarios, aplicar plantilla y ajustar casillas por empresa, quitar acceso, suspender y reactivar, crear empresas (con su vertical General) y verticales.
+
+La estructura vive en Postgres y viaja en la sesión (`sesion.estructura`), así una empresa o vertical creada en Ajustes aplica de inmediato. Los módulos son funciones del código y se siembran desde `lib/acceso/estructura.ts`.
+
+Invitaciones: el doc pide un correo con la marca; el envío de correo llega en la entrega 4 (Composio). Mientras tanto Ajustes genera el enlace (vence en 7 días, se muestra una sola vez, en la base solo queda su hash) y Felipe lo envía por WhatsApp. En `/invitacion/<token>` la persona entra con Google; el enlace solo activa la cuenta si el correo de Google coincide con el invitado, y se usa una sola vez.
+
+Ver como: el Maestro abre `/hoy?verComo=<usuario>` y ve exactamente lo que la función de permisos le da a esa persona. Queda en AUDITORIA.

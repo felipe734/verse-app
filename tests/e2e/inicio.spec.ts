@@ -35,3 +35,9 @@ test("sin sesión, Hoy manda a entrar y no muestra módulos", async ({ page }) =
   await expect(page).toHaveURL(/\/entrar/);
   await expect(page.getByText("Módulos")).toHaveCount(0);
 });
+
+test("sin sesión, Ajustes manda a entrar", async ({ page }) => {
+  await page.goto("/ajustes");
+  await expect(page).toHaveURL(/\/entrar/);
+  await expect(page.getByText("Nuevo usuario")).toHaveCount(0);
+});
