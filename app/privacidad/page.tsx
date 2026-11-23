@@ -12,7 +12,7 @@ const ACTUALIZADA = "22 de noviembre de 2026";
 function Seccion({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <section className="space-y-2">
-      <h2 className="font-display text-lg font-medium text-foreground">{titulo}</h2>
+      <h2 className="text-lg font-medium text-foreground">{titulo}</h2>
       {children}
     </section>
   );
@@ -32,7 +32,7 @@ export default function Privacidad() {
         <p>
           El responsable del tratamiento es Verse Group, en Bogotá, Colombia. Para cualquier pregunta o solicitud sobre tus datos
           escribe a{" "}
-          <a className="text-[var(--verse-azul)] underline" href="mailto:contacto@verseliving.com">
+          <a className="underline underline-offset-2 hover:text-foreground" href="mailto:contacto@verseliving.com">
             contacto@verseliving.com
           </a>
           .
@@ -73,7 +73,7 @@ export default function Privacidad() {
         <p>
           El uso que Verse App hace de la información recibida de las API de Google cumple la{" "}
           <a
-            className="text-[var(--verse-azul)] underline"
+            className="underline underline-offset-2 hover:text-foreground"
             href="https://developers.google.com/terms/api-services-user-data-policy"
             rel="noreferrer"
             target="_blank"
@@ -115,7 +115,7 @@ export default function Privacidad() {
           Conforme a la Ley 1581 de 2012 de Colombia puedes conocer, actualizar, corregir y pedir la eliminación de tus datos
           personales, y revocar la autorización. También puedes quitar el acceso de Verse App a tu cuenta desde la configuración de
           seguridad de Google. Escribe a{" "}
-          <a className="text-[var(--verse-azul)] underline" href="mailto:contacto@verseliving.com">
+          <a className="underline underline-offset-2 hover:text-foreground" href="mailto:contacto@verseliving.com">
             contacto@verseliving.com
           </a>{" "}
           y responderemos en los plazos de la ley.
@@ -127,7 +127,7 @@ export default function Privacidad() {
       </Seccion>
 
       <p className="pt-2">
-        <Link className="text-[var(--verse-azul)] underline" href="/">
+        <Link className="underline underline-offset-2 hover:text-foreground" href="/">
           Volver al inicio
         </Link>
       </p>

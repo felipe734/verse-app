@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import type { Resultado } from "@/app/(privado)/ajustes/acciones";
+import type { Resultado } from "@/app/(privado)/(fijas)/ajustes/acciones";
 import { Button } from "@/components/ui/button";
 
 /** Formulario de Ajustes con el resultado de la acción debajo del botón. */
@@ -25,7 +25,7 @@ export function Forma({
           {enviando ? "Guardando" : boton}
         </Button>
         {estado && (
-          <span role="status" className={estado.ok ? "text-[var(--verse-azul)]" : "text-foreground"}>
+          <span role="status" className={estado.ok ? "text-foreground" : "text-foreground"}>
             {estado.mensaje}
           </span>
         )}
@@ -37,7 +37,7 @@ export function Forma({
 export function Campo({ etiqueta, children }: { etiqueta: string; children: React.ReactNode }) {
   return (
     <label className="block space-y-1">
-      <span className="font-display text-[11px] tracking-[1.2px] text-muted-foreground">{etiqueta.toUpperCase()}</span>
+      <span className="text-[11px] tracking-[1.2px] text-muted-foreground">{etiqueta.toUpperCase()}</span>
       {children}
     </label>
   );

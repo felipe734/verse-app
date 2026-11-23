@@ -228,6 +228,9 @@ export const empresas = pgTable("empresas", {
   nombre: text().notNull(),
   orden: integer().notNull().default(0),
   cuentas: jsonb().$type<{ id: string; nombre: string }[]>().notNull().default([]),
+  /** Lo único que cambia por empresa en la interfaz: color de acento y logo. */
+  acento: text().notNull().default("#18181b"),
+  logo: text(),
   creado: ahora(),
 });
 
@@ -243,6 +246,8 @@ export const modulos = pgTable("modulos", {
   verticalId: text("vertical_id").notNull().references(() => verticales.id),
   nombre: text().notNull(),
   descripcion: text().notNull().default(""),
+  /** Tipo de pantalla del registro de módulos; vacío = sin pantalla todavía. */
+  tipo: text().notNull().default(""),
   orden: integer().notNull().default(0),
 });
 

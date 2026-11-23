@@ -11,7 +11,7 @@ export default function Inicio() {
         cobros de Verse Living, y la obra del edificio 54-47 de C&amp;C.
       </p>
       <div className="space-y-2">
-        <h2 className="font-display text-lg font-medium text-foreground">Para qué sirve</h2>
+        <h2 className="text-lg font-medium text-foreground">Para qué sirve</h2>
         <ul className="list-disc space-y-1 pl-5">
           <li>Ver y cerrar los pendientes de cada persona según su rol.</li>
           <li>Aprobar cambios propuestos y dejar rastro de quién hizo qué.</li>
@@ -20,11 +20,11 @@ export default function Inicio() {
         </ul>
       </div>
       <div className="space-y-2">
-        <h2 className="font-display text-lg font-medium text-foreground">Quién puede entrar</h2>
+        <h2 className="text-lg font-medium text-foreground">Quién puede entrar</h2>
         <p>
           Solo las personas que la empresa invita, con su cuenta de Google. Cada una ve únicamente lo que su rol permite. Para saber
           qué datos usa la app y para qué, lee la{" "}
-          <Link className="text-[var(--verse-azul)] underline" href="/privacidad">
+          <Link className="underline underline-offset-2 hover:text-foreground" href="/privacidad">
             política de privacidad
           </Link>
           .
@@ -32,7 +32,7 @@ export default function Inicio() {
       </div>
       <Link
         href="/entrar"
-        className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 font-display text-primary-foreground"
+        className="inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-primary-foreground"
       >
         Entrar
       </Link>

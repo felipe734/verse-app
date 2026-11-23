@@ -1,29 +1,24 @@
-import Link from "next/link";
-
-/** Franja Navy de las pantallas privadas. */
+/**
+ * Piezas de las pantallas que aún no tienen su PR de rediseño (Correo, Sistema, Ajustes).
+ * Ya viven dentro del shell: aquí solo dan título y espaciado neutros.
+ */
 export function Encabezado({ submarca }: { submarca: string }) {
+  const titulo = submarca.charAt(0) + submarca.slice(1).toLowerCase();
   return (
-    <header className="flex items-center justify-between rounded-t-2xl bg-primary px-6 py-4">
-      <Link href="/hoy" className="font-display text-sm font-bold tracking-[4px] text-primary-foreground">
-        VERSE<span className="ml-2.5 text-xs tracking-[2px] text-[#a9b8cc]">{submarca}</span>
-      </Link>
-      <span aria-hidden className="size-[9px] rounded-full bg-[var(--verse-naranja)]" />
-    </header>
+    <div className="px-4 pt-6 pb-2 md:px-6">
+      <h1 className="text-xl font-semibold tracking-tight">{titulo}</h1>
+    </div>
   );
 }
 
 export function Tarjeta({ children }: { children: React.ReactNode }) {
-  return (
-    <article className="space-y-6 rounded-b-2xl border border-t-0 bg-card px-6 py-6 text-[14.5px] leading-relaxed text-[var(--verse-parrafo)]">
-      {children}
-    </article>
-  );
+  return <div className="space-y-6 px-4 pb-10 text-sm leading-relaxed md:px-6">{children}</div>;
 }
 
 export function Seccion({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <section className="space-y-3">
-      <h2 className="font-display text-[11px] tracking-[1.6px] text-muted-foreground">{titulo.toUpperCase()}</h2>
+      <h2 className="text-xs font-medium text-muted-foreground">{titulo}</h2>
       {children}
     </section>
   );
