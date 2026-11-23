@@ -62,3 +62,12 @@ En Finanzas, el cierre de arriba es el del mes elegido. Si ese mes todavía no t
 - **Actas (Obra)**: tablero por contratista para el corte del mes.
 - **Equipo**: agenda de la semana con las horas de cada turno por funcionaria.
 - **Finanzas**: debajo del cierre, las barras de ingresos y margen neto de los últimos seis meses, con una tabla para lectores de pantalla.
+
+## Inicio por rol (quinto PR)
+
+- `/inicio` es la pantalla de entrada: después de entrar con Google, desde la invitación y al abrir la app instalada.
+- Arriba están los críticos, vencidos, para hoy y para aprobar de todas las empresas que la persona ve, cada uno con enlace.
+- Debajo hay una tarjeta por módulo visible que tenga cifras, agrupadas por empresa y vertical. Cada tarjeta muestra las tres primeras cifras del período actual, con los montos solo si hay casilla de cifras. Cada tarjeta carga por su cuenta y, si Airtable no responde, dice eso sin tumbar la página. Los montos grandes se abrevian ($ 269 M) y el valor completo queda en el título.
+- Quien tiene una sola pantalla, como aseo con su ruta, entra directo a ella.
+- Inicio aparece en la barra lateral debajo de Buscar y es el primer acceso de la barra del celular.
+- Costo: cada visita a Inicio hace una consulta a Airtable por tarjeta (hasta unas 15 para el Maestro). Queda medido en Sistema.

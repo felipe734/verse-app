@@ -44,8 +44,9 @@ export function BarraMovil({ d }: { d: DatosShell }) {
   }, [ruta]);
 
   const hoy = items.find((i) => i.tipo === "hoy");
-  const correo = items.find((i) => i.tipo === "correo");
-  const fijos = new Set([hoy?.href, correo?.href]);
+  // Con Hoy, el primer acceso es Inicio; el correo compite con los demás por el más usado.
+  const inicio: ItemNav | undefined = hoy ? { ...hoy, id: "inicio", tipo: "inicio", nombre: "Inicio", icono: "house", href: "/inicio" } : undefined;
+  const fijos = new Set([hoy?.href]);
   const usado: ItemNav | undefined = items.filter((i) => !fijos.has(i.href)).sort((a, b) => (usos[b.href] ?? 0) - (usos[a.href] ?? 0))[0];
 
   const enlace = (i: ItemNav | undefined) =>
@@ -62,8 +63,8 @@ export function BarraMovil({ d }: { d: DatosShell }) {
 
   return (
     <nav aria-label="Accesos" className="fixed inset-x-0 bottom-0 z-30 flex border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+      {enlace(inicio)}
       {enlace(hoy)}
-      {enlace(correo)}
       {asistenteHabilitado && (
         <button type="button" onClick={() => abrirAsistente()} className="flex flex-1 flex-col items-center gap-1 py-2 text-[11px] text-muted-foreground">
           <span className="flex size-9 -mt-3 items-center justify-center rounded-full bg-acento text-acento-foreground shadow-sm">

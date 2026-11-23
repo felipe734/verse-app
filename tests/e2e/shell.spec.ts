@@ -239,3 +239,19 @@ test("Living: contratos en calendario del mes y cobros en tablero", async ({ pag
   await expect(page.getByRole("radio", { name: "Tablero" })).toHaveAttribute("aria-checked", "true");
   await expect(page.getByRole("definition").filter({ hasText: "$" }).first()).toBeVisible();
 });
+
+test("Inicio muestra lo de hoy y una tarjeta por módulo con sus cifras", async ({ page }) => {
+  await page.goto("/inicio");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(/Buen(os|as) .*, /);
+  await expect(page.getByRole("region", { name: "Para hoy" }).getByText("Críticos")).toBeVisible();
+  const host = page.getByRole("main").getByRole("link", { name: /Operación/ });
+  await expect(host.getByText("Reservas")).toBeVisible();
+  await host.click();
+  await expect(page).toHaveURL(/\/verse\/host\/operacion/);
+});
+
+test("aseo entra directo a su ruta desde Inicio", async ({ page, baseURL }) => {
+  await page.context().addCookies([{ name: "vitrina_usuario", value: "edy@vitrina.test", url: baseURL! }]);
+  await page.goto("/inicio");
+  await expect(page).toHaveURL(/\/verse\/host\/ruta$/);
+});
