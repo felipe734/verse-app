@@ -190,7 +190,7 @@ export function Calendario({ def, filas, periodo, hoy, alAbrir }: { def: DefCale
 
 
 /** Agenda de la semana: una fila por funcionaria y una columna por día, con la hora de cada servicio. */
-export function Agenda({ def, filas, periodo, hoy, alAbrir }: { def: DefAgenda; filas: FilaTabla[]; periodo: Periodo; hoy: string; alAbrir: (f: FilaTabla) => void }) {
+export function Agenda({ def, filas, periodo, hoy, alAbrir, accion }: { def: DefAgenda; filas: FilaTabla[]; periodo: Periodo; hoy: string; alAbrir: (f: FilaTabla) => void; accion?: (f: FilaTabla) => React.ReactNode }) {
   const ds = useMemo(() => dias(periodo), [periodo]);
   const items = useMemo(
     () =>
@@ -204,9 +204,12 @@ export function Agenda({ def, filas, periodo, hoy, alAbrir }: { def: DefAgenda; 
   const tarjeta = (x: (typeof items)[number]) => {
     const terminado = def.estado && /termin|hech/i.test(x.f.celdas[def.estado] ?? "");
     return (
-      <button key={x.f.id} type="button" onClick={() => alAbrir(x.f)} className={cn("w-full rounded-md border bg-card px-2 py-1.5 text-left text-xs hover:border-foreground/20", terminado && "opacity-60")}>
-        <span className="tabular-nums text-muted-foreground">{x.cuando.hora || "—"}</span> <span className="font-medium">{x.f.celdas[def.titulo] || "—"}</span>
-      </button>
+      <div key={x.f.id} className={cn("flex items-center gap-1 rounded-md border bg-card pr-1 hover:border-foreground/20", terminado && "opacity-60")}>
+        <button type="button" onClick={() => alAbrir(x.f)} className="min-w-0 flex-1 px-2 py-1.5 text-left text-xs">
+          <span className="tabular-nums text-muted-foreground">{x.cuando.hora || "—"}</span> <span className="font-medium">{x.f.celdas[def.titulo] || "—"}</span>
+        </button>
+        {accion?.(x.f)}
+      </div>
     );
   };
   return (

@@ -5,7 +5,7 @@ import { db } from "@/db/cliente";
 import { sesionActual } from "@/lib/acceso/actual";
 import { ESTRUCTURA } from "@/lib/acceso/estructura";
 import { crearContador } from "@/lib/medicion/contador";
-import { formularioEdicion, guardarEdicion, type Formulario, type Guardado } from "@/lib/modulos/editar";
+import { formularioEdicion, guardarEdicion, idDeCampo, type Formulario, type Guardado } from "@/lib/modulos/editar";
 import { pestanaDe } from "@/lib/modulos/finanzas";
 import { ubicar } from "@/lib/modulos/registro";
 import { clienteServidor } from "@/lib/servidor/airtable";
@@ -52,6 +52,27 @@ export async function guardarEdicionAccion(ref: RefModulo, recId: string, cambio
     return r;
   } catch (e) {
     console.error("[editar/guardar]", e instanceof Error ? e.message : e);
+    return { ok: false, mensaje: "Airtable no respondió. Intenta de nuevo" };
+  }
+}
+
+/**
+ * Acción de un toque o tarjeta movida en el tablero: un solo campo de opciones. `valorActual`
+ * es lo que la persona veía; si Airtable cambió entre tanto, gana Airtable.
+ */
+export async function cambiarRapido(ref: RefModulo, recId: string, campo: string, valor: string, valorActual: string): Promise<Guardado> {
+  const c = await contexto(ref);
+  if (!c) return { ok: false, mensaje: "Este módulo no se edita desde la app" };
+  const id = idDeCampo(c.editar, String(campo));
+  if (!id) return { ok: false, mensaje: "Ese campo no se edita desde la app" };
+  const contador = crearContador();
+  try {
+    const r = await guardarEdicion(db(), clienteServidor(contador), c.s, c.u.empresa, c.u.modulo.id, c.editar, String(recId), { [campo]: String(valor) }, { [id]: valorActual || null });
+    await contador.volcar(db());
+    if (r.ok) revalidatePath(c.ruta);
+    return r;
+  } catch (e) {
+    console.error("[editar/rapido]", e instanceof Error ? e.message : e);
     return { ok: false, mensaje: "Airtable no respondió. Intenta de nuevo" };
   }
 }

@@ -39,6 +39,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 400,
   },
   limpiezas: {
+    rapidas: [{ etiqueta: "Terminada", campo: "estado", valor: "Terminado", columna: "Estado" }],
     persona: "Funcionario",
     agenda: { fecha: "Fecha", fila: "Funcionario", etiquetaFila: "Funcionaria", titulo: "Unidad", estado: "Estado" },
     vistaInicial: "agenda",
@@ -124,6 +125,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     vistaInicial: "tablero",
   },
   contratos: {
+    rapidas: [{ etiqueta: "Firmado", campo: "estado", valor: "Firmado", columna: "Estado" }],
     editar: { tabla: "contratos", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("7. LIVING", "CONTRATO"),
     titulo: "Unidad",
@@ -143,6 +145,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 300,
   },
   cobros: {
+    rapidas: [{ etiqueta: "Pagado", campo: "estado", valor: "PAGO", columna: "Estado" }],
     editar: { tabla: "ingresosLiving", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("7. LIVING", "INGRESOS"),
     titulo: "Unidad",

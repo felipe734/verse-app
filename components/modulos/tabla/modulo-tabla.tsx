@@ -6,6 +6,7 @@ import { leerTabla, type ResultadoTabla } from "@/lib/modulos/tabla";
 import { db } from "@/db/cliente";
 import { clienteServidor } from "@/lib/servidor/airtable";
 import { EncabezadoModulo } from "../encabezado";
+import { campoPorNombre } from "@/lib/modulos/editar";
 import { leerPeriodo } from "@/lib/vistas/periodo";
 import { vistasDe } from "@/lib/vistas/guardadas";
 import { VistaTabla } from "./vista-tabla";
@@ -48,6 +49,8 @@ export async function ModuloTabla({ sesion, u, p }: { sesion: Sesion; u: Ubicaci
         vistaInicial={def.vistaInicial}
         hoy={hoy}
         tablas={[def.idTabla]}
+        rapidas={puedeEditar ? def.rapidas : undefined}
+        campoTablero={puedeEditar ? (campoPorNombre(def.editar, def.tablero) ?? undefined) : undefined}
         persona={
           def.persona && sesion.nombreAirtable
             ? { campo: def.persona, nombre: sesion.nombreAirtable, porDefecto: !sesion.maestro && alcanceHoy(sesion, u.empresa) === "suyo" }

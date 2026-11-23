@@ -270,3 +270,21 @@ test("el Maestro abre en Todo", async ({ page }) => {
   await page.goto("/verse/host/limpiezas?v=lista");
   await expect(page.getByRole("radio", { name: "Todo" })).toHaveAttribute("aria-checked", "true");
 });
+
+test("acciones de un toque: Terminada en la agenda y en el detalle; el tablero se puede arrastrar", async ({ page, isMobile }) => {
+  await page.goto("/verse/host/limpiezas");
+  if (!isMobile) await expect(page.getByRole("button", { name: /^Terminada: / }).first()).toBeVisible();
+  await page.goto("/verse/host/limpiezas?v=lista");
+  await page.locator("table:not(.sr-only) tbody tr").first().click();
+  await expect(page.getByRole("dialog").getByRole("button", { name: "Terminada" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.goto("/verse/host/limpiezas?v=tablero");
+  await expect(page.getByLabel("Tablero por Estado").getByRole("button").first()).toHaveAttribute("draggable", "true");
+});
+
+test("sin editar no hay acciones de un toque", async ({ page, baseURL }) => {
+  await page.context().addCookies([{ name: "vitrina_usuario", value: "admin@vitrina.test", url: baseURL! }]);
+  await page.goto("/verse/general/finanzas");
+  await page.locator("table:not(.sr-only) tbody tr").first().click();
+  await expect(page.getByRole("dialog").getByRole("button", { name: "Conciliado" })).toHaveCount(0);
+});

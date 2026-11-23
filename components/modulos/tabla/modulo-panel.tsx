@@ -11,6 +11,7 @@ import { subidasActivas } from "@/lib/servidor/blob";
 import { cn } from "@/lib/utils";
 import { EncabezadoModulo } from "../encabezado";
 import { CrearFila } from "./crear-fila";
+import { campoPorNombre } from "@/lib/modulos/editar";
 import { leerPeriodo } from "@/lib/vistas/periodo";
 import { vistasDe } from "@/lib/vistas/guardadas";
 import { VistaTabla } from "./vista-tabla";
@@ -174,6 +175,8 @@ export async function ModuloPanel({ sesion, u, pestana, p }: { sesion: Sesion; u
         vistaInicial={activa.tabla.vistaInicial}
         hoy={hoy}
         tablas={[activa.tabla.idTabla]}
+        rapidas={puedeEditar ? activa.tabla.rapidas : undefined}
+        campoTablero={puedeEditar ? (campoPorNombre(activa.tabla.editar, activa.tabla.tablero) ?? undefined) : undefined}
         persona={
           activa.tabla.persona && sesion.nombreAirtable
             ? { campo: activa.tabla.persona, nombre: sesion.nombreAirtable, porDefecto: !sesion.maestro && alcanceHoy(sesion, u.empresa) === "suyo" }
