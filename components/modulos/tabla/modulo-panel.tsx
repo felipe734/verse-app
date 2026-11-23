@@ -49,7 +49,58 @@ function Cierre({ meses, mes }: { meses: MesCierre[]; mes?: string }) {
         <Indicador etiqueta="Overhead" valor={actual.overhead} antes={anterior?.overhead ?? null} />
         <Indicador etiqueta="Margen neto" valor={actual.margen} antes={anterior?.margen ?? null} />
       </div>
+      <Tendencia meses={meses.slice(i, i + 6).reverse()} />
     </section>
+  );
+}
+
+/** Seis meses de ingresos y margen neto, en barras. La tabla de abajo es la versión accesible. */
+function Tendencia({ meses }: { meses: MesCierre[] }) {
+  if (meses.length < 2) return null;
+  const max = Math.max(1, ...meses.map((m) => Math.abs(m.ingresos ?? 0)));
+  const millones = (v: number | null) => (v === null ? "—" : `${(v / 1_000_000).toLocaleString("es-CO", { maximumFractionDigits: 1 })} M`);
+  return (
+    <figure className="rounded-lg border bg-card p-3">
+      <figcaption className="mb-2 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+        Últimos {meses.length} meses
+        <span className="inline-flex items-center gap-1">
+          <span className="size-2.5 rounded-sm bg-muted-foreground/40" aria-hidden /> Ingresos
+        </span>
+        <span className="inline-flex items-center gap-1">
+          <span className="size-2.5 rounded-sm bg-acento" aria-hidden /> Margen neto
+        </span>
+      </figcaption>
+      <div className="flex h-28 items-end gap-3" aria-hidden>
+        {meses.map((m) => (
+          <div key={m.mes} className="flex flex-1 flex-col items-center gap-1">
+            <div className="flex h-24 w-full items-end justify-center gap-1">
+              <div className="w-1/3 rounded-t bg-muted-foreground/40" style={{ height: `${(Math.abs(m.ingresos ?? 0) / max) * 100}%` }} />
+              <div className={cn("w-1/3 rounded-t", (m.margen ?? 0) < 0 ? "bg-destructive" : "bg-acento")} style={{ height: `${(Math.abs(m.margen ?? 0) / max) * 100}%` }} />
+            </div>
+            <span className="text-[11px] text-muted-foreground">{nombreMes(m.mes).split(" ")[0]}</span>
+          </div>
+        ))}
+      </div>
+      <table className="sr-only">
+        <caption>Ingresos y margen neto por mes</caption>
+        <thead>
+          <tr>
+            <th>Mes</th>
+            <th>Ingresos</th>
+            <th>Margen neto</th>
+          </tr>
+        </thead>
+        <tbody>
+          {meses.map((m) => (
+            <tr key={m.mes}>
+              <td>{nombreMes(m.mes)}</td>
+              <td>{millones(m.ingresos)}</td>
+              <td>{millones(m.margen)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </figure>
   );
 }
 

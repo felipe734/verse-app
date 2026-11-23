@@ -115,16 +115,16 @@ test("un módulo de tabla oculta montos y terceros según la plantilla", async (
 });
 
 test("el Maestro abre el detalle de una fila de tabla", async ({ page }) => {
-  await page.goto("/cyc/obra/actas");
+  await page.goto("/cyc/obra/actas?v=lista");
   await expect(page.getByRole("heading", { name: "Actas", level: 1 })).toBeVisible();
-  await page.locator("tbody tr").first().click();
+  await page.locator("table:not(.sr-only) tbody tr").first().click();
   await expect(page.getByRole("dialog").getByText("A pagar", { exact: true })).toBeVisible();
 });
 
 test("Finanzas de Verse muestra el cierre y cambia de pestaña", async ({ page }) => {
   await page.goto("/verse/general/finanzas");
   await expect(page.getByRole("heading", { name: "Finanzas", level: 1 })).toBeVisible();
-  await expect(page.getByRole("region", { name: "Cierre del mes" }).getByText("Margen neto")).toBeVisible();
+  await expect(page.getByRole("region", { name: "Cierre del mes" }).getByText("Margen neto").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Movimientos" })).toHaveAttribute("aria-current", "page");
   await page.getByRole("link", { name: "Cruces" }).click();
   await expect(page).toHaveURL(/pestana=cruces/);
@@ -161,7 +161,7 @@ test("quien coordina ve la ruta de todas", async ({ page }) => {
 
 test("en un módulo con editar, el detalle abre el formulario con las opciones de Airtable", async ({ page }) => {
   await page.goto("/verse/host/limpiezas?v=lista");
-  await page.locator("tbody tr").first().click();
+  await page.locator("table:not(.sr-only) tbody tr").first().click();
   const panel = page.getByRole("dialog");
   await panel.getByRole("button", { name: "Editar" }).click();
   const form = panel.getByRole("form", { name: "Editar fila" });
@@ -173,7 +173,7 @@ test("en un módulo con editar, el detalle abre el formulario con las opciones d
 test("con el módulo solo en ver no aparece Editar", async ({ page, baseURL }) => {
   await page.context().addCookies([{ name: "vitrina_usuario", value: "admin@vitrina.test", url: baseURL! }]);
   await page.goto("/verse/general/finanzas");
-  await page.locator("tbody tr").first().click();
+  await page.locator("table:not(.sr-only) tbody tr").first().click();
   await expect(page.getByRole("dialog").getByRole("button", { name: "Editar" })).toHaveCount(0);
 });
 

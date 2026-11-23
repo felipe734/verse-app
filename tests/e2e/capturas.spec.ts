@@ -36,11 +36,11 @@ test.describe("capturas", () => {
             await page.getByPlaceholder(/Busca un módulo/).fill("pol");
             await page.waitForTimeout(700);
           } else if (p.accion === "detalle") {
-            const filaTabla = page.locator("tbody tr").first();
+            const filaTabla = page.locator("table:not(.sr-only) tbody tr").first();
             if (await filaTabla.count()) await filaTabla.click();
             else await page.locator("main li button").nth(1).click();
           } else if (p.accion === "editar") {
-            await page.locator("tbody tr").first().click();
+            await page.locator("table:not(.sr-only) tbody tr").first().click();
             await page.getByRole("dialog").getByRole("button", { name: "Editar" }).click();
             await page.getByRole("form", { name: "Editar fila" }).waitFor();
           } else if (p.accion === "crear") {

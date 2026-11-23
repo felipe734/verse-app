@@ -61,7 +61,8 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     orden: { campo: "Unidad", desc: false },
     max: 300,
     filtros: ["Edificio", "Estado", "Producto", "Canal"],
-    tablero: "Estado",
+    tablero: "Edificio",
+    vistaInicial: "tablero",
     indicadores: [{ etiqueta: "Unidades", tipo: "conteo" }, { etiqueta: "Edificios", tipo: "distintos", campo: "Edificio" }],
   },
   liquidaciones: {
@@ -74,6 +75,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     periodo: { unidad: "mes", campo: "Fecha" },
     filtros: ["Estado", "Tipo Modelo"],
     tablero: "Estado",
+    vistaInicial: "tablero",
     indicadores: [{ etiqueta: "Liquidaciones", tipo: "conteo" }, { etiqueta: "Facturado", tipo: "suma", campo: "Factura_General" }, { etiqueta: "Neto propietarios", tipo: "suma", campo: "Neto Propietario" }],
   },
   alistamiento: {
@@ -84,6 +86,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 300,
     filtros: ["Estado Pedido", "Estado Pago", "Categoria"],
     tablero: "Estado Pedido",
+    vistaInicial: "tablero",
     indicadores: [{ etiqueta: "Pedidos", tipo: "conteo" }, { etiqueta: "Total", tipo: "suma", campo: "Total" }, { etiqueta: "Pendiente", tipo: "suma", campo: "Pendiente" }],
   },
   "comercial-host": {
@@ -97,6 +100,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     periodo: { unidad: "mes", campo: "Fecha de Envio" },
     filtros: ["Estado", "Canal", "SDR"],
     tablero: "Estado",
+    vistaInicial: "tablero",
     indicadores: [{ etiqueta: "Leads", tipo: "conteo" }],
   },
   "unidades-living": {
@@ -174,6 +178,8 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     vacio: "No hay turnos registrados en dos semanas",
     periodo: { unidad: "semana", campo: "Ingreso" },
     filtros: ["Funcionaria", "Validado"],
+    agenda: { fecha: "Ingreso", fila: "Funcionaria", titulo: "Horas" },
+    vistaInicial: "agenda",
     indicadores: [{ etiqueta: "Turnos", tipo: "conteo" }, { etiqueta: "Horas", tipo: "suma", campo: "Horas" }],
   },
   actas: {
@@ -185,7 +191,8 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 200,
     periodo: { unidad: "mes", campo: "Fecha" },
     filtros: ["Contratista", "Fase", "Estado"],
-    tablero: "Estado",
+    tablero: "Contratista",
+    vistaInicial: "tablero",
     indicadores: [{ etiqueta: "Actas", tipo: "conteo" }, { etiqueta: "Total corte", tipo: "suma", campo: "Total Corte" }, { etiqueta: "A pagar", tipo: "suma", campo: "A pagar" }],
   },
   "pagos-obra": {
