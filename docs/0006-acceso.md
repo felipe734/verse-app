@@ -21,3 +21,9 @@ Sesión: `sesionDe` la arma desde Postgres en cada petición, así un cambio de 
 Maestro: sale de `MAESTRO_CORREO` en Vercel; el correo no va en el repo.
 
 Prueba por plantilla (`tests/unit/permisos.test.ts`): cada plantilla contra cada módulo, con el nivel exacto del doc; Aseo no ve nada fuera de su ruta; nadie sin C&C ve algo de C&C.
+
+## Entrada con Google
+
+Auth.js 5 con Google (`auth.ts`). Solo entra un usuario que existe en `usuarios` con estado activo y correo verificado (`lib/acceso/entrada.ts`); una cuenta de Google sin invitación no entra. El token de Auth.js solo guarda el correo: las casillas se leen de Postgres en cada petición con `sesionActual()` (`lib/acceso/actual.ts`), así suspender corta el acceso en la siguiente acción. Cada entrada queda en `auditoria`.
+
+Páginas: `/entrar` (pública) y `/hoy` (privada, con selector de empresa y los módulos que abre el acceso). Las rutas de API con su propia clave (cron, webhook, restauración) no pasan por la entrada.
