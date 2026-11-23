@@ -109,7 +109,13 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 300,
     filtros: ["Estado"],
     tablero: "Estado",
-    indicadores: [{ etiqueta: "Unidades", tipo: "conteo" }, { etiqueta: "Canon total", tipo: "suma", campo: "Total" }],
+    indicadores: [
+      { etiqueta: "Unidades", tipo: "conteo" },
+      { etiqueta: "Ocupadas", tipo: "conteo", donde: { campo: "Estado", valores: ["Actual", "Salida"] } },
+      { etiqueta: "Con salida", tipo: "conteo", donde: { campo: "Estado", valores: ["Salida"] } },
+      { etiqueta: "Vacías", tipo: "conteo", donde: { campo: "Estado", valores: ["Vacío"] } },
+    ],
+    vistaInicial: "tablero",
   },
   contratos: {
     editar: { tabla: "contratos", campos: [{ campo: "estado", etiqueta: "Estado" }] },
@@ -121,7 +127,13 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     periodo: { unidad: "mes", campo: "Fecha_Inicio", campoFin: "Fecha_Finalización" },
     filtros: ["Edificio", "Estado"],
     tablero: "Estado",
-    indicadores: [{ etiqueta: "Contratos activos", tipo: "conteo" }, { etiqueta: "Canon y servicios", tipo: "suma", campo: "Canon_Servicios" }],
+    indicadores: [
+      { etiqueta: "Contratos en el mes", tipo: "conteo" },
+      { etiqueta: "Sin firmar", tipo: "conteo", donde: { campo: "Estado", valores: ["Pendiente", "Elaborado"] } },
+      { etiqueta: "Canon y servicios", tipo: "suma", campo: "Canon_Servicios" },
+    ],
+    calendario: { inicio: "Fecha_Inicio", fin: "Fecha_Finalización", fila: "Unidad", color: "Estado", textos: { entran: "Empiezan hoy", salen: "Terminan hoy", ocupacion: "Ocupación del mes por contratos" } },
+    vistaInicial: "calendario",
     max: 300,
   },
   cobros: {
@@ -134,7 +146,13 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     periodo: { unidad: "mes", campo: "Fecha" },
     filtros: ["Edificio", "Estado"],
     tablero: "Estado",
-    indicadores: [{ etiqueta: "Cobros", tipo: "conteo" }, { etiqueta: "Total", tipo: "suma", campo: "Total" }],
+    indicadores: [
+      { etiqueta: "Cobros", tipo: "conteo" },
+      { etiqueta: "Por pagar", tipo: "conteo", donde: { campo: "Estado", valores: ["POR PAGAR"] } },
+      { etiqueta: "Cobrado", tipo: "suma", campo: "Total", donde: { campo: "Estado", valores: ["PAGO"] } },
+      { etiqueta: "Por cobrar", tipo: "suma", campo: "Total", donde: { campo: "Estado", valores: ["POR PAGAR"] } },
+    ],
+    vistaInicial: "tablero",
   },
   "comercial-living": {
     ...ids("7. LIVING", "WEB LEADS"),

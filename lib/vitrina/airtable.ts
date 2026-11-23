@@ -46,6 +46,7 @@ export function airtableVitrina(): ClienteAirtable {
   const valor = (campo: string, i: number): string => {
     const c = campo.toLowerCase();
     if (DINERO.has(campo)) return `$${(campo === "MARGEN NETO" ? 4_200_000 - i * 310_000 : 38_000_000 - i * 1_250_000).toLocaleString("es-CO")}`;
+    if (/finaliz/.test(c)) return `${(i % 24) + 1}/${(i % 3) + 1}/2027`;
     if (c === "salida") return `${Math.min(28, (i % 24) + 1 + 2 + (i % 4))}/11/2026`;
     if (c === "fecha") return `${(i % 7) + 23 > 30 ? (i % 7) - 7 + 23 : (i % 7) + 23}/11/2026 ${["8:30am", "11:00am", "2:00pm"][i % 3]}`;
     if (/fecha|ingreso|salida|inicio|fin|día|dia|corte/.test(c)) return `${(i % 24) + 1}/11/2026`;

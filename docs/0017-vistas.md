@@ -44,3 +44,11 @@ En Finanzas, el cierre de arriba es el del mes elegido. Si ese mes todavía no t
   - En celular se ve como agenda de llegadas y salidas por día.
 - **Limpiezas abre en una agenda semanal:** una fila por funcionaria y una columna por día, con la hora y la unidad. Lo terminado sale atenuado. En celular se ve como lista por día.
 - Lista y Tablero siguen disponibles en los dos módulos. La vista inicial de cada módulo es `vistaInicial`.
+
+## Living (tercer PR)
+
+- **Contratos** abre en el calendario del mes: unidades por días, con una barra por contrato coloreada por estado, "Empiezan hoy", "Terminan hoy" y la ocupación del mes. Las cifras son contratos en el mes, sin firmar y canon.
+- **Cobros** abre en tablero por estado (POR PAGAR y PAGO), con cobrado y por cobrar del mes.
+- **Unidades Living** abre en tablero por estado (Actual, Salida, Futuro, Vacío, Pasado), con ocupadas, con salida y vacías.
+- Las cifras de suma aceptan `donde`, para sumar solo un estado.
+- La ocupación del calendario cuenta cada noche una sola vez aunque dos registros se pisen.

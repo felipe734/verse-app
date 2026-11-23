@@ -147,7 +147,8 @@ export function Indicadores({ indicadores, columnas, filas }: { indicadores: Ind
       const col = columnas.find((c) => c.campo === i.campo);
       if (!col) return null;
       if (i.tipo === "distintos") return { etiqueta: i.etiqueta, valor: numero.format(new Set(filas.map((f) => f.celdas[i.campo]).filter(Boolean)).size) };
-      const total = filas.reduce((s, f) => s + aNumero(f.celdas[i.campo] ?? ""), 0);
+      const base = i.donde ? filas.filter((f) => i.donde!.valores.includes(f.celdas[i.donde!.campo] ?? "")) : filas;
+      const total = base.reduce((s, f) => s + aNumero(f.celdas[i.campo] ?? ""), 0);
       return { etiqueta: i.etiqueta, valor: col.tipo === "dinero" ? pesos.format(total) : numero.format(total) };
     })
     .filter(Boolean) as { etiqueta: string; valor: string }[];

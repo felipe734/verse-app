@@ -230,3 +230,12 @@ test("Operación abre en el calendario del mes y Limpiezas en la agenda de la se
   await expect(page.getByRole("radio", { name: "Agenda" })).toHaveAttribute("aria-checked", "true");
   await expect(page.getByLabel(isMobile ? "Agenda por día" : "Agenda de la semana")).toBeVisible();
 });
+
+test("Living: contratos en calendario del mes y cobros en tablero", async ({ page, isMobile }) => {
+  await page.goto("/verse/living/contratos");
+  await expect(page.getByRole("radio", { name: "Calendario" })).toHaveAttribute("aria-checked", "true");
+  if (!isMobile) await expect(page.getByText("Terminan hoy")).toBeVisible();
+  await page.goto("/verse/living/cobros");
+  await expect(page.getByRole("radio", { name: "Tablero" })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByRole("definition").filter({ hasText: "$" }).first()).toBeVisible();
+});

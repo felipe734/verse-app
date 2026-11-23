@@ -67,6 +67,8 @@ export interface DefCalendario {
   color?: string;
   /** Campo que se muestra en la barra (Huésped o Plataforma). */
   etiqueta?: string;
+  /** Textos del resumen de hoy; por defecto "Llegan hoy" y "Salen hoy". */
+  textos?: { entran: string; salen: string; ocupacion?: string };
 }
 
 export interface DefAgenda {
@@ -84,7 +86,7 @@ export interface DefAgenda {
 
 export type Indicador =
   | { etiqueta: string; tipo: "conteo"; donde?: { campo: string; valores: string[] } }
-  | { etiqueta: string; tipo: "suma"; campo: string }
+  | { etiqueta: string; tipo: "suma"; campo: string; donde?: { campo: string; valores: string[] } }
   | { etiqueta: string; tipo: "distintos"; campo: string };
 
 export type TipoVista = "lista" | "tablero" | "calendario" | "agenda";
