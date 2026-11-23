@@ -16,17 +16,19 @@ export async function iniciarVitrina(): Promise<Db> {
   await migrate(db as never, { migrationsFolder: "db/migraciones" });
   await sembrar(db, { correo: MAESTRO_VITRINA, nombre: "Maestro Vitrina" });
 
-  const [admin, coord] = await db
+  const [admin, coord, edy] = await db
     .insert(usuarios)
     .values([
       { nombre: "Ana Prueba", correo: "admin@vitrina.test", estado: "activo", maestro: false, nombreAirtable: "Diana" },
       { nombre: "Laura Prueba", correo: "aseo@vitrina.test", estado: "activo", maestro: false, nombreAirtable: "Alejandra" },
+      { nombre: "Edy Prueba", correo: "edy@vitrina.test", estado: "activo", maestro: false, nombreAirtable: "Edy Prueba" },
     ])
     .returning();
   await db.insert(accesos).values([
     { usuarioId: admin!.id, empresaId: "verse", casillas: { ...plantilla("administrador-verse").casillas, asistente: "acciones" } },
     { usuarioId: coord!.id, empresaId: "verse", casillas: plantilla("coordinacion-aseo").casillas },
     { usuarioId: coord!.id, empresaId: "cyc", casillas: plantilla("obra").casillas },
+    { usuarioId: edy!.id, empresaId: "verse", casillas: plantilla("aseo").casillas },
   ]);
 
   const hoy = hoyBogota();

@@ -1,5 +1,5 @@
 // Archivo generado por `pnpm mapeo:generar`. No editar a mano.
-// Fuente: CATÁLOGO DE DATOS (9. VERSE OS) y esquemas vivos de Airtable, 2026-11-22.
+// Fuente: CATÁLOGO DE DATOS (9. VERSE OS) y esquemas vivos de Airtable, 2026-11-23.
 import type { Mapeo } from "./construir-mapeo";
 
 export const MAPEO = {
@@ -633,6 +633,15 @@ export const MAPEO = {
       "idTabla": "tblvEIcU4Dxmn8Ha8",
       "origen": "Propia",
       "uso": "Automatizada"
+    },
+    {
+      "tabla": "FUNCIONARIAS",
+      "workspace": "Verse",
+      "base": "6. OPERACION 360",
+      "idBase": "appOJopQhmyaON16G",
+      "idTabla": "tblpPlSS3TNoSGXi5",
+      "origen": "Propia",
+      "uso": "Manual"
     },
     {
       "tabla": "HUESPEDES",
@@ -1448,8 +1457,241 @@ export const MAPEO = {
         }
       }
     }
+  },
+  "escritura": {
+    "funcionarias": {
+      "base": "6. OPERACION 360",
+      "tabla": "FUNCIONARIAS",
+      "workspace": "Verse",
+      "idBase": "appOJopQhmyaON16G",
+      "idTabla": "tblpPlSS3TNoSGXi5",
+      "campos": {
+        "nombre": {
+          "id": "fld98MXbTjCPlIqYo",
+          "nombre": "Nombre",
+          "tipo": "singleLineText"
+        },
+        "activa": {
+          "id": "fldu5fI4aW6XHCei6",
+          "nombre": "Activa",
+          "tipo": "checkbox"
+        },
+        "correo": {
+          "id": "fldSFQbnUSge7BbQJ",
+          "nombre": "Correo",
+          "tipo": "email"
+        },
+        "nombreLimpieza": {
+          "id": "fld7TUocU6zLdz2x4",
+          "nombre": "Nombre en LIMPIEZA",
+          "tipo": "singleLineText"
+        },
+        "nombreServicios": {
+          "id": "fldrcbfrjPdui9oAr",
+          "nombre": "Nombre en SERVICIOS",
+          "tipo": "singleLineText"
+        },
+        "nombreHoras": {
+          "id": "fldatXhVwdSRcMHY2",
+          "nombre": "Nombre en CONTROL HORAS",
+          "tipo": "singleLineText"
+        }
+      }
+    },
+    "limpieza": {
+      "base": "6. OPERACION 360",
+      "tabla": "LIMPIEZA",
+      "workspace": "Verse",
+      "idBase": "appOJopQhmyaON16G",
+      "idTabla": "tblTmsKaL9UuVWEap",
+      "campos": {
+        "id": {
+          "id": "fldcmmRdwRxbLTXLC",
+          "nombre": "ID",
+          "tipo": "autoNumber"
+        },
+        "unidad": {
+          "id": "fldfCDSwX42IXyNIr",
+          "nombre": "Unidad",
+          "tipo": "multipleRecordLinks"
+        },
+        "funcionario": {
+          "id": "fld4C24g5wTVYEOrn",
+          "nombre": "Funcionario",
+          "tipo": "singleSelect"
+        },
+        "funcionaria": {
+          "id": "fld4Iql6cBgIKb1cA",
+          "nombre": "Funcionaria enlace",
+          "tipo": "multipleRecordLinks"
+        },
+        "estado": {
+          "id": "fldqV4DDMtENjTnd7",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        },
+        "fecha": {
+          "id": "fld3a5oAln5BSYhcY",
+          "nombre": "Fecha",
+          "tipo": "dateTime"
+        },
+        "comentario": {
+          "id": "fldhCxAIV0TyZ9wYX",
+          "nombre": "Comentario",
+          "tipo": "multilineText"
+        }
+      }
+    },
+    "servicios": {
+      "base": "6. OPERACION 360",
+      "tabla": "SERVICIOS",
+      "workspace": "Verse",
+      "idBase": "appOJopQhmyaON16G",
+      "idTabla": "tblFS0uYG73F6Nree",
+      "campos": {
+        "unidad": {
+          "id": "fldqDevrBeekf8Ly9",
+          "nombre": "Unidad",
+          "tipo": "multipleRecordLinks"
+        },
+        "tipo": {
+          "id": "fldaJS53Mu8yRq4t5",
+          "nombre": "Tipo",
+          "tipo": "singleSelect"
+        },
+        "fechaHora": {
+          "id": "fldxKmlvzNTXv7G82",
+          "nombre": "Fecha - Hora",
+          "tipo": "dateTime"
+        },
+        "funcionario": {
+          "id": "flddmL27zlwiyr8Pb",
+          "nombre": "Funcionario",
+          "tipo": "singleSelect"
+        },
+        "funcionaria": {
+          "id": "fldX6Az45F4S7EGiG",
+          "nombre": "Funcionaria enlace",
+          "tipo": "multipleRecordLinks"
+        },
+        "video": {
+          "id": "fldRMDOzMJYqQO4nL",
+          "nombre": "Video",
+          "tipo": "multipleAttachments"
+        },
+        "estado": {
+          "id": "fldcX8e8xFgWNpbtG",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        },
+        "danos": {
+          "id": "fldgAzVzxH1HG80nx",
+          "nombre": "Daños | Faltantes",
+          "tipo": "multilineText"
+        },
+        "comentario": {
+          "id": "fldWFuWnhdwJTgZpD",
+          "nombre": "Comentario",
+          "tipo": "multilineText"
+        },
+        "necesitaImplementos": {
+          "id": "fld5VDvLdoXmdAWdl",
+          "nombre": "¿Se necesitan implementos para el próximo servicio?",
+          "tipo": "singleSelect"
+        },
+        "implementosComprar": {
+          "id": "fldYyGmebP1MXU2BC",
+          "nombre": "Implementos a comprar",
+          "tipo": "multilineText"
+        },
+        "lavanderia": {
+          "id": "fldAusB6zPgGEqQMe",
+          "nombre": "Lavandería",
+          "tipo": "multilineText"
+        }
+      }
+    },
+    "controlHoras": {
+      "base": "6. OPERACION 360",
+      "tabla": "CONTROL HORAS",
+      "workspace": "Verse",
+      "idBase": "appOJopQhmyaON16G",
+      "idTabla": "tbli7qkgm1oJlAgFX",
+      "campos": {
+        "funcionaria": {
+          "id": "fldzgi9D7KKNZio1t",
+          "nombre": "Funcionaria",
+          "tipo": "singleSelect"
+        },
+        "funcionariaEnlace": {
+          "id": "fldkwRwoUmdV5D5y7",
+          "nombre": "Funcionaria enlace",
+          "tipo": "multipleRecordLinks"
+        },
+        "ingreso": {
+          "id": "fld7vRXhCWzJCfFnU",
+          "nombre": "Ingreso",
+          "tipo": "dateTime"
+        },
+        "salida": {
+          "id": "fldogMWBhrleuTxd0",
+          "nombre": "Salida",
+          "tipo": "dateTime"
+        },
+        "notas": {
+          "id": "fldY4J64YTpAfVikz",
+          "nombre": "Notas",
+          "tipo": "multilineText"
+        }
+      }
+    },
+    "unidadesOperacion": {
+      "base": "6. OPERACION 360",
+      "tabla": "UNIDADES",
+      "workspace": "Verse",
+      "idBase": "appOJopQhmyaON16G",
+      "idTabla": "tbl6276d73BpmrCWS",
+      "campos": {
+        "unidad": {
+          "id": "fldld4r7ZV92sFll0",
+          "nombre": "Unidad",
+          "tipo": "singleLineText"
+        },
+        "edificio": {
+          "id": "fldsrL3hmkzraoINO",
+          "nombre": "Edificio",
+          "tipo": "singleLineText"
+        },
+        "metodo": {
+          "id": "fldkGICc7amtu7kTR",
+          "nombre": "Metodo Ingreso",
+          "tipo": "multipleSelects"
+        },
+        "codigo": {
+          "id": "fldpAjkTgsNfiRYb8",
+          "nombre": "Codigo",
+          "tipo": "singleLineText"
+        },
+        "candado": {
+          "id": "fldfMYQ6ZimaoUhrZ",
+          "nombre": "Candado",
+          "tipo": "singleLineText"
+        },
+        "wifiRed": {
+          "id": "fldLxW6pQe9Gv1Ezp",
+          "nombre": "WIFI Red",
+          "tipo": "singleLineText"
+        },
+        "wifiClave": {
+          "id": "fldpjUKQkzby6gLbM",
+          "nombre": "WIFI Contraseña",
+          "tipo": "singleLineText"
+        }
+      }
+    }
   }
 } as const satisfies Mapeo;
 
 export const TABLAS = MAPEO.tablas;
 export const CATALOGO = MAPEO.catalogo;
+export const ESCRITURA = MAPEO.escritura;

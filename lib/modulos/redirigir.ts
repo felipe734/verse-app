@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { sesionActual } from "@/lib/acceso/actual";
 import { ESTRUCTURA } from "@/lib/acceso/estructura";
 import { empresasVisibles } from "@/lib/acceso/permisos";
-import { navegacion, TODAS } from "./registro";
+import { inicioDe, navegacion, TODAS } from "./registro";
 
 /** Rutas de antes (/hoy, /aprobar…) → /[empresa]/[vertical]/[modulo] del mismo tipo. */
 export async function redirigirA(tipo: string, empresaPedida?: string | null, extra = ""): Promise<never> {
@@ -18,5 +18,7 @@ export async function redirigirA(tipo: string, empresaPedida?: string | null, ex
       .find((i) => i.tipo === tipo);
     if (item) redirect(`${item.href}${extra}`);
   }
-  redirect("/sin-acceso");
+  // Sin ese módulo (aseo no tiene Hoy): a su primera pantalla, la Ruta de aseo por ejemplo.
+  const inicio = inicioDe(s, estructura, visibles);
+  redirect(inicio ?? "/sin-acceso");
 }

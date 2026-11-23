@@ -62,7 +62,7 @@ test("coordinación de aseo no ve Correo, Ajustes ni Para aprobar de Verse", asy
 });
 
 test("un módulo sin construir no se abre y una empresa ajena lleva al inicio", async ({ page }) => {
-  await page.goto("/verse/host/ruta");
+  await page.goto("/cyc/obra/diseno");
   await expect(page.getByText("No encontramos esta página")).toBeVisible();
   await page.goto("/otra/general/hoy");
   await expect(page).toHaveURL(/\/verse\/general\/hoy$/);
@@ -136,4 +136,25 @@ test("Finanzas C&C no muestra números de cuenta", async ({ page, isMobile }) =>
   await expect(page.getByRole("link", { name: "Referencias bancarias" })).toHaveAttribute("aria-current", "page");
   if (!isMobile) await expect(page.getByRole("button", { name: "Tipo de cuenta" })).toBeVisible();
   await expect(page.getByText("# CUENTA")).toHaveCount(0);
+});
+
+test("la funcionaria ve su ruta de hoy y el turno; sin turno no hay códigos ni reporte", async ({ page, baseURL }) => {
+  await page.context().addCookies([{ name: "vitrina_usuario", value: "edy@vitrina.test", url: baseURL! }]);
+  await page.goto("/hoy");
+  await expect(page).toHaveURL(/\/verse\/host\/ruta$/);
+  await expect(page.getByRole("heading", { name: "Ruta de aseo", level: 1 })).toBeVisible();
+  await expect(page.getByText("Sin turno abierto")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Iniciar turno" })).toBeVisible();
+  const lista = page.getByRole("list", { name: "Limpiezas de hoy" });
+  await expect(lista.getByText("Parque 1104")).toBeVisible();
+  await expect(page.getByText("1 de 3 limpiezas terminadas")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Ingreso" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Reportar" }).first()).toBeDisabled();
+});
+
+test("quien coordina ve la ruta de todas", async ({ page }) => {
+  await page.goto("/verse/host/ruta");
+  await expect(page.getByRole("region", { name: "Ruta de Edy Prueba" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Ruta de Sara Prueba" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Iniciar turno" })).toHaveCount(0);
 });
