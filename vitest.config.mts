@@ -7,5 +7,7 @@ export default defineConfig({
   test: {
     include: ["tests/unit/**/*.test.ts", "tests/unit/**/*.test.tsx"],
     environment: "node",
+    // Cada prueba levanta su propio Postgres en memoria (PGlite); en paralelo puede pasar de 5 s.
+    testTimeout: 20_000,
   },
 });

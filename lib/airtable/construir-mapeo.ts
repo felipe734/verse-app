@@ -16,11 +16,13 @@ export interface EsquemaCampo {
   id: string;
   name: string;
   type: string;
+  options?: { choices?: { id?: string; name: string }[]; [k: string]: unknown };
 }
 
 export interface EsquemaTabla {
   id: string;
   name: string;
+  primaryFieldId?: string;
   fields: EsquemaCampo[];
 }
 

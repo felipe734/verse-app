@@ -20,6 +20,12 @@ export interface PayloadWebhook {
   >;
 }
 
+export interface CampoNuevo {
+  name: string;
+  type: string;
+  options?: Record<string, unknown>;
+}
+
 export interface WebhookCreado {
   id: string;
   macSecretBase64: string;
@@ -34,6 +40,10 @@ export interface ClienteAirtable {
   obtener(idBase: string, idTabla: string, recId: string): Promise<RegistroAirtable | null>;
   actualizar(idBase: string, idTabla: string, recId: string, campos: Record<string, unknown>): Promise<RegistroAirtable>;
   crear(idBase: string, idTabla: string, campos: Record<string, unknown>): Promise<RegistroAirtable>;
+  /** Crea una tabla nueva (solo la usa la restauración, que nunca toca tablas existentes). */
+  crearTabla(idBase: string, nombre: string, campos: CampoNuevo[]): Promise<{ id: string }>;
+  /** Crea hasta 10 filas por llamada, por nombre de campo, con conversión de tipos. */
+  crearVarios(idBase: string, idTabla: string, filas: Record<string, unknown>[]): Promise<number>;
   crearWebhook(idBase: string, idTabla: string, url: string): Promise<WebhookCreado>;
   renovarWebhook(idBase: string, webhookId: string): Promise<{ expirationTime: string }>;
   payloads(
@@ -139,6 +149,23 @@ export function crearCliente({
         method: "POST",
         body: JSON.stringify({ fields: campos, returnFieldsByFieldId: true }),
       }),
+    crearTabla: (idBase, nombre, campos) =>
+      pedir<{ id: string }>(idBase, `/meta/bases/${idBase}/tables`, {
+        method: "POST",
+        body: JSON.stringify({ name: nombre, fields: campos }),
+      }),
+    async crearVarios(idBase, idTabla, filas) {
+      let creadas = 0;
+      for (let i = 0; i < filas.length; i += 10) {
+        const lote = filas.slice(i, i + 10).map((fields) => ({ fields }));
+        const r = await pedir<{ records: unknown[] }>(idBase, `/${idBase}/${idTabla}`, {
+          method: "POST",
+          body: JSON.stringify({ records: lote, typecast: true }),
+        });
+        creadas += r.records.length;
+      }
+      return creadas;
+    },
     crearWebhook: (idBase, idTabla, url) =>
       pedir<WebhookCreado>(idBase, `/bases/${idBase}/webhooks`, {
         method: "POST",

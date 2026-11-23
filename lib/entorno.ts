@@ -15,7 +15,10 @@ const esquema = z.object({
   GCP_WORKLOAD_IDENTITY_POOL_ID: z.string().min(1).optional(),
   GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID: z.string().min(1).optional(),
   RESPALDO_DRIVE_ID: z.string().min(1).optional(),
-  WEBHOOKS_ACTIVOS: z.enum(["0", "1"]).optional(),
+  // Interruptores: se activan solo con el valor exacto "1". Texto libre para que un valor
+  // distinto no tumbe todas las rutas al validar el entorno.
+  WEBHOOKS_ACTIVOS: z.string().optional(),
+  CORRIDAS_ACTIVAS: z.string().optional(),
 });
 
 export type Entorno = z.infer<typeof esquema>;
