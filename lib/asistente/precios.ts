@@ -5,6 +5,11 @@
 export const MODELO_POR_DEFECTO = "claude-sonnet-5-5";
 export const MODELO_PROFUNDO = "claude-opus-5-5";
 
+/** Cierres y diagnósticos van con Opus (doc del plan); lo demás con Sonnet. */
+export function modeloPara(texto: string): string {
+  return /\b(cierre|cerr[oó]|diagn[oó]stic|margen|overhead|contribuci[oó]n|c[oó]mo va|c[oó]mo vamos|meta del mes)/i.test(texto) ? MODELO_PROFUNDO : MODELO_POR_DEFECTO;
+}
+
 const PRECIOS: Record<string, { entrada: number; salida: number; cacheLeido: number }> = {
   "claude-sonnet-5-5": { entrada: 2, salida: 10, cacheLeido: 0.1 },
   "claude-opus-5-5": { entrada: 4, salida: 20, cacheLeido: 0.2 },

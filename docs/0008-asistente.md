@@ -19,3 +19,11 @@ Costo: cada respuesta guarda tokens y costo (`mensajes_asistente`); Sistema mues
 Pantalla: botón Asistente en todas las pantallas privadas; panel a la derecha en computador y hoja completa en celular; dictado con el reconocimiento de voz del navegador (es-CO); sabe la ruta y el pendiente abierto.
 
 Variable en Vercel: `ANTHROPIC_API_KEY`. Sin ella el asistente no aparece.
+
+## Lecturas en vivo (reservas y cierre)
+
+Reservas (6. OPERACION 360 / RESERVAS) y el cierre mensual (2. FACTURACION / AGREGADO) no se copian a la base de la app: el asistente los lee en Airtable en el momento, solo lectura. Los campos se piden por nombre y solo los que la casilla abre: datos del huésped con Terceros, montos con Cifras y códigos y wifi solo con Códigos "Siempre" ("Solo en su turno" no pasa por el asistente). Lo que se ocultó se le dice al modelo para que no lo invente.
+
+Reservas pide la operación de Verse Host; cierre pide Finanzas de Verse y cifras generales. Las llamadas cuentan en la medición de Airtable de Sistema.
+
+Modelo: si la pregunta habla de cierre, margen, overhead, contribución, diagnóstico o "cómo va", la respuesta usa `claude-opus-5-5`; lo demás, `claude-sonnet-5-5`.

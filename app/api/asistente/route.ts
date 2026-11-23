@@ -4,6 +4,9 @@ import { db } from "@/db/cliente";
 import { sesionActual } from "@/lib/acceso/actual";
 import { conversar, type Evento } from "@/lib/asistente/bucle";
 import { empresasDelAsistente } from "@/lib/asistente/herramientas";
+import { modeloPara } from "@/lib/asistente/precios";
+import { crearContador } from "@/lib/medicion/contador";
+import { clienteServidor } from "@/lib/servidor/airtable";
 import { llamarClaude } from "@/lib/servidor/claude";
 
 export const maxDuration = 300;
@@ -28,7 +31,19 @@ export async function POST(request: Request) {
     async start(control) {
       const enviar = (e: Evento) => control.enqueue(codificador.encode(`${JSON.stringify(e)}\n`));
       try {
-        await conversar({ db: db(), sesion, llamar, texto: pedido.data.texto, pantalla: pedido.data.pantalla, conversacionId: pedido.data.conversacionId, alEvento: enviar });
+        const contador = crearContador();
+        await conversar({
+          db: db(),
+          sesion,
+          llamar,
+          texto: pedido.data.texto,
+          pantalla: pedido.data.pantalla,
+          conversacionId: pedido.data.conversacionId,
+          modelo: modeloPara(pedido.data.texto),
+          airtable: clienteServidor(contador),
+          alEvento: enviar,
+        });
+        await contador.volcar(db());
       } catch (e) {
         const texto =
           e instanceof Anthropic.RateLimitError

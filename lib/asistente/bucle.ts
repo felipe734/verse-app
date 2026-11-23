@@ -1,6 +1,7 @@
 import { asc, eq, sql } from "drizzle-orm";
 import type Anthropic from "@anthropic-ai/sdk";
 import type { Db } from "@/db/cliente";
+import type { ClienteAirtable } from "@/lib/airtable/cliente";
 import { conversaciones, mensajesAsistente } from "@/db/esquema";
 import type { Sesion } from "@/lib/acceso/permisos";
 import { hoyBogota } from "@/lib/hoy/clasificar";
@@ -85,6 +86,8 @@ export async function conversar(opciones: {
   pantalla?: Pantalla;
   conversacionId?: string | null;
   modelo?: string;
+  /** Cliente de Airtable para las herramientas que leen en el momento (reservas, cierre). */
+  airtable?: ClienteAirtable;
   alEvento: (e: Evento) => void;
   ahora?: Date;
 }): Promise<{ conversacionId: string; costoUsd: number }> {
@@ -110,7 +113,7 @@ export async function conversar(opciones: {
   await guardar(db, conversacionId, "user", mensajeUsuario.content);
 
   const mensajes = [...(await historia(db, conversacionId))];
-  const ctx: Contexto = { db, sesion, conversacionId, hoy };
+  const ctx: Contexto = { db, sesion, conversacionId, hoy, airtable: opciones.airtable };
   let total = 0;
 
   for (let vuelta = 0; vuelta < MAX_VUELTAS; vuelta++) {

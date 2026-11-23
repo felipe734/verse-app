@@ -6,6 +6,8 @@ import { propuestas, tareas, unidades } from "@/db/esquema";
 import { filtrarSuyo, puede, type Sesion } from "@/lib/acceso/permisos";
 import { accion, esAprobar, esCritico, hoyBogota, seccionDe, type TareaHoy } from "@/lib/hoy/clasificar";
 import { HOY_POR_EMPRESA } from "@/lib/hoy/datos";
+import type { ClienteAirtable } from "@/lib/airtable/cliente";
+import { BuscarReservas, buscarReservas, VerCierre, verCierre } from "./vivo";
 
 /**
  * Herramientas del asistente. Cada una pasa por la función de permisos con el acceso de
@@ -33,6 +35,8 @@ export interface Contexto {
   sesion: Sesion;
   conversacionId: string | null;
   hoy?: string;
+  /** Para las herramientas que leen Airtable en el momento (reservas, cierre). */
+  airtable?: ClienteAirtable;
 }
 
 export interface ResultadoHerramienta {
@@ -94,6 +98,12 @@ export function definiciones(): Anthropic.Beta.BetaTool[] {
       NuevoPendiente,
     ),
     base("buscar_unidades", "Busca unidades de Verse Host o Verse Living por nombre o edificio.", BuscarUnidades),
+    base(
+      "buscar_reservas",
+      "Reservas de Verse Host que se cruzan con un rango de fechas (por defecto, de hoy a 7 días), opcionalmente de una unidad o edificio. Montos, datos del huésped y códigos solo si la persona tiene acceso.",
+      BuscarReservas,
+    ),
+    base("ver_cierre", "Cierre mensual de Verse Group (AGREGADO): ingresos, contribución, overhead y margen de un mes, con el mes anterior para comparar.", VerCierre),
   ];
 }
 
@@ -214,6 +224,21 @@ export async function ejecutar(nombre: string, entrada: unknown, c: Contexto): P
         .where(and(inArray(unidades.linea, lineas as ("Host" | "Living")[]), or(ilike(unidades.unidad, t), ilike(unidades.edificio, t))))
         .limit(30);
       return { contenido: json({ total: filas.length, unidades: filas }) };
+    }
+    case "buscar_reservas":
+    case "ver_cierre": {
+      if (nivelAsistente(c.sesion, "verse") === "no") return { contenido: json({ error: "El asistente no está habilitado para Verse." }), error: true };
+      if (!c.airtable) return { contenido: json({ error: "Airtable no está disponible ahora." }), error: true };
+      if (nombre === "buscar_reservas") {
+        const r = BuscarReservas.safeParse(entrada);
+        if (!r.success) return invalida(r.error);
+        const res = await buscarReservas(c.airtable, c.sesion, r.data, hoy);
+        return { contenido: json(res), error: "error" in res };
+      }
+      const r = VerCierre.safeParse(entrada);
+      if (!r.success) return invalida(r.error);
+      const res = await verCierre(c.airtable, c.sesion, r.data);
+      return { contenido: json(res), error: "error" in res && !("meses_disponibles" in res) };
     }
     default:
       return { contenido: json({ error: `Herramienta desconocida: ${nombre}` }), error: true };
