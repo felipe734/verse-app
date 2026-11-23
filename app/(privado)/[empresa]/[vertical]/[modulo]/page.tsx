@@ -10,6 +10,9 @@ import { EsqueletoModulo } from "@/components/modulos/encabezado";
 import { ModuloHoy } from "@/components/modulos/hoy/modulo-hoy";
 import { ModuloRuta } from "@/components/modulos/ruta/modulo-ruta";
 import { sesionActual } from "@/lib/acceso/actual";
+import { db } from "@/db/cliente";
+import { hoyBogota } from "@/lib/hoy/clasificar";
+import { registrarUso } from "@/lib/medicion/uso";
 import { ESTRUCTURA } from "@/lib/acceso/estructura";
 import { PLATFORM_NAME } from "@/lib/config";
 import { REGISTRO, ubicar } from "@/lib/modulos/registro";
@@ -31,6 +34,7 @@ async function Contenido({ params, searchParams }: { params: Promise<Params>; se
   const busqueda = await searchParams;
   const u = ubicar(sesion, sesion.estructura ?? ESTRUCTURA, empresa, vertical, modulo);
   if (!u) notFound();
+  await registrarUso(db(), sesion.usuarioId, `/${u.empresa}/${u.vertical.segmento}/${u.def.segmento}`, hoyBogota());
   if (u.def.tabla) return <ModuloTabla sesion={sesion} u={u} p={busqueda.p} />;
   if (u.def.pestanas) return <ModuloPanel sesion={sesion} u={u} pestana={busqueda.pestana} p={busqueda.p} />;
   switch (u.def.tipo) {

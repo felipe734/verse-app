@@ -385,3 +385,17 @@ export const vistasGuardadas = pgTable(
   },
   (t) => [uniqueIndex("vistas_guardadas_usuario_modulo_nombre").on(t.usuarioId, t.modulo, t.nombre)],
 );
+
+/** Uso de la app: cuántas veces abrió cada persona cada pantalla, por día (Sistema). */
+export const usoPantallas = pgTable(
+  "uso_pantallas",
+  {
+    usuarioId: uuid("usuario_id")
+      .notNull()
+      .references(() => usuarios.id, { onDelete: "cascade" }),
+    ruta: text().notNull(),
+    dia: date().notNull(),
+    vistas: integer().notNull().default(1),
+  },
+  (t) => [primaryKey({ columns: [t.usuarioId, t.ruta, t.dia] })],
+);

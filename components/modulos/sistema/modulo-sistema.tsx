@@ -1,3 +1,6 @@
+import { sumarDias } from "@/lib/vistas/periodo";
+import { hoyBogota } from "@/lib/hoy/clasificar";
+import { usoDesde } from "@/lib/medicion/uso";
 import { db } from "@/db/cliente";
 import type { Sesion } from "@/lib/acceso/permisos";
 import { sistemaDe } from "@/lib/sistema/datos";
@@ -185,7 +188,51 @@ export async function ModuloSistema({ sesion, empresa }: { sesion: Sesion; empre
             </Bloque>
           )}
         </div>
+        {sesion.maestro && <UsoApp />}
       </div>
     </>
+  );
+}
+
+/** Qué se usa y quién, últimos 7 días (solo el Maestro). */
+async function UsoApp() {
+  const desde = sumarDias(hoyBogota(), -6);
+  const u = await usoDesde(db(), desde).catch(() => null);
+  if (!u) return null;
+  return (
+    <Bloque titulo="Uso de la app en 7 días">
+      <div className="grid gap-4 p-4 text-sm md:grid-cols-2">
+        <div>
+          <p className="mb-2 text-xs text-muted-foreground">Pantallas</p>
+          {u.porPantalla.length === 0 ? (
+            <p className="text-muted-foreground">Sin visitas todavía.</p>
+          ) : (
+            <ul className="space-y-1 tabular-nums">
+              {u.porPantalla.map((p) => (
+                <li key={p.ruta} className="flex justify-between gap-2">
+                  <span className="truncate text-muted-foreground">{p.ruta}</span>
+                  <span>
+                    {p.vistas} · {p.personas} {p.personas === 1 ? "persona" : "personas"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div>
+          <p className="mb-2 text-xs text-muted-foreground">Personas</p>
+          <ul className="space-y-1 tabular-nums">
+            {u.porPersona.map((p) => (
+              <li key={p.correo} className="flex justify-between gap-2">
+                <span className="truncate">{p.nombre}</span>
+                <span className="text-muted-foreground">
+                  {p.vistas} visitas · {p.dias} {p.dias === 1 ? "día" : "días"}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </Bloque>
   );
 }

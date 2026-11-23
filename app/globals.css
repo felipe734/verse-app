@@ -141,7 +141,7 @@
   [data-slot="sidebar"],
   [data-sidebar="sidebar"],
   [data-slot="sidebar-gap"],
-  header,
+  .barra-superior,
   nav[aria-label="Accesos"],
   .print\:hidden {
     display: none !important;
