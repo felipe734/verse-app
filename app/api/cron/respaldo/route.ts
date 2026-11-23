@@ -31,8 +31,9 @@ export async function GET(request: Request) {
   try {
     if (vuelta === 0) await prepararDia(base, fecha, CATALOGO);
     const r = await procesarDia({ db: base, airtable: clienteServidor(contador), drive, idUnidad }, fecha, PRESUPUESTO_MS);
+    const llamadas = contador.total();
     await contador.volcar(base);
-    console.info("[cron/respaldo]", JSON.stringify({ fecha, vuelta, ...r, llamadas: contador.total() }));
+    console.info("[cron/respaldo]", JSON.stringify({ fecha, vuelta, ...r, llamadas }));
 
     if (!r.terminado && vuelta < MAX_VUELTAS) {
       const siguiente = new URL(url);
