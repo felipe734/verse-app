@@ -7,6 +7,7 @@ import type { Ubicacion } from "@/lib/modulos/registro";
 import { leerTabla, type ResultadoTabla } from "@/lib/modulos/tabla";
 import { db } from "@/db/cliente";
 import { clienteServidor } from "@/lib/servidor/airtable";
+import { subidasActivas } from "@/lib/servidor/blob";
 import { cn } from "@/lib/utils";
 import { EncabezadoModulo } from "../encabezado";
 import { CrearFila } from "./crear-fila";
@@ -76,7 +77,7 @@ export async function ModuloPanel({ sesion, u, pestana }: { sesion: Sesion; u: U
           <CrearFila
             refModulo={{ empresa: u.empresa, vertical: u.vertical.segmento, modulo: u.def.segmento, pestana: activa.id }}
             titulo={activa.crear.titulo}
-            subidas={Boolean(process.env.BLOB_READ_WRITE_TOKEN)}
+            subidas={subidasActivas()}
           />
         )}
       </EncabezadoModulo>

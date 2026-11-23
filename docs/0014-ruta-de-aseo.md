@@ -27,7 +27,7 @@ Para escribir con IDs sin escribirlos a mano, el mapeo generado tiene ahora `ESC
 - **Reporte:**
   - Se envía con el turno abierto y crea la fila en SERVICIOS con: tipo de inventario, estado, video, daños y faltantes, implementos, lavandería y comentario.
   - Si la unidad queda lista, la limpieza pasa a Terminado.
-- **Video:**
+- **Video** (cambió el 2026-11-23, ver `lib/servidor/blob.ts`: el almacén es privado y se conecta por OIDC; el celular sube con una URL firmada y Airtable recibe una URL de lectura firmada por 24 horas):
   - Va directo del celular a Vercel Blob, con un token que solo da `/api/ruta/video` a quien opera la ruta.
   - Solo acepta video, de hasta 500 MB, y el nombre del archivo lleva un sufijo aleatorio.
   - La URL pasa a SERVICIOS y Airtable guarda su propia copia.

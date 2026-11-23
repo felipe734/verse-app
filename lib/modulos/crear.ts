@@ -104,7 +104,7 @@ export async function formularioCreacion(airtable: ClienteAirtable, s: Sesion, e
   };
 }
 
-const ALMACEN = /\.public\.blob\.vercel-storage\.com$/;
+const ALMACEN = /\.blob\.vercel-storage\.com$/;
 
 export async function crearFila(
   db: Db,
