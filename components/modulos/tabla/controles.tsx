@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, CalendarDays, RefreshCw, CalendarRange, ChevronDown, ChevronLeft, ChevronRight, Columns3, List, Trash2, X } from "lucide-react";
+import { Bookmark, CalendarDays, Download, RefreshCw, CalendarRange, ChevronDown, ChevronLeft, ChevronRight, Columns3, List, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -399,5 +399,85 @@ export function MenuVistas({ vistas }: { vistas: VistaGuardada[] }) {
         </form>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+/** CSV de lo que se ve (mismas columnas, filtros y período). Solo trae lo que la persona ya ve. */
+export function Exportar({ nombre, columnas, filas }: { nombre: string; columnas: Columna[]; filas: FilaTabla[] }) {
+  const csv = () => {
+    const celda = (v: string) => (/[",\n;]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v);
+    const lineas = [columnas.map((c) => celda(c.etiqueta ?? c.campo)).join(","), ...filas.map((f) => columnas.map((c) => celda(f.celdas[c.campo] ?? "")).join(","))];
+    // BOM para que Excel lea bien las tildes.
+    const blob = new Blob(["﻿" + lineas.join("\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${nombre.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "-")}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="outline" size="sm" className="h-7 gap-1 px-2.5 text-xs">
+          <Download className="size-3.5" aria-hidden /> Exportar
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onSelect={csv}>CSV para Excel</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => window.print()}>Imprimir o guardar PDF</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+/**
+ * Atajos del módulo: / filtra, [ y ] mueven el período, H vuelve a lo actual, 1 a 4 cambian la
+ * vista y ? muestra la ayuda. No actúan mientras se escribe en un campo.
+ */
+export function Atajos({ periodo, opciones, inicial, alFiltrar }: { periodo?: Periodo; opciones: TipoVista[]; inicial: TipoVista; alFiltrar: () => void }) {
+  const { cambiar } = useParametros();
+  const [ayuda, setAyuda] = useState(false);
+  useEffect(() => {
+    const tecla = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (e.metaKey || e.ctrlKey || e.altKey || el?.closest("input, textarea, select, [contenteditable=true], [role=dialog]")) return;
+      if (e.key === "/") {
+        e.preventDefault();
+        alFiltrar();
+      } else if (e.key === "[" && periodo) cambiar({ p: periodo.anterior }, "push");
+      else if (e.key === "]" && periodo) cambiar({ p: periodo.siguiente }, "push");
+      else if ((e.key === "h" || e.key === "H") && periodo && !periodo.actual) cambiar({ p: null }, "push");
+      else if (/^[1-4]$/.test(e.key) && opciones[Number(e.key) - 1]) {
+        const v = opciones[Number(e.key) - 1]!;
+        cambiar({ v: v === inicial ? null : v });
+      } else if (e.key === "?") setAyuda((a) => !a);
+      else if (e.key === "Escape") setAyuda(false);
+    };
+    window.addEventListener("keydown", tecla);
+    return () => window.removeEventListener("keydown", tecla);
+  }, [periodo, opciones, inicial, alFiltrar, cambiar]);
+  if (!ayuda) return null;
+  const filas: [string, string][] = [
+    ["/", "Filtrar"],
+    ...(periodo ? ([["[  ]", "Período anterior y siguiente"], ["H", "Volver a lo actual"]] as [string, string][]) : []),
+    ...(opciones.length > 1 ? ([["1 a " + opciones.length, "Cambiar de vista"]] as [string, string][]) : []),
+    ["⌘K", "Buscar en toda la app"],
+    ["⌘J", "Asistente"],
+    ["?", "Mostrar u ocultar esta ayuda"],
+  ];
+  return (
+    <div role="dialog" aria-label="Atajos de teclado" className="fixed right-4 bottom-4 z-50 w-72 rounded-lg border bg-popover p-3 text-sm shadow-lg max-md:hidden">
+      <p className="mb-2 font-medium">Atajos</p>
+      <dl className="space-y-1">
+        {filas.map(([k, t]) => (
+          <div key={k} className="flex justify-between gap-3">
+            <dt className="text-muted-foreground">{t}</dt>
+            <dd>
+              <kbd className="rounded border bg-muted px-1.5 py-0.5 font-mono text-xs">{k}</kbd>
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }

@@ -4,7 +4,7 @@ import { ArrowDown, ArrowUp, Check, EyeOff, Search, Sparkles, Table2 } from "luc
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { cambiarRapido } from "@/app/modulos/editar";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { AccionesModulo } from "@/components/shell/barra-superior";
 import { useShell } from "@/components/shell/contexto";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,7 @@ import type { Periodo } from "@/lib/vistas/periodo";
 import { cn } from "@/lib/utils";
 import type { RefModulo } from "@/app/modulos/editar";
 import { esMio } from "@/lib/vistas/mio";
-import { Actualizar, aplicarFiltros, Filtros, InterruptorMio, filtrosDeUrl, Indicadores, MenuVistas, SelectorPeriodo, SelectorVista, Tablero, type VistaGuardada } from "./controles";
+import { Actualizar, aplicarFiltros, Atajos, Exportar, Filtros, InterruptorMio, filtrosDeUrl, Indicadores, MenuVistas, SelectorPeriodo, SelectorVista, Tablero, type VistaGuardada } from "./controles";
 import { Agenda, Calendario } from "./calendario";
 import { Edicion } from "./edicion";
 import { Actividad } from "./actividad";
@@ -111,6 +111,8 @@ export function VistaTabla({
   const aplicables = (f: FilaTabla) => (edicion ? rapidas.filter((a) => (f.celdas[a.columna] ?? "") !== a.valor) : []);
   const { abrirAsistente, asistenteHabilitado } = useShell();
   const params = useSearchParams();
+  const refFiltro = useRef<HTMLInputElement>(null);
+  const refFiltroMovil = useRef<HTMLInputElement>(null);
   const activos = useMemo(() => filtrosDeUrl(new URLSearchParams(params.toString()), filtros), [params, filtros]);
   const tableroVisible = tablero && columnas.some((c) => c.campo === tablero) ? tablero : undefined;
   const opciones: TipoVista[] = [
@@ -157,17 +159,19 @@ export function VistaTabla({
       <AccionesModulo>
         <div className="relative max-md:hidden">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
-          <Input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Filtrar" aria-label={`Filtrar ${modulo}`} className="h-8 w-48 pl-8" />
+          <Input ref={refFiltro} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Filtrar  /" aria-label={`Filtrar ${modulo}`} className="h-8 w-48 pl-8" />
         </div>
       </AccionesModulo>
+      <Atajos periodo={periodo} opciones={opciones} inicial={opciones.includes(vistaInicial) ? vistaInicial : "lista"} alFiltrar={() => (refFiltro.current?.offsetParent ? refFiltro.current : refFiltroMovil.current)?.focus()} />
       <div className="px-4 pb-10 md:px-6">
         {(periodo || opciones.length > 1 || vistas || personaVisible || tablas) && (
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 print:[&>div]:hidden">
             {periodo ? <SelectorPeriodo periodo={periodo} /> : <span />}
             <div className="flex flex-wrap items-center gap-2">
               {tablas && <Actualizar tablas={tablas} />}
               {personaVisible && <InterruptorMio mio={mio} porDefecto={personaVisible.porDefecto} />}
               <SelectorVista vista={vista} opciones={opciones} inicial={opciones.includes(vistaInicial) ? vistaInicial : "lista"} />
+              {!error && <Exportar nombre={modulo} columnas={columnas} filas={visibles} />}
               {vistas && <MenuVistas vistas={vistas} />}
             </div>
           </div>
@@ -191,7 +195,7 @@ export function VistaTabla({
               <EyeOff className="size-3.5" aria-hidden /> Tu acceso no incluye {ocultos.join(", ")}.
             </span>
           )}
-          <Input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Filtrar" aria-label={`Filtrar ${modulo}`} className="h-8 md:hidden" />
+          <Input ref={refFiltroMovil} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Filtrar" aria-label={`Filtrar ${modulo}`} className="h-8 md:hidden" />
         </div>
         {error ? (
           <p role="alert" className="rounded-md border px-3 py-6 text-center text-sm">

@@ -135,3 +135,18 @@
     @apply outline-2 outline-offset-2 outline-ring;
   }
 }
+
+/* Imprimir o guardar PDF: solo el contenido del módulo. */
+@media print {
+  [data-slot="sidebar"],
+  [data-sidebar="sidebar"],
+  [data-slot="sidebar-gap"],
+  header,
+  nav[aria-label="Accesos"],
+  .print\:hidden {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+}

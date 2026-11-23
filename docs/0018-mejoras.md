@@ -57,3 +57,15 @@ Regla general: **todo abre en lo actual y en lo tuyo**.
 
 - **⌘K** también busca, por el nombre de la fila y sin importar el período, en Contratos, Cobros, Actas, Contratistas, Comercial Host y Living y Liquidaciones, siempre que la persona vea el módulo. El resultado abre el módulo en el período de la fila (`?p=`), en lista y Todo, con la fila abierta (`?fila=`).
 - **Actividad**: el detalle muestra quién cambió qué y cuándo desde la app (AUDITORIA, con nombres de campo legibles). Lo que se cambió a mano en Airtable o hizo una skill no aparece aquí.
+
+## 7. Exportar y atajos
+
+- **Exportar** en cada módulo:
+  - CSV para Excel con las mismas columnas, filtros y período que se ven, con tildes correctas. Se arma en el navegador con lo que la persona ya ve, así que no saca nada nuevo del servidor.
+  - "Imprimir o guardar PDF" usa la impresión del navegador, sin barra lateral ni controles.
+- **Atajos de teclado**, que no actúan mientras se escribe:
+  - `/` filtra.
+  - `[` y `]` mueven el período y `H` vuelve a lo actual.
+  - `1` a `4` cambian la vista.
+  - `?` muestra la ayuda.
+  - Se suman a ⌘K (buscar) y ⌘J (asistente).
