@@ -38,6 +38,17 @@ export class ErrorComposio extends Error {
   }
 }
 
+/** El motivo que da Composio (ya enmascara la clave, por ejemplo "ak_**abcd"). */
+async function detalle(r: Response): Promise<string> {
+  try {
+    const j = (await r.json()) as { error?: { message?: string; slug?: string } };
+    const m = j.error?.message ?? j.error?.slug;
+    return m ? `: ${m.slice(0, 160)}` : "";
+  } catch {
+    return "";
+  }
+}
+
 export function clienteComposio(apiKey: string, fetcher: typeof fetch = fetch): ClienteComposio {
   const cabeceras = { "x-api-key": apiKey, "Content-Type": "application/json" };
 
@@ -48,7 +59,7 @@ export function clienteComposio(apiKey: string, fetcher: typeof fetch = fetch): 
       const q = new URLSearchParams({ toolkit_slugs: toolkit, limit: "50" });
       if (cursor) q.set("cursor", cursor);
       const r = await fetcher(`${BASE}/connected_accounts?${q}`, { headers: cabeceras, signal: AbortSignal.timeout(15_000) });
-      if (!r.ok) throw new ErrorComposio(`Composio respondió ${r.status} al listar cuentas`, r.status);
+      if (!r.ok) throw new ErrorComposio(`Composio respondió ${r.status} al listar cuentas${await detalle(r)}`, r.status);
       const j = (await r.json()) as { items?: { id: string; alias?: string | null; word_id?: string | null; status: string }[]; next_cursor?: string | null };
       for (const c of j.items ?? []) lista.push({ id: c.id, alias: c.alias ?? null, wordId: c.word_id ?? null, estado: c.status });
       cursor = j.next_cursor ?? null;
@@ -66,7 +77,7 @@ export function clienteComposio(apiKey: string, fetcher: typeof fetch = fetch): 
         body: JSON.stringify({ connected_account_id: cuentaConectada, arguments: argumentos }),
         signal: AbortSignal.timeout(30_000),
       });
-      if (!r.ok) throw new ErrorComposio(`Composio respondió ${r.status} en ${herramienta}`, r.status);
+      if (!r.ok) throw new ErrorComposio(`Composio respondió ${r.status} en ${herramienta}${await detalle(r)}`, r.status);
       const j = (await r.json()) as { successful?: boolean; data?: Record<string, unknown>; error?: string | null };
       if (!j.successful) throw new ErrorComposio(`${herramienta} falló: ${(j.error ?? "sin detalle").slice(0, 200)}`);
       return j.data ?? {};
