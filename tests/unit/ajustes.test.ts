@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { accesos, auditoria, usuarios } from "@/db/esquema";
 import type { Db } from "@/db/cliente";
 import {
+  actualizarEmpresa,
   actualizarUsuario,
   cambiarEstado,
   crearEmpresa,
@@ -151,6 +152,20 @@ describe("estructura editable", () => {
     const s = (await sesionDe(db, "maestro@prueba.co"))!;
     expect(s.estructura?.find((e) => e.id === id)?.verticales.map((v) => v.nombre)).toEqual(["General", "Arriendos"]);
     await expect(crearEmpresa(db, maestro, "Inversiones Ñandú")).rejects.toThrow("Ya existe");
+  });
+
+  it("edita nombre, acento y logo de una empresa, con validación y AUDITORIA", async () => {
+    await actualizarEmpresa(db, maestro, "verse", { nombre: "Verse Group", acento: "#0F766E", logo: "" });
+    const s = (await sesionDe(db, "maestro@prueba.co"))!;
+    expect(s.estructura?.find((e) => e.id === "verse")).toMatchObject({ acento: "#0f766e", logo: null });
+    await expect(actualizarEmpresa(db, maestro, "verse", { nombre: "Verse", acento: "azul", logo: "" })).rejects.toThrow("color");
+    await expect(actualizarEmpresa(db, maestro, "verse", { nombre: "Verse", acento: "#000000", logo: "javascript:alert(1)" })).rejects.toThrow("https");
+    const [a] = (await db.select().from(auditoria)).filter((x) => x.accion === "estructura.empresa_editada");
+    expect(a?.despues).toMatchObject({ acento: "#0f766e" });
+  });
+
+  it("solo el Maestro edita una empresa", async () => {
+    await expect(actualizarEmpresa(db, { ...maestro, maestro: false }, "verse", { nombre: "X", acento: "#000000", logo: "" })).rejects.toThrow(ErrorAcceso);
   });
 });
 

@@ -18,7 +18,7 @@ export function Invitar({ action }: { action: () => Promise<Resultado> }) {
       {estado && <p role="status">{estado.mensaje}</p>}
       {estado?.enlace && (
         <div className="flex gap-2">
-          <input readOnly value={estado.enlace} className="w-full rounded-lg border bg-white px-3 py-2 text-[12.5px]" aria-label="Enlace de invitación" />
+          <input readOnly value={estado.enlace} className="h-9 w-full rounded-md border bg-transparent px-3 text-xs" aria-label="Enlace de invitación" />
           <Button
             type="button"
             onClick={async () => {
