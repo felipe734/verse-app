@@ -13,6 +13,7 @@ import { puede } from "@/lib/acceso/permisos";
 import { sesionPorId } from "@/lib/acceso/sesion";
 import { TODAS, vistaHoy } from "@/lib/acceso/vista";
 import { auditar } from "@/lib/auditoria";
+import { cuentasLegibles } from "@/lib/correo/bandeja";
 import { aprobacionesDe } from "@/lib/hoy/aprobar";
 import { hoyDe } from "@/lib/hoy/datos";
 import { accionPendiente } from "./acciones";
@@ -124,6 +125,11 @@ async function Panel({ searchParams }: { searchParams: Promise<Parametros> }) {
           {sesion.maestro ? " · Maestro" : ""}
         </span>
         <span className="flex items-center gap-3">
+          {cuentasLegibles(sesion).length > 0 && (
+            <Link href="/correo" className="text-[var(--verse-azul)] underline">
+              Correo
+            </Link>
+          )}
           {(puede(sesion, "verse", "verse-sistema", "ver") || puede(sesion, "cyc", "cyc-sistema", "ver")) && (
             <Link href="/sistema" className="text-[var(--verse-azul)] underline">
               Sistema
