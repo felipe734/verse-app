@@ -86,7 +86,7 @@ export async function procesarDia(deps: Dependencias, fecha: string, presupuesto
       await drive.subir(`${nombre}.json`, carpeta, exp.json, "application/json");
       await drive.subir(`${nombre}.csv`, carpeta, exp.csv, "text/csv");
 
-      await registrarAdjuntos(db, { idBase: t.idBase, idTabla: t.idTabla, base: t.base, tabla: t.tabla }, esquema, registros, fecha);
+      await registrarAdjuntos(db, { idBase: t.idBase, idTabla: t.idTabla, base: t.base, tabla: t.tabla }, esquema, registros);
 
       const bytes = exp.json.length + exp.csv.length;
       await db.update(respaldoTareas).set({ estado: "hecha", filas: exp.filas, bytes, error: null, actualizado: sql`now()` }).where(clave);

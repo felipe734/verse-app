@@ -25,27 +25,27 @@ export interface TablaOrigen {
   tabla: string;
 }
 
-/** Domingo en Bogotá: el día de los videos de SERVICIOS. */
-export function esDomingo(fecha: string): boolean {
-  return new Date(`${fecha}T12:00:00Z`).getUTCDay() === 0;
-}
+/**
+ * Los videos de limpieza no se respaldan (decisión de Felipe, 2026-11-22; el doc pedía una vez por semana).
+ * Solo se excluyen los videos de estas tablas; sus fotos y archivos sí entran.
+ */
+export const TABLAS_SIN_VIDEOS = new Set(["SERVICIOS", "LIMPIEZA"]);
 
 const esVideo = (a: AdjuntoAirtable) => (a.type ?? "").startsWith("video/");
 
 /**
  * Registra los adjuntos de una tabla que aún no están en Drive.
- * Los videos de SERVICIOS solo entran los domingos.
+ * Los videos de limpieza (SERVICIOS y LIMPIEZA) no entran.
  */
 export async function registrarAdjuntos(
   db: Db,
   origen: TablaOrigen,
   esquema: EsquemaTabla,
   registros: RegistroAirtable[],
-  fecha: string,
 ): Promise<number> {
   const campos = esquema.fields.filter((c) => c.type === "multipleAttachments").map((c) => c.id);
   if (!campos.length) return 0;
-  const videosHoy = origen.tabla !== "SERVICIOS" || esDomingo(fecha);
+  const sinVideos = TABLAS_SIN_VIDEOS.has(origen.tabla);
 
   const filas = [];
   for (const r of registros) {
@@ -54,7 +54,7 @@ export async function registrarAdjuntos(
       if (!Array.isArray(lista)) continue;
       for (const a of lista as AdjuntoAirtable[]) {
         if (!a?.id || !a.url) continue;
-        if (esVideo(a) && !videosHoy) continue;
+        if (sinVideos && esVideo(a)) continue;
         filas.push({
           idAdjunto: a.id,
           ...origen,
