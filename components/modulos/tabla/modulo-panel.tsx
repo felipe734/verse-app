@@ -173,6 +173,7 @@ export async function ModuloPanel({ sesion, u, pestana, p }: { sesion: Sesion; u
         agenda={activa.tabla.agenda}
         vistaInicial={activa.tabla.vistaInicial}
         hoy={hoy}
+        tablas={[activa.tabla.idTabla]}
         persona={
           activa.tabla.persona && sesion.nombreAirtable
             ? { campo: activa.tabla.persona, nombre: sesion.nombreAirtable, porDefecto: !sesion.maestro && alcanceHoy(sesion, u.empresa) === "suyo" }

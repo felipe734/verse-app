@@ -14,7 +14,7 @@ const RUTA = "/verse/host/ruta";
 
 async function conCliente<T>(f: (a: ReturnType<typeof clienteServidor>) => Promise<T>): Promise<T> {
   const contador = crearContador();
-  const r = await f(clienteServidor(contador));
+  const r = await f(clienteServidor(contador, { fresco: true }));
   await contador.volcar(db());
   return r;
 }

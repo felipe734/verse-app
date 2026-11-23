@@ -1,10 +1,11 @@
 "use client";
 
-import { Bookmark, CalendarDays, CalendarRange, ChevronDown, ChevronLeft, ChevronRight, Columns3, List, Trash2, X } from "lucide-react";
+import { Bookmark, CalendarDays, RefreshCw, CalendarRange, ChevronDown, ChevronLeft, ChevronRight, Columns3, List, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { actualizarTablas } from "@/app/modulos/actualizar";
 import { borrarVista, guardarVista } from "@/app/modulos/vistas";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,30 @@ export function SelectorPeriodo({ periodo }: { periodo: Periodo }) {
         </Button>
       )}
     </div>
+  );
+}
+
+/** Trae lo último de Airtable (los módulos guardan las lecturas un minuto). */
+export function Actualizar({ tablas }: { tablas: string[] }) {
+  const router = useRouter();
+  const [girando, setGirando] = useState(false);
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="size-8"
+      title="Actualizar: los datos se guardan un minuto"
+      aria-label="Actualizar"
+      disabled={girando}
+      onClick={async () => {
+        setGirando(true);
+        await actualizarTablas(tablas);
+        router.refresh();
+        setTimeout(() => setGirando(false), 600);
+      }}
+    >
+      <RefreshCw className={cn("size-4", girando && "animate-spin")} aria-hidden />
+    </Button>
   );
 }
 
