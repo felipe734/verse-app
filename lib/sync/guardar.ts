@@ -77,13 +77,13 @@ export async function guardar(db: Db, clave: ClaveTabla, filas: RegistroAirtable
 /** Borra de la copia y de su proyección las filas que Airtable ya no tiene. */
 export async function borrar(db: Db, clave: ClaveTabla, recIds: string[]): Promise<void> {
   const { idBase, idTabla } = TABLAS[clave];
-  const proyeccion = clave.startsWith("trazabilidad") ? tareas : unidades;
+  const proyeccion = clave.startsWith("trazabilidad") ? tareas : clave.startsWith("unidades") && !clave.endsWith("Copia") ? unidades : null;
   for (let i = 0; i < recIds.length; i += LOTE) {
     const lote = recIds.slice(i, i + LOTE);
     await db
       .delete(registros)
       .where(and(eq(registros.idBase, idBase), eq(registros.idTabla, idTabla), inArray(registros.recId, lote)));
-    await db.delete(proyeccion).where(inArray(proyeccion.recId, lote));
+    if (proyeccion) await db.delete(proyeccion).where(inArray(proyeccion.recId, lote));
   }
 }
 

@@ -6,7 +6,8 @@ import type { tareas, unidades } from "@/db/esquema";
 type Tarea = typeof tareas.$inferInsert;
 type Unidad = typeof unidades.$inferInsert;
 
-export type Proyeccion = { tipo: "tarea"; fila: Tarea } | { tipo: "unidad"; fila: Unidad };
+/** Las copias de lectura (reservas, limpiezas, ingresos) solo viven en `registros`. */
+export type Proyeccion = { tipo: "tarea"; fila: Tarea } | { tipo: "unidad"; fila: Unidad } | { tipo: "ninguna" };
 
 const txt = (v: unknown): string | null => {
   if (v === null || v === undefined || v === "") return null;
@@ -75,6 +76,11 @@ export function proyectar(clave: ClaveTabla, r: RegistroAirtable): Proyeccion {
       return { tipo: "unidad", fila: unidadHost(r) };
     case "unidadesLiving":
       return { tipo: "unidad", fila: unidadLiving(r) };
+    case "reservasHost":
+    case "limpiezasHost":
+    case "ingresosLivingCopia":
+    case "unidadesOperacionCopia":
+      return { tipo: "ninguna" };
   }
 }
 

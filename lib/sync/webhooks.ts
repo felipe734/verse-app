@@ -8,9 +8,12 @@ import { TABLAS } from "@/lib/airtable/mapeo";
 import { borrar, guardar } from "./guardar";
 import { CLAVES } from "./tablas";
 
+/** Tablas que solo se copian de noche: cambian poco y no justifican un webhook. */
+const SOLO_DE_NOCHE: ClaveTabla[] = ["unidadesOperacionCopia"];
+
 /** Solo el workspace Verse recibe webhooks; C&C se lee al abrir el módulo y cada noche. */
 export function clavesConWebhook(): ClaveTabla[] {
-  return CLAVES.filter((c) => TABLAS[c].workspace === "Verse");
+  return CLAVES.filter((c) => TABLAS[c].workspace === "Verse" && !SOLO_DE_NOCHE.includes(c));
 }
 
 export interface WebhookPlaneado {

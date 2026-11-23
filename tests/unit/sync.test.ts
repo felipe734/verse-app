@@ -87,8 +87,8 @@ describe("webhooks", () => {
     at = new AirtableFalso();
   });
 
-  it("solo las tablas del workspace Verse llevan webhook", () => {
-    expect(clavesConWebhook().sort()).toEqual(["trazabilidadCyC", "trazabilidadVerse", "unidadesHost", "unidadesLiving"]);
+  it("solo las tablas del workspace Verse llevan webhook, menos las que van solo de noche", () => {
+    expect(clavesConWebhook().sort()).toEqual(["ingresosLivingCopia", "limpiezasHost", "reservasHost", "trazabilidadCyC", "trazabilidadVerse", "unidadesHost", "unidadesLiving"]);
   });
 
   it("apagados no crean nada en Airtable", async () => {
@@ -100,10 +100,10 @@ describe("webhooks", () => {
   it("encendidos crean uno por tabla y después solo renuevan", async () => {
     const url = "https://app.prueba/api/airtable/webhook";
     const r1 = await mantenerWebhooks(db, at, { activos: true, url });
-    expect(r1.creados).toHaveLength(4);
+    expect(r1.creados).toHaveLength(7);
     const r2 = await mantenerWebhooks(db, at, { activos: true, url });
     expect(r2).toEqual({ creados: [], renovados: r1.creados });
-    expect(at.webhooks).toHaveLength(4);
+    expect(at.webhooks).toHaveLength(7);
   });
 
   it("valida la firma HMAC del aviso", () => {
