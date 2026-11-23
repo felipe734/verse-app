@@ -31,11 +31,32 @@ export function composioVitrina(): ClienteComposio {
     { id: "ca_cyc", alias: "cyc-comercial", wordId: "gmail_vetch-hummer", estado: "ACTIVE" },
     { id: "ca_cyc_conta", alias: "cyc-contabilidad", wordId: "gmail_fender-sumph", estado: "ACTIVE" },
   ];
+  const archivos = [
+    { id: "1vitrinaPolizaTorreNorte603", name: "Póliza Torre Norte 603.pdf", mimeType: "application/pdf", modifiedTime: hace(30), size: "182044" },
+    { id: "1vitrinaEstadoCuentaNoviembre", name: "Estado de cuenta noviembre.pdf", mimeType: "application/pdf", modifiedTime: hace(50), size: "90211" },
+  ];
   return {
     async cuentasGmail() {
       return conectadas;
     },
+    async cuentasDrive() {
+      return [{ id: "ca_drive", alias: "verse-drive", wordId: "googledrive_vitrina", estado: "ACTIVE" }];
+    },
+    async bajar() {
+      return new Uint8Array(8);
+    },
+    async subirArchivo(a) {
+      return `vitrina/${a.nombre}`;
+    },
     async ejecutar(herramienta, cuenta, args) {
+      if (herramienta === "GOOGLEDRIVE_FIND_FILE") {
+        const t = String(args.q).match(/name contains '([^']*)'/)?.[1]?.toLowerCase() ?? "";
+        return { files: archivos.filter((a) => a.name.toLowerCase().includes(t)) };
+      }
+      if (herramienta === "GOOGLEDRIVE_DOWNLOAD_FILE") {
+        const a = archivos.find((x) => x.id === args.fileId);
+        return a ? { name: a.name, downloaded_file_content: { name: a.name, mimetype: a.mimeType, s3url: "https://almacen.composio.dev/vitrina" } } : {};
+      }
       if (herramienta === "GMAIL_FETCH_EMAILS") return { messages: String(args.query).match(/(^|\s)in:sent/) ? [] : (buzones[cuenta] ?? []) };
       if (herramienta === "GMAIL_FETCH_MESSAGE_BY_THREAD_ID") return { messages: Object.values(buzones).flat().filter((x) => x.threadId === args.thread_id) };
       return {};

@@ -6,6 +6,7 @@ import type { Sesion } from "@/lib/acceso/permisos";
 import { auditar } from "@/lib/auditoria";
 import { aplicarAccion, type ResultadoAccion } from "@/lib/hoy/acciones";
 import { HOY_POR_EMPRESA } from "@/lib/hoy/datos";
+import { prepararAdjuntos, puedeDrive, type Adjunto } from "@/lib/drive/drive";
 import type { ClienteComposio } from "./composio";
 import { cuentaPorId, cuentasConectadas } from "./cuentas";
 import { nivelEnCuenta, ProponerCorreo, vistaPrevia, type DatosCorreo } from "./redactar";
@@ -45,6 +46,8 @@ export async function ejecutarCorreo(opciones: {
   if (modo === "enviar" && nivel !== "enviar") return { ok: false, mensaje: `No tienes permiso para enviar desde ${cuenta.correo}. Guarda el borrador` };
   if (nivel !== "enviar" && nivel !== "redactar") return { ok: false, mensaje: `No tienes permiso para redactar desde ${cuenta.correo}` };
 
+  if (d.adjuntos?.length && !puedeDrive(s)) return { ok: false, mensaje: "Adjuntar de Drive es para quien envía correo" };
+
   const { mapa } = await cuentasConectadas(composio);
   const conectada = mapa.get(d.cuenta);
   if (!conectada) return { ok: false, mensaje: `La cuenta ${cuenta.correo} no está conectada en Composio` };
@@ -57,11 +60,18 @@ export async function ejecutarCorreo(opciones: {
     .returning({ id: propuestas.id });
   if (!tomada.length) return { ok: false, mensaje: "Ese correo ya se respondió" };
 
-  const html = vistaPrevia(d);
   const [primero, ...demas] = d.para;
   const destinos = { recipient_email: primero, extra_recipients: demas, cc: d.cc ?? [] };
+  const herramienta = modo === "borrador" ? "GMAIL_CREATE_EMAIL_DRAFT" : d.hilo ? "GMAIL_REPLY_TO_THREAD" : "GMAIL_SEND_EMAIL";
   let r: ResultadoAccion;
+  let adjuntos: Adjunto[] = [];
+  let enlaces: { nombre: string; url: string }[] = [];
   try {
+    if (d.adjuntos?.length) ({ adjuntos, enlaces } = await prepararAdjuntos(composio, d.adjuntos, herramienta));
+    // Lo que no se pudo adjuntar va como enlace al final del texto.
+    const cuerpo = enlaces.length ? `${d.cuerpo}\n\n${enlaces.map((e) => `${e.nombre}: ${e.url}`).join("\n")}` : d.cuerpo;
+    const html = vistaPrevia({ ...d, cuerpo });
+    const adjunto = adjuntos.length ? { attachment: adjuntos } : {};
     if (modo === "enviar") {
       if (!d.hilo) {
         const enviados = await composio.ejecutar("GMAIL_FETCH_EMAILS", conectada, {
@@ -76,11 +86,11 @@ export async function ejecutarCorreo(opciones: {
           await terminar(db, id, r, "fallida");
           return r;
         }
-        await composio.ejecutar("GMAIL_SEND_EMAIL", conectada, { ...destinos, subject: d.asunto, body: html, is_html: true, include_signature: false });
+        await composio.ejecutar("GMAIL_SEND_EMAIL", conectada, { ...destinos, subject: d.asunto, body: html, is_html: true, include_signature: false, ...adjunto });
       } else {
-        await composio.ejecutar("GMAIL_REPLY_TO_THREAD", conectada, { ...destinos, thread_id: d.hilo, message_body: html, is_html: true, include_signature: false, timezone: "America/Bogota" });
+        await composio.ejecutar("GMAIL_REPLY_TO_THREAD", conectada, { ...destinos, thread_id: d.hilo, message_body: html, is_html: true, include_signature: false, timezone: "America/Bogota", ...adjunto });
       }
-      r = { ok: true, mensaje: `Enviado desde ${cuenta.correo}` };
+      r = { ok: true, mensaje: `Enviado desde ${cuenta.correo}${notaAdjuntos(adjuntos.length, enlaces.length)}` };
     } else {
       await composio.ejecutar("GMAIL_CREATE_EMAIL_DRAFT", conectada, {
         ...destinos,
@@ -90,8 +100,9 @@ export async function ejecutarCorreo(opciones: {
         body: html,
         is_html: true,
         include_signature: false,
+        ...adjunto,
       });
-      r = { ok: true, mensaje: `Borrador guardado en ${cuenta.correo}` };
+      r = { ok: true, mensaje: `Borrador guardado en ${cuenta.correo}${notaAdjuntos(adjuntos.length, enlaces.length)}` };
     }
   } catch (e) {
     console.error("[correo]", e instanceof Error ? e.message : e);
@@ -104,7 +115,16 @@ export async function ejecutarCorreo(opciones: {
   await auditar(db, {
     autor: s.correo,
     accion: modo === "enviar" ? "correo.enviado" : "correo.borrador",
-    despues: { cuenta: d.cuenta, para: d.para, cc: d.cc ?? [], asunto: d.asunto, hilo: d.hilo ?? null, editado: Boolean(opciones.edicion) },
+    despues: {
+      cuenta: d.cuenta,
+      para: d.para,
+      cc: d.cc ?? [],
+      asunto: d.asunto,
+      hilo: d.hilo ?? null,
+      editado: Boolean(opciones.edicion),
+      adjuntos: adjuntos.map((a) => a.name),
+      enlaces: enlaces.map((e) => e.nombre),
+    },
     detalle: `${cuenta.correo} → ${d.para.join(", ")} · ${d.asunto}`,
   });
 
@@ -114,6 +134,11 @@ export async function ejecutarCorreo(opciones: {
   }
   await terminar(db, id, r, "hecha");
   return r;
+}
+
+function notaAdjuntos(adjuntos: number, enlaces: number): string {
+  const partes = [adjuntos && `${adjuntos} ${adjuntos === 1 ? "adjunto" : "adjuntos"}`, enlaces && `${enlaces} como enlace de Drive`].filter(Boolean);
+  return partes.length ? `, con ${partes.join(" y ")}` : "";
 }
 
 async function terminar(db: Db, id: string, r: ResultadoAccion, estado: "hecha" | "fallida") {

@@ -16,6 +16,11 @@ export const ProponerCorreo = z.object({
   hilo: z.string().regex(/^[0-9a-f]{10,20}$/i).optional().describe("Id del hilo de Gmail si es una respuesta"),
   submarca: z.enum(["HOST", "LIVING"]).optional().describe("Solo Verse: HOST o LIVING según el tema; sin valor para el grupo"),
   pendiente: z.object({ empresa: z.enum(["verse", "cyc"]), numero: z.number().int() }).optional().describe("Fila de TRAZABILIDAD de la que sale el correo"),
+  adjuntos: z
+    .array(z.object({ id: z.string().regex(/^[\w-]{10,100}$/), nombre: z.string().trim().min(1).max(200) }))
+    .max(5)
+    .optional()
+    .describe("Archivos de Drive a adjuntar, con el id y el nombre tal como los devolvió buscar_drive. Nunca inventes un id"),
 });
 export type DatosCorreo = z.infer<typeof ProponerCorreo> & { firma: string };
 
