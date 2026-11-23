@@ -29,9 +29,11 @@ export async function POST(request: Request) {
   after(async () => {
     const contador = crearContador();
     try {
-      await aplicarAviso(base, clienteServidor(contador), webhookId);
+      const r = await aplicarAviso(base, clienteServidor(contador), webhookId);
       await contador.volcar(base);
+      console.info("[webhook]", JSON.stringify({ clave: estado.clave, ...r }));
     } catch (e) {
+      console.error("[webhook]", estado.clave, e instanceof Error ? e.message : "error");
       await base
         .update(syncEstado)
         .set({ error: e instanceof Error ? e.message : "error" })
