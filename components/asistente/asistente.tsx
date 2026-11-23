@@ -4,11 +4,12 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { cancelar, confirmar } from "@/app/asistente/acciones";
 import { Button } from "@/components/ui/button";
+import { TarjetaCorreo, type DatosTarjetaCorreo } from "./tarjeta-correo";
 
 type Entrada =
   | { tipo: "persona"; texto: string }
   | { tipo: "asistente"; texto: string; herramientas: string[] }
-  | { tipo: "propuesta"; id: string; resumen: string; estado: "pendiente" | "hecha" | "cancelada" | "error"; mensaje?: string }
+  | { tipo: "propuesta"; id: string; resumen: string; estado: "pendiente" | "hecha" | "cancelada" | "error"; mensaje?: string; correo?: DatosTarjetaCorreo }
   | { tipo: "aviso"; texto: string };
 
 const NOMBRES: Record<string, string> = {
@@ -17,6 +18,11 @@ const NOMBRES: Record<string, string> = {
   proponer_cambio_pendiente: "Preparando el cambio",
   proponer_nuevo_pendiente: "Preparando el pendiente",
   buscar_unidades: "Buscando unidades",
+  buscar_reservas: "Buscando reservas",
+  ver_cierre: "Leyendo el cierre",
+  ver_bandeja: "Revisando el correo",
+  leer_hilo: "Leyendo el hilo",
+  proponer_correo: "Redactando el correo",
 };
 
 interface ReconocimientoVoz {
@@ -94,7 +100,7 @@ export function Asistente() {
           if (ev.tipo === "conversacion") conversacion.current = ev.id as string;
           else if (ev.tipo === "texto") actualizar((u) => ({ ...u, texto: u.texto + (ev.delta as string) }));
           else if (ev.tipo === "herramienta") actualizar((u) => ({ ...u, herramientas: [...u.herramientas, ev.nombre as string] }));
-          else if (ev.tipo === "propuesta") setEntradas((e) => [...e, { tipo: "propuesta", id: ev.id as string, resumen: ev.resumen as string, estado: "pendiente" }]);
+          else if (ev.tipo === "propuesta") setEntradas((e) => [...e, { tipo: "propuesta", id: ev.id as string, resumen: ev.resumen as string, estado: "pendiente", correo: ev.correo as DatosTarjetaCorreo | undefined }]);
           else if (ev.tipo === "aviso") setEntradas((e) => [...e, { tipo: "aviso", texto: ev.texto as string }]);
         }
       }
@@ -191,6 +197,8 @@ export function Asistente() {
                     {e.texto ? <p className="whitespace-pre-line text-foreground">{e.texto}</p> : enviando && i === entradas.length - 1 ? <p className="text-muted-foreground">Pensando</p> : null}
                   </div>
                 );
+              if (e.tipo === "propuesta" && e.correo)
+                return <TarjetaCorreo key={i} id={e.id} correo={e.correo} />;
               if (e.tipo === "propuesta")
                 return (
                   <div key={i} className="space-y-2 rounded-xl border px-3 py-3">

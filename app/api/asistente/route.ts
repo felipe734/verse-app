@@ -8,6 +8,7 @@ import { modeloPara } from "@/lib/asistente/precios";
 import { crearContador } from "@/lib/medicion/contador";
 import { clienteServidor } from "@/lib/servidor/airtable";
 import { llamarClaude } from "@/lib/servidor/claude";
+import { composioServidor } from "@/lib/servidor/composio";
 
 export const maxDuration = 300;
 
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
           conversacionId: pedido.data.conversacionId,
           modelo: modeloPara(pedido.data.texto),
           airtable: clienteServidor(contador),
+          composio: composioServidor() ?? undefined,
           alEvento: enviar,
         });
         await contador.volcar(db());

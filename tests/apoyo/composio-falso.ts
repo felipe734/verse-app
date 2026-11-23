@@ -12,6 +12,8 @@ export class ComposioFalso implements ClienteComposio {
   /** Mensajes por cuenta conectada. */
   buzones = new Map<string, Record<string, unknown>[]>();
   hilos = new Map<string, Record<string, unknown>[]>();
+  /** Enviados por cuenta conectada, para la revisión de duplicados. */
+  enviados = new Map<string, Record<string, unknown>[]>();
   llamadas: { herramienta: string; cuenta: string; argumentos: Record<string, unknown> }[] = [];
   fallaEn: string | null = null;
 
@@ -22,7 +24,7 @@ export class ComposioFalso implements ClienteComposio {
   async ejecutar(herramienta: string, cuenta: string, argumentos: Record<string, unknown>) {
     this.llamadas.push({ herramienta, cuenta, argumentos });
     if (this.fallaEn === cuenta) throw new Error("Composio respondió 500");
-    if (herramienta === "GMAIL_FETCH_EMAILS") return { messages: this.buzones.get(cuenta) ?? [] };
+    if (herramienta === "GMAIL_FETCH_EMAILS") return { messages: (/(^|\s)in:sent/.test(String(argumentos.query)) ? this.enviados : this.buzones).get(cuenta) ?? [] };
     if (herramienta === "GMAIL_FETCH_MESSAGE_BY_THREAD_ID") return { messages: this.hilos.get(String(argumentos.thread_id)) ?? [] };
     return {};
   }
