@@ -11,11 +11,15 @@ import { PLANTILLAS } from "./plantillas";
  */
 export async function sembrar(db: Db, maestro?: { correo: string; nombre: string }): Promise<void> {
   for (const [i, e] of ESTRUCTURA.entries()) {
-    await db.insert(empresas).values({ id: e.id, nombre: e.nombre, orden: i, cuentas: e.cuentas }).onConflictDoNothing();
+    await db.insert(empresas).values({ id: e.id, nombre: e.nombre, orden: i, cuentas: e.cuentas, acento: e.acento ?? "#18181b" }).onConflictDoNothing();
     for (const [j, v] of e.verticales.entries()) {
       await db.insert(verticales).values({ id: v.id, empresaId: e.id, nombre: v.nombre, orden: j }).onConflictDoNothing();
       for (const [k, m] of v.modulos.entries()) {
-        await db.insert(modulos).values({ id: m.id, verticalId: v.id, nombre: m.nombre, descripcion: m.descripcion, orden: k }).onConflictDoNothing();
+        // El tipo es del código (qué pantalla lo muestra): se actualiza siempre; nombre y orden son de Ajustes.
+        await db
+          .insert(modulos)
+          .values({ id: m.id, verticalId: v.id, nombre: m.nombre, descripcion: m.descripcion, tipo: m.tipo ?? "", orden: k })
+          .onConflictDoUpdate({ target: modulos.id, set: { tipo: m.tipo ?? "" } });
       }
     }
   }

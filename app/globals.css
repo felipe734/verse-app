@@ -4,11 +4,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Sistema de diseño neutro (zinc de shadcn). La marca Verse vive solo en los correos.
+ * Cada empresa aporta un único token, --acento, que se usa en el selector de empresa,
+ * el ítem activo de la barra y los botones primarios. Nada más cambia por empresa.
+ */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-lato);
-  --font-display: var(--font-gantari);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -38,67 +43,95 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-acento: var(--acento);
+  --color-acento-foreground: var(--acento-foreground);
+  --color-acento-suave: var(--acento-suave);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
 }
 
 :root {
-  /* Paleta verse-marca */
-  --verse-navy: #002448;
-  --verse-azul: #0043ac;
-  --verse-azul-claro: #eef3fb;
-  --verse-gris: #6b7a8f;
-  --verse-parrafo: #3b4d63;
-  --verse-filete: #e6e8ec;
-  --verse-filete-suave: #eef0f3;
-  --verse-lienzo: #f3f3f1;
-  --verse-naranja: #ff6501;
-
-  --radius: 1rem;
-  --background: var(--verse-lienzo);
-  --foreground: var(--verse-navy);
-  --card: #ffffff;
-  --card-foreground: var(--verse-navy);
-  --popover: #ffffff;
-  --popover-foreground: var(--verse-navy);
-  --primary: var(--verse-navy);
-  --primary-foreground: #ffffff;
-  --secondary: var(--verse-azul-claro);
-  --secondary-foreground: var(--verse-azul);
-  --muted: var(--verse-filete-suave);
-  --muted-foreground: var(--verse-gris);
-  --accent: var(--verse-azul-claro);
-  --accent-foreground: var(--verse-azul);
-  --destructive: var(--verse-navy);
-  --border: var(--verse-filete);
-  --input: var(--verse-filete);
-  --ring: var(--verse-azul);
-  --chart-1: var(--verse-navy);
-  --chart-2: var(--verse-azul);
-  --chart-3: var(--verse-gris);
-  --chart-4: var(--verse-parrafo);
-  --chart-5: var(--verse-filete);
-  --sidebar: #ffffff;
-  --sidebar-foreground: var(--verse-navy);
-  --sidebar-primary: var(--verse-navy);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--verse-azul-claro);
-  --sidebar-accent-foreground: var(--verse-azul);
-  --sidebar-border: var(--verse-filete);
-  --sidebar-ring: var(--verse-azul);
+  --radius: 0.5rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.141 0.005 285.823);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.141 0.005 285.823);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.141 0.005 285.823);
+  --primary: oklch(0.21 0.006 285.885);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.967 0.001 286.375);
+  --secondary-foreground: oklch(0.21 0.006 285.885);
+  --muted: oklch(0.967 0.001 286.375);
+  --muted-foreground: oklch(0.52 0.016 285.938);
+  --accent: oklch(0.967 0.001 286.375);
+  --accent-foreground: oklch(0.21 0.006 285.885);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.92 0.004 286.32);
+  --input: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.705 0.015 286.067);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.141 0.005 285.823);
+  --sidebar-primary: oklch(0.21 0.006 285.885);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.955 0.002 286.32);
+  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
+  --sidebar-border: oklch(0.92 0.004 286.32);
+  --sidebar-ring: oklch(0.705 0.015 286.067);
+  /* Acento de la empresa activa: lo fija el shell en un style del contenedor. */
+  --acento: oklch(0.21 0.006 285.885);
+  --acento-foreground: oklch(0.985 0 0);
+  --acento-suave: color-mix(in oklch, var(--acento) 10%, transparent);
 }
 
+.dark {
+  --background: oklch(0.141 0.005 285.823);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.175 0.005 285.823);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.21 0.006 285.885);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.92 0.004 286.32);
+  --primary-foreground: oklch(0.21 0.006 285.885);
+  --secondary: oklch(0.274 0.006 286.033);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.274 0.006 286.033);
+  --muted-foreground: oklch(0.705 0.015 286.067);
+  --accent: oklch(0.274 0.006 286.033);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.552 0.016 285.938);
+  --sidebar: oklch(0.175 0.005 285.823);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.985 0 0);
+  --sidebar-primary-foreground: oklch(0.21 0.006 285.885);
+  --sidebar-accent: oklch(0.274 0.006 286.033);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.552 0.016 285.938);
+  --acento-suave: color-mix(in oklch, var(--acento) 22%, transparent);
+}
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    @apply bg-background;
+  }
   body {
     @apply bg-background text-foreground;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ring;
   }
 }

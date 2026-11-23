@@ -17,7 +17,8 @@ export default defineConfig({
   webServer: process.env.PLAYWRIGHT_URL_BASE
     ? undefined
     : {
-        command: `pnpm start --port ${puerto}`,
+        // Vitrina: base en memoria con datos inventados y sesión de prueba (lib/vitrina).
+        command: `APP_E2E=1 DATABASE_URL= pnpm start --port ${puerto}`,
         url: urlBase,
         reuseExistingServer: !process.env.CI,
       },

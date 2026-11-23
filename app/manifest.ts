@@ -1,15 +1,16 @@
 import type { MetadataRoute } from "next";
+import { PLATFORM_NAME } from "@/lib/config";
 
 /** La app se instala en el celular desde el navegador; en iPhone, los avisos necesitan la app instalada. */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Verse App",
-    short_name: "Verse",
-    description: "Operación de Verse Group y C&C Group",
+    name: PLATFORM_NAME,
+    short_name: PLATFORM_NAME,
+    description: "Plataforma de operación sobre Airtable",
     start_url: "/hoy",
     display: "standalone",
-    background_color: "#F3F3F1",
-    theme_color: "#002448",
+    background_color: "#ffffff",
+    theme_color: "#09090b",
     lang: "es",
     icons: [
       { src: "/icono/192", sizes: "192x192", type: "image/png" },

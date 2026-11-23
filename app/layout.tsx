@@ -1,36 +1,34 @@
 import type { Metadata, Viewport } from "next";
-import { Gantari, Lato } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
+import { Tema } from "@/components/tema";
+import { PLATFORM_NAME } from "@/lib/config";
 import "./globals.css";
 
-const gantari = Gantari({
-  variable: "--font-gantari",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-});
-
-const lato = Lato({
-  variable: "--font-lato",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
+const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Verse App",
-  description: "Operación de Verse Group y C&C Group sobre Airtable",
-  appleWebApp: { capable: true, title: "Verse", statusBarStyle: "default" },
+  title: PLATFORM_NAME,
+  description: "Plataforma de operación sobre Airtable",
+  appleWebApp: { capable: true, title: PLATFORM_NAME, statusBarStyle: "default" },
   icons: { apple: "/icono/180" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#002448",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#09090b" },
+  ],
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${gantari.variable} ${lato.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+    <html lang="es" suppressHydrationWarning className={`${geist.variable} ${geistMono.variable} h-full antialiased`}>
+      <body className="min-h-full font-sans">
+        <Tema>{children}</Tema>
+      </body>
     </html>
   );
 }

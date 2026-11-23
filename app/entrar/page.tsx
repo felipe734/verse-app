@@ -17,7 +17,7 @@ async function Aviso({ searchParams }: { searchParams: Promise<{ error?: string 
   if (!error) return null;
   const texto = MENSAJES_ENTRADA[error] ?? "No se pudo entrar. Intenta de nuevo.";
   return (
-    <p role="alert" className="rounded-xl bg-[var(--verse-azul-claro)] px-4 py-3 text-[var(--verse-azul)]">
+    <p role="alert" className="rounded-lg bg-muted px-4 py-3 text-foreground">
       {texto}
     </p>
   );
@@ -31,7 +31,7 @@ export default function Entrar({ searchParams }: PageProps<"/entrar">) {
         <Aviso searchParams={searchParams as Promise<{ error?: string }>} />
       </Suspense>
       <form action={entrarConGoogle}>
-        <Button type="submit" size="lg" className="w-full rounded-xl">
+        <Button type="submit" size="lg" className="w-full rounded-lg">
           Entrar con Google
         </Button>
       </form>

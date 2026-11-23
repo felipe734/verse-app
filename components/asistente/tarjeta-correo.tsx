@@ -44,8 +44,8 @@ export function TarjetaCorreo({ id, correo }: { id: string; correo: DatosTarjeta
   }
 
   return (
-    <div className="space-y-2 rounded-xl border px-3 py-3">
-      <p className="font-display text-[11px] tracking-[1.4px] text-muted-foreground">{correo.respuesta ? "RESPUESTA POR CONFIRMAR" : "CORREO POR CONFIRMAR"}</p>
+    <div className="space-y-2 rounded-lg border bg-card p-3">
+      <p className="text-xs font-medium text-muted-foreground">{correo.respuesta ? "RESPUESTA POR CONFIRMAR" : "CORREO POR CONFIRMAR"}</p>
       <dl className="grid grid-cols-[auto_1fr] gap-x-2 text-[12.5px]">
         <dt className="text-muted-foreground">De</dt>
         <dd>{correo.de}</dd>
@@ -65,12 +65,12 @@ export function TarjetaCorreo({ id, correo }: { id: string; correo: DatosTarjeta
             onChange={(e) => setAsunto(e.target.value)}
             aria-label="Asunto"
             disabled={correo.respuesta}
-            className="w-full rounded-lg border bg-white px-2 py-1.5 text-[13.5px]"
+            className="w-full rounded-lg border bg-background px-2 py-1.5 text-[13.5px]"
           />
-          <textarea value={cuerpo} onChange={(e) => setCuerpo(e.target.value)} aria-label="Texto del correo" rows={10} className="w-full rounded-lg border bg-white px-2 py-1.5 text-[13.5px]" />
+          <textarea value={cuerpo} onChange={(e) => setCuerpo(e.target.value)} aria-label="Texto del correo" rows={10} className="w-full rounded-lg border bg-background px-2 py-1.5 text-[13.5px]" />
         </div>
       ) : (
-        <p className="font-display text-foreground">{asunto}</p>
+        <p className="font-medium text-foreground">{asunto}</p>
       )}
       {/* Vista previa aislada: sin scripts ni navegación. */}
       <iframe title="Vista previa del correo" sandbox="" srcDoc={html} className="h-72 w-full rounded-lg border bg-white" />

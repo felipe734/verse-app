@@ -14,12 +14,14 @@ export async function estructuraDe(db: Db): Promise<EmpresaBase[]> {
     id: e.id,
     nombre: e.nombre,
     cuentas: e.cuentas,
+    acento: e.acento,
+    logo: e.logo,
     verticales: vs
       .filter((v) => v.empresaId === e.id)
       .map((v) => ({
         id: v.id,
         nombre: v.nombre,
-        modulos: ms.filter((m) => m.verticalId === v.id).map((m) => ({ id: m.id, nombre: m.nombre, descripcion: m.descripcion })),
+        modulos: ms.filter((m) => m.verticalId === v.id).map((m) => ({ id: m.id, nombre: m.nombre, descripcion: m.descripcion, tipo: m.tipo })),
       })),
   }));
 }

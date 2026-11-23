@@ -10,7 +10,7 @@ App de Verse Group y C&C Group sobre Airtable. El plan vive en el doc "Verse App
 4. Rama claude/, PR pequeño, lint, tipos y pruebas en verde. Nada se fusiona sin OK de Felipe.
 5. Sin secretos en código ni logs; sin datos reales de propietarios, contratistas o huéspedes en pruebas.
 6. Cambios en Airtable o en skills van en su propio PR en verse-plugins, con plan y OK antes de escribir.
-7. Español, marca Verse, sin signos de admiración; celular primero.
+7. Español, sin signos de admiración; celular primero. Interfaz de SaaS neutra (shadcn zinc, Geist, claro y oscuro): cada empresa solo aporta logo, nombre y color de acento. La marca Verse queda para los correos. Módulos nuevos se declaran en lib/modulos/registro.ts.
 
 ## Rutina de cada PR
 

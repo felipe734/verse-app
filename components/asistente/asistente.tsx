@@ -1,7 +1,9 @@
 "use client";
 
 import { usePathname, useSearchParams } from "next/navigation";
+import { Mic, Plus, SendHorizontal, Sparkles, Square, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useShell } from "@/components/shell/contexto";
 import { cancelar, confirmar } from "@/app/asistente/acciones";
 import { Button } from "@/components/ui/button";
 import { TarjetaCorreo, type DatosTarjetaCorreo } from "./tarjeta-correo";
@@ -34,17 +36,20 @@ interface ReconocimientoVoz {
   stop(): void;
 }
 
-/** Lo que la persona tiene seleccionado: el pendiente abierto en Hoy, si hay uno. */
+/** Lo que la persona tiene seleccionado: la fila abierta en el panel de detalle, si hay una. */
 function seleccion(): string | null {
-  const abierto = document.querySelector<HTMLElement>("details[open][data-numero]");
-  return abierto ? `fila ${abierto.dataset.numero} de ${abierto.dataset.empresa}` : null;
+  const abierto = document.querySelector<HTMLElement>("[data-seleccion]");
+  return abierto?.dataset.seleccion ?? null;
 }
 
-/** Asistente en todas las pantallas: botón flotante, panel a la derecha en computador y hoja completa en celular. */
+/**
+ * Asistente en todas las pantallas: panel a la derecha en computador y hoja completa en
+ * celular. Se abre con ⌘J, con el botón de la barra o desde ⌘K. Sabe la empresa, el módulo
+ * (por la ruta) y la fila abierta.
+ */
 export function Asistente() {
-  const [abierto, setAbierto] = useState(false);
+  const { asistente: abierto, cerrarAsistente, borrador: texto, setBorrador: setTexto } = useShell();
   const [entradas, setEntradas] = useState<Entrada[]>([]);
-  const [texto, setTexto] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [escuchando, setEscuchando] = useState(false);
   const conversacion = useRef<string | null>(null);
@@ -56,6 +61,7 @@ export function Asistente() {
   useEffect(() => {
     fondo.current?.scrollIntoView({ block: "end" });
   }, [entradas]);
+
 
   async function enviar(pregunta: string) {
     if (!pregunta.trim() || enviando) return;
@@ -139,125 +145,128 @@ export function Asistente() {
     r.start();
   }
 
+  if (!abierto) return null;
   return (
-    <>
-      {!abierto && (
-        <button
-          type="button"
-          onClick={() => setAbierto(true)}
-          className="fixed right-4 bottom-4 z-40 rounded-full bg-primary px-5 py-3 font-display text-sm text-primary-foreground shadow-lg"
-        >
-          Asistente
-        </button>
-      )}
-      {abierto && (
-        <aside
-          aria-label="Asistente"
-          className="fixed inset-0 z-50 flex flex-col bg-card md:inset-y-0 md:right-0 md:left-auto md:w-[420px] md:border-l md:shadow-xl"
-        >
-          <header className="flex items-center justify-between bg-primary px-5 py-3">
-            <span className="font-display text-sm font-bold tracking-[3px] text-primary-foreground">
-              ASISTENTE
-            </span>
-            <span className="flex gap-3">
-              <button
-                type="button"
-                className="text-[12.5px] text-[#a9b8cc] underline"
-                onClick={() => {
-                  conversacion.current = null;
-                  setEntradas([]);
-                }}
-              >
-                Nueva
-              </button>
-              <button type="button" className="text-sm text-primary-foreground" onClick={() => setAbierto(false)} aria-label="Cerrar asistente">
-                Cerrar
-              </button>
-            </span>
-          </header>
-          <div className="flex-1 space-y-3 overflow-y-auto px-4 py-4 text-[14px] leading-relaxed text-[var(--verse-parrafo)]">
-            {entradas.length === 0 && (
-              <p className="text-muted-foreground">Pregunta o pide algo: &ldquo;qué tengo hoy&rdquo;, &ldquo;listo 295&rdquo;, &ldquo;agrega pendiente para Diana mañana&rdquo;.</p>
-            )}
-            {entradas.map((e, i) => {
-              if (e.tipo === "persona")
-                return (
-                  <p key={i} className="ml-8 rounded-xl bg-[var(--verse-azul-claro)] px-3 py-2 text-[var(--verse-azul)]">
-                    {e.texto}
-                  </p>
-                );
-              if (e.tipo === "asistente")
-                return (
-                  <div key={i} className="space-y-1">
-                    {e.herramientas.map((h, j) => (
-                      <p key={j} className="text-[12px] text-muted-foreground">
-                        {NOMBRES[h] ?? h}
-                      </p>
-                    ))}
-                    {e.texto ? <p className="whitespace-pre-line text-foreground">{e.texto}</p> : enviando && i === entradas.length - 1 ? <p className="text-muted-foreground">Pensando</p> : null}
-                  </div>
-                );
-              if (e.tipo === "propuesta" && e.correo)
-                return <TarjetaCorreo key={i} id={e.id} correo={e.correo} />;
-              if (e.tipo === "propuesta")
-                return (
-                  <div key={i} className="space-y-2 rounded-xl border px-3 py-3">
-                    <p className="font-display text-[11px] tracking-[1.4px] text-muted-foreground">POR CONFIRMAR</p>
-                    <p className="text-foreground">{e.resumen}</p>
-                    {e.estado === "pendiente" ? (
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => void responder(e.id, true)}>
-                          Confirmar
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => void responder(e.id, false)}>
-                          Cancelar
-                        </Button>
-                      </div>
-                    ) : (
-                      <p role="status" className="text-[13px]">
-                        {e.mensaje}
-                      </p>
-                    )}
-                  </div>
-                );
-              return (
-                <p key={i} role="status" className="text-[13px] text-muted-foreground">
-                  {e.texto}
-                </p>
-              );
-            })}
-            <div ref={fondo} />
-          </div>
-          <form
-            className="flex items-end gap-2 border-t p-3"
-            onSubmit={(ev) => {
-              ev.preventDefault();
-              void enviar(texto);
+    <aside
+      aria-label="Asistente"
+      className="fixed inset-0 z-50 flex flex-col bg-background md:sticky md:top-0 md:z-10 md:h-svh md:w-[400px] md:shrink-0 md:border-l"
+    >
+      <header className="flex h-14 shrink-0 items-center justify-between border-b px-4">
+        <span className="flex items-center gap-2 text-sm font-medium">
+          <Sparkles className="size-4 text-acento" aria-hidden /> Asistente
+        </span>
+        <span className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 gap-1.5 text-muted-foreground"
+            onClick={() => {
+              conversacion.current = null;
+              setEntradas([]);
             }}
           >
-            <textarea
-              value={texto}
-              onChange={(e) => setTexto(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  void enviar(texto);
-                }
-              }}
-              rows={2}
-              placeholder="Escribe o dicta"
-              aria-label="Mensaje para el asistente"
-              className="flex-1 resize-none rounded-lg border bg-white px-3 py-2 text-[14px]"
-            />
-            <Button type="button" variant="outline" onClick={dictar} aria-pressed={escuchando}>
-              {escuchando ? "Parar" : "Dictar"}
-            </Button>
-            <Button type="submit" disabled={enviando || !texto.trim()}>
-              Enviar
-            </Button>
-          </form>
-        </aside>
-      )}
-    </>
+            <Plus className="size-4" aria-hidden /> Nueva
+          </Button>
+          <Button variant="ghost" size="icon" className="size-8" onClick={cerrarAsistente} aria-label="Cerrar asistente">
+            <X className="size-4" aria-hidden />
+          </Button>
+        </span>
+      </header>
+      <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 text-sm leading-relaxed">
+        {entradas.length === 0 && (
+          <div className="space-y-3 pt-6 text-muted-foreground">
+            <p>Pregunta o pide algo. Sabe en qué módulo estás y qué fila tienes abierta.</p>
+            <div className="flex flex-wrap gap-2">
+              {["Qué tengo hoy", "Qué entra esta semana al Teik", "Listo 295"].map((x) => (
+                <button key={x} type="button" onClick={() => setTexto(x)} className="rounded-full border px-3 py-1 text-xs text-foreground hover:bg-accent">
+                  {x}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {entradas.map((e, i) => {
+          if (e.tipo === "persona")
+            return (
+              <p key={i} className="ml-10 rounded-lg bg-muted px-3 py-2 text-foreground">
+                {e.texto}
+              </p>
+            );
+          if (e.tipo === "asistente")
+            return (
+              <div key={i} className="space-y-1">
+                {e.herramientas.map((h, j) => (
+                  <p key={j} className="text-xs text-muted-foreground">
+                    {NOMBRES[h] ?? h}
+                  </p>
+                ))}
+                {e.texto ? (
+                  <p className="whitespace-pre-line text-foreground">{e.texto}</p>
+                ) : enviando && i === entradas.length - 1 ? (
+                  <p className="animate-pulse text-muted-foreground">Pensando</p>
+                ) : null}
+              </div>
+            );
+          if (e.tipo === "propuesta" && e.correo) return <TarjetaCorreo key={i} id={e.id} correo={e.correo} />;
+          if (e.tipo === "propuesta")
+            return (
+              <div key={i} className="space-y-2 rounded-lg border bg-card p-3">
+                <p className="text-xs font-medium text-muted-foreground">Por confirmar</p>
+                <p className="text-foreground">{e.resumen}</p>
+                {e.estado === "pendiente" ? (
+                  <div className="flex gap-2">
+                    <Button size="sm" className="bg-acento text-acento-foreground hover:bg-acento/90" onClick={() => void responder(e.id, true)}>
+                      Confirmar
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => void responder(e.id, false)}>
+                      Cancelar
+                    </Button>
+                  </div>
+                ) : (
+                  <p role="status" className="text-muted-foreground">
+                    {e.mensaje}
+                  </p>
+                )}
+              </div>
+            );
+          return (
+            <p key={i} role="status" className="text-xs text-muted-foreground">
+              {e.texto}
+            </p>
+          );
+        })}
+        <div ref={fondo} />
+      </div>
+      <form
+        className="border-t p-3"
+        onSubmit={(ev) => {
+          ev.preventDefault();
+          void enviar(texto);
+        }}
+      >
+        <div className="flex items-end gap-2 rounded-lg border bg-background p-2 focus-within:ring-2 focus-within:ring-ring/50">
+          <textarea
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void enviar(texto);
+              }
+            }}
+            rows={2}
+            placeholder="Escribe o dicta"
+            aria-label="Mensaje para el asistente"
+            className="flex-1 resize-none bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground"
+          />
+          <Button type="button" variant="ghost" size="icon" className="size-8" onClick={dictar} aria-pressed={escuchando} aria-label={escuchando ? "Parar el dictado" : "Dictar"}>
+            {escuchando ? <Square className="size-4" aria-hidden /> : <Mic className="size-4" aria-hidden />}
+          </Button>
+          <Button type="submit" size="icon" className="size-8 bg-acento text-acento-foreground hover:bg-acento/90" disabled={enviando || !texto.trim()} aria-label="Enviar">
+            <SendHorizontal className="size-4" aria-hidden />
+          </Button>
+        </div>
+      </form>
+    </aside>
   );
 }
