@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import type { Resultado } from "@/app/ajustes/acciones";
+import type { Resultado } from "@/app/(privado)/ajustes/acciones";
 import { Button } from "@/components/ui/button";
 
 /** Genera el enlace de invitación y lo muestra una sola vez para copiarlo. */
