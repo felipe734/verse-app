@@ -35,6 +35,8 @@ function tarea(clave: "trazabilidadVerse" | "trazabilidadCyC", r: RegistroAirtab
     fechaLimite: fecha(f[c.fechaLimite.id]),
     detalle: txt(f[c.detalle.id]),
     link: txt(f[c.link.id]),
+    linea: txt(f[c.linea.id]),
+    creado: r.createdTime ? new Date(r.createdTime) : null,
     corrida: ids(f[c.corrida.id]),
   };
 }

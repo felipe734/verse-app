@@ -3,12 +3,14 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { signOut } from "@/auth";
 import { Encabezado, Tarjeta } from "@/components/ajustes/encabezado";
+import { Item } from "@/components/hoy/item";
 import { Button } from "@/components/ui/button";
 import { db } from "@/db/cliente";
 import { sesionActual } from "@/lib/acceso/actual";
 import { sesionPorId } from "@/lib/acceso/sesion";
 import { TODAS, vistaHoy } from "@/lib/acceso/vista";
 import { auditar } from "@/lib/auditoria";
+import { hoyDe } from "@/lib/hoy/datos";
 
 export const metadata: Metadata = { title: "Hoy · Verse App" };
 
@@ -29,6 +31,9 @@ async function Panel({ searchParams }: { searchParams: Promise<Parametros> }) {
   const quien = otra ?? sesion;
   const vista = vistaHoy(quien, pedida);
   const extra = otra ? `&verComo=${otra.usuarioId}` : "";
+  const deEmpresas = vista.empresa === TODAS ? vista.empresas.map((e) => e.id) : vista.empresa ? [vista.empresa] : [];
+  const hoy = await hoyDe(db(), quien, deEmpresas);
+  const conEmpresa = vista.empresa === TODAS;
 
   return (
     <>
@@ -58,27 +63,37 @@ async function Panel({ searchParams }: { searchParams: Promise<Parametros> }) {
         })}
       </nav>
 
+      {hoy.secciones.map((sec) =>
+        sec.items.length === 0 ? null : (
+          <section key={sec.id} aria-label={sec.titulo}>
+            <h2 className="flex justify-between font-display text-[11px] tracking-[1.6px] text-muted-foreground">
+              <span>{sec.titulo.toUpperCase()}</span>
+              <span>{sec.items.length}</span>
+            </h2>
+            <div className="mt-1 divide-y divide-[var(--verse-filete-suave)]">
+              {sec.items.map((t) => (
+                <Item key={t.recId} t={t} conEmpresa={conEmpresa} />
+              ))}
+            </div>
+          </section>
+        ),
+      )}
+      {vista.grupos.length > 0 && hoy.total === 0 && <p>Nada pendiente para hoy.</p>}
+
       {vista.grupos.length === 0 ? (
         <p>Todavía no hay módulos asignados. Pídele acceso a Felipe.</p>
       ) : (
-        <div className="space-y-4">
-          <p className="text-muted-foreground">Hoy, Para aprobar y Sistema llegan en la entrega 3. Estos son los módulos que abre el acceso.</p>
-          {vista.grupos.map((g) => (
-            <section key={`${g.empresa}-${g.vertical}`}>
-              <h2 className="font-display text-[11px] tracking-[1.6px] text-muted-foreground">
-                {(vista.empresa === TODAS ? `${g.empresa} · ${g.vertical}` : g.vertical).toUpperCase()}
-              </h2>
-              <ul className="mt-1 divide-y divide-[var(--verse-filete-suave)]">
-                {g.modulos.map((m) => (
-                  <li key={m.id} className="py-2.5">
-                    <b className="text-foreground">{m.nombre}</b>
-                    <div className="text-[12.5px] text-muted-foreground">{m.descripcion}</div>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
-        </div>
+        <details className="text-[13.5px]">
+          <summary className="cursor-pointer font-display text-[11px] tracking-[1.6px] text-muted-foreground">TUS MÓDULOS</summary>
+          <div className="mt-2 space-y-3">
+            {vista.grupos.map((g) => (
+              <div key={`${g.empresa}-${g.vertical}`}>
+                <b className="text-foreground">{vista.empresa === TODAS ? `${g.empresa} · ${g.vertical}` : g.vertical}</b>
+                <div className="text-muted-foreground">{g.modulos.map((m) => m.nombre).join(" · ")}</div>
+              </div>
+            ))}
+          </div>
+        </details>
       )}
 
       <div className="flex items-center justify-between gap-3 border-t pt-4 text-[12.5px] text-muted-foreground">

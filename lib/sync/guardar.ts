@@ -50,6 +50,8 @@ export async function guardar(db: Db, clave: ClaveTabla, filas: RegistroAirtable
             fechaLimite: sql`excluded.fecha_limite`,
             detalle: sql`excluded.detalle`,
             link: sql`excluded.link`,
+            linea: sql`excluded.linea`,
+            creado: sql`excluded.creado`,
             corrida: sql`excluded.corrida`,
             actualizado: sql`now()`,
           },
@@ -83,4 +85,25 @@ export async function borrar(db: Db, clave: ClaveTabla, recIds: string[]): Promi
       .where(and(eq(registros.idBase, idBase), eq(registros.idTabla, idTabla), inArray(registros.recId, lote)));
     await db.delete(proyeccion).where(inArray(proyeccion.recId, lote));
   }
+}
+
+/**
+ * Rehace tareas y unidades desde la copia fiel (registros), sin llamar a Airtable.
+ * Corre en el build, para que un cambio en la proyección aplique a lo ya copiado.
+ */
+export async function reproyectar(db: Db): Promise<number> {
+  let total = 0;
+  for (const [clave, t] of Object.entries(TABLAS) as [ClaveTabla, (typeof TABLAS)[ClaveTabla]][]) {
+    const filas = await db
+      .select()
+      .from(registros)
+      .where(and(eq(registros.idBase, t.idBase), eq(registros.idTabla, t.idTabla)));
+    await guardar(
+      db,
+      clave,
+      filas.map((f) => ({ id: f.recId, createdTime: f.creadoEnAirtable.toISOString(), fields: f.campos })),
+    );
+    total += filas.length;
+  }
+  return total;
 }
