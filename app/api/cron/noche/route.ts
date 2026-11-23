@@ -56,6 +56,18 @@ export async function GET(request: Request) {
   }
 
   const informe = { resultados, webhooks, cola, llamadas, neon, errores };
+  // Resumen sin datos de negocio ni secretos: solo conteos, para verificar cada corrida en los logs de Vercel.
+  console.info(
+    "[cron/noche]",
+    JSON.stringify({
+      tablas: resultados.map((r) => ({ clave: r.clave, airtable: r.filasAirtable, copia: r.filasCopia, faltaban: r.faltaban, sobraban: r.sobraban, distintas: r.distintas, cuadra: r.cuadra })),
+      webhooks,
+      cola,
+      llamadas,
+      neonUsd: neon?.usdTotal ?? null,
+      errores,
+    }),
+  );
   await auditar(base, { autor: "sistema", accion: "sync.reconciliacion", detalle: JSON.stringify(informe) });
   return Response.json(informe, { status: errores.length ? 500 : 200 });
 }
