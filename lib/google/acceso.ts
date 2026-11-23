@@ -28,6 +28,17 @@ export class ErrorGoogle extends Error {
 
 const DRIVE = "https://www.googleapis.com/auth/drive";
 
+/** El motivo que da Google (sin tokens), para saber qué ajustar en la consola. */
+async function motivo(r: Response): Promise<string> {
+  try {
+    const cuerpo = (await r.json()) as { error?: { message?: string } | string; error_description?: string };
+    const m = typeof cuerpo.error === "string" ? (cuerpo.error_description ?? cuerpo.error) : cuerpo.error?.message;
+    return m ? `: ${m.slice(0, 300)}` : "";
+  } catch {
+    return "";
+  }
+}
+
 export function crearAcceso({ config, tokenOidc, alcances = [DRIVE], fetch: f = fetch }: OpcionesAcceso) {
   let enCache: { token: string; vence: number } | null = null;
 
@@ -47,7 +58,9 @@ export function crearAcceso({ config, tokenOidc, alcances = [DRIVE], fetch: f = 
         subjectToken: await tokenOidc(),
       }),
     });
-    if (!sts.ok) throw new ErrorGoogle(`Google STS respondió ${sts.status}. Revisa el pool vercel y el OIDC de Vercel.`, sts.status);
+    if (!sts.ok) {
+      throw new ErrorGoogle(`Google STS respondió ${sts.status}. Revisa el pool vercel y el OIDC de Vercel${await motivo(sts)}`, sts.status);
+    }
     const { access_token: federado } = (await sts.json()) as { access_token: string };
 
     const r = await f(
@@ -58,7 +71,7 @@ export function crearAcceso({ config, tokenOidc, alcances = [DRIVE], fetch: f = 
         body: JSON.stringify({ scope: alcances, lifetime: "3600s" }),
       },
     );
-    if (!r.ok) throw new ErrorGoogle(`Google no dejó actuar como la cuenta de servicio (${r.status}).`, r.status);
+    if (!r.ok) throw new ErrorGoogle(`Google no dejó actuar como la cuenta de servicio (${r.status})${await motivo(r)}`, r.status);
     const { accessToken, expireTime } = (await r.json()) as { accessToken: string; expireTime: string };
     enCache = { token: accessToken, vence: new Date(expireTime).getTime() };
     return accessToken;

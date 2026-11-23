@@ -95,6 +95,19 @@ describe("acceso a Google sin claves", () => {
     expect(llamadas).toHaveLength(2);
   });
 
+  it("incluye el motivo de Google cuando no deja actuar como la cuenta", async () => {
+    const f = async (url: string | URL | Request) =>
+      String(url).includes("sts.")
+        ? Response.json({ access_token: "federado" })
+        : Response.json({ error: { message: "Permission 'iam.serviceAccounts.getAccessToken' denied" } }, { status: 403 });
+    const token = crearAcceso({
+      config: { numeroProyecto: "1", pool: "vercel", proveedor: "vercel", cuentaServicio: "x@y.z" },
+      tokenOidc: async () => "t",
+      fetch: f as typeof fetch,
+    });
+    await expect(token()).rejects.toThrow("(403): Permission 'iam.serviceAccounts.getAccessToken' denied");
+  });
+
   it("explica qué revisar si Google rechaza el token de Vercel", async () => {
     const token = crearAcceso({
       config: { numeroProyecto: "1", pool: "vercel", proveedor: "vercel", cuentaServicio: "x@y.z" },

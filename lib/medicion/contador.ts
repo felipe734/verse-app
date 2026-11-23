@@ -29,6 +29,7 @@ export function crearContador() {
       for (const [b, n] of porBase) r[workspaceDe(b)] = (r[workspaceDe(b)] ?? 0) + n;
       return r;
     },
+    /** Suma a Postgres y vacía el contador: lee total() o porWorkspace() antes. */
     async volcar(db: Db, fecha = new Date()): Promise<void> {
       const dia = diaBogota(fecha);
       for (const [idBase, n] of porBase) {
