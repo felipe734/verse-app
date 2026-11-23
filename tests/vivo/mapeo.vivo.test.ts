@@ -5,10 +5,12 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { crearCliente } from "@/lib/airtable/cliente";
 import type { EsquemaTabla } from "@/lib/airtable/construir-mapeo";
+import { estaEnLaApp } from "@/lib/airtable/definicion";
 import { CATALOGO, TABLAS } from "@/lib/airtable/mapeo";
 
 const token = process.env.AIRTABLE_TOKEN;
 const esquemas = new Map<string, EsquemaTabla[]>();
+const catalogoApp = CATALOGO.filter((f) => estaEnLaApp(f.base));
 
 describe("mapeo contra Airtable", () => {
   beforeAll(async () => {
@@ -16,13 +18,13 @@ describe("mapeo contra Airtable", () => {
     const cliente = crearCliente({ token });
     const bases = new Set<string>([
       ...Object.values(TABLAS).map((t) => t.idBase),
-      ...CATALOGO.map((f) => f.idBase),
+      ...catalogoApp.map((f) => f.idBase),
     ]);
     for (const id of bases) esquemas.set(id, await cliente.esquema(id));
   }, 120_000);
 
-  it("cada tabla del catálogo existe", () => {
-    const faltan = CATALOGO.filter(
+  it("cada tabla del catálogo dentro de la app existe", () => {
+    const faltan = catalogoApp.filter(
       (f) => !esquemas.get(f.idBase)?.some((t) => t.id === f.idTabla),
     ).map((f) => `${f.base} / ${f.tabla} (${f.idTabla})`);
     expect(faltan).toEqual([]);

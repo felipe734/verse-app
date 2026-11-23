@@ -105,3 +105,10 @@ export const TABLAS_SINCRONIZADAS = {
 } as const satisfies Record<string, TablaDefinida>;
 
 export type ClaveTabla = keyof typeof TABLAS_SINCRONIZADAS;
+
+/** Bases fuera del alcance de la app (doc del plan). El token de Airtable no las incluye. */
+export const BASES_FUERA_DE_LA_APP = ["FELIPE", "5. VENTAS 54-47", "6. OTROS"] as const;
+
+export function estaEnLaApp(base: string): boolean {
+  return !(BASES_FUERA_DE_LA_APP as readonly string[]).includes(base);
+}
