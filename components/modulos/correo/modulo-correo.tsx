@@ -3,6 +3,7 @@ import type { Sesion } from "@/lib/acceso/permisos";
 import { bandejaDe, cuentasLegibles } from "@/lib/correo/bandeja";
 import { cuentaPorId } from "@/lib/correo/cuentas";
 import { nivelEnCuenta } from "@/lib/correo/redactar";
+import { ErrorComposio } from "@/lib/correo/composio";
 import { composioServidor } from "@/lib/servidor/composio";
 import { EncabezadoModulo } from "../encabezado";
 import { Bandeja } from "./bandeja";
@@ -26,7 +27,27 @@ export async function ModuloCorreo({ sesion, empresa, cuenta }: { sesion: Sesion
     );
   }
   const elegida = cuenta && cuentas.some((c) => c.id === cuenta) ? cuenta : null;
-  const b = await bandejaDe(cliente, sesion, { empresa, cuenta: elegida ?? undefined });
+  let b: Awaited<ReturnType<typeof bandejaDe>>;
+  try {
+    b = await bandejaDe(cliente, sesion, { empresa, cuenta: elegida ?? undefined });
+  } catch (e) {
+    console.error("[correo]", e instanceof Error ? e.message : e);
+    const clave = e instanceof ErrorComposio && (e.estado === 401 || e.estado === 403);
+    return (
+      <>
+        <EncabezadoModulo titulo="Correo" />
+        <div role="alert" className="mx-auto flex max-w-sm flex-col items-center gap-3 px-6 py-24 text-center">
+          <span className="flex size-10 items-center justify-center rounded-full bg-muted">
+            <Mail className="size-5 text-muted-foreground" aria-hidden />
+          </span>
+          <p className="font-medium">{clave ? "Composio rechazó la clave" : "El correo no respondió"}</p>
+          <p className="text-sm text-muted-foreground">
+            {clave ? "Revisa COMPOSIO_API_KEY en Vercel: debe ser una API key del proyecto de Composio donde están conectadas las cuentas." : "Intenta de nuevo en un momento."}
+          </p>
+        </div>
+      </>
+    );
+  }
   const colas = b.colas.map((q) => ({
     id: q.id,
     items: q.items.map((x) => ({

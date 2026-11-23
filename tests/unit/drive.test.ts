@@ -149,3 +149,10 @@ describe("cliente de archivos", () => {
     await expect(c.bajar("https://evil.example/archivo", 10)).rejects.toThrow("almacenamiento");
   });
 });
+
+describe("errores de Composio", () => {
+  it("el error trae el motivo que da Composio, con la clave ya enmascarada", async () => {
+    const fetcher = (async () => Response.json({ error: { message: "Invalid API key: ak_**abcd", slug: "APIKey_InvalidAPIKey" } }, { status: 401 })) as unknown as typeof fetch;
+    await expect(clienteComposio("clave", fetcher).cuentasGmail()).rejects.toThrow("Composio respondió 401 al listar cuentas: Invalid API key: ak_**abcd");
+  });
+});
