@@ -8,6 +8,7 @@ import { hoyBogota } from "@/lib/hoy/clasificar";
 import { crearContador } from "@/lib/medicion/contador";
 import { cerrarTurno, datosIngreso, iniciarTurno, reportar, type DatosIngreso, type Resultado } from "@/lib/ruta/ruta";
 import { clienteServidor } from "@/lib/servidor/airtable";
+import { rutaValida, urlDeLectura } from "@/lib/servidor/blob";
 
 const RUTA = "/verse/host/ruta";
 
@@ -64,17 +65,18 @@ const ReporteEntrada = z.object({
   necesitaImplementos: z.boolean(),
   implementos: z.string().max(1000).optional(),
   lavanderia: z.string().max(1000).optional(),
-  video: z.object({ url: z.string().url().startsWith("https://"), nombre: z.string().max(200) }).optional(),
+  video: z.object({ ruta: z.string().max(400), nombre: z.string().max(200) }).optional(),
 });
 
 export async function reportarAccion(entrada: unknown): Promise<Resultado> {
   const r = ReporteEntrada.safeParse(entrada);
   if (!r.success) return { ok: false, mensaje: "Revisa el reporte" };
-  // El video solo puede venir del almacenamiento de la app.
-  if (r.data.video && !new URL(r.data.video.url).hostname.endsWith(".public.blob.vercel-storage.com")) return { ok: false, mensaje: "El video no se subió bien. Súbelo otra vez" };
+  // El video solo puede venir del almacenamiento de la app, en su carpeta.
+  if (r.data.video && !rutaValida(r.data.video.ruta, "servicios")) return { ok: false, mensaje: "El video no se subió bien. Súbelo otra vez" };
   const s = await sesionActual();
   try {
-    const res = await conCliente((a) => reportar(db(), a, s, hoyBogota(), r.data));
+    const video = r.data.video ? { url: await urlDeLectura(r.data.video.ruta), nombre: r.data.video.nombre } : undefined;
+    const res = await conCliente((a) => reportar(db(), a, s, hoyBogota(), { ...r.data, video }));
     revalidatePath(RUTA);
     return res;
   } catch (e) {

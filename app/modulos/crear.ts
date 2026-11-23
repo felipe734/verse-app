@@ -10,6 +10,7 @@ import { crearFila, formularioCreacion, type CampoNuevo } from "@/lib/modulos/cr
 import { pestanaDe } from "@/lib/modulos/finanzas";
 import { ubicar } from "@/lib/modulos/registro";
 import { clienteServidor } from "@/lib/servidor/airtable";
+import { rutaValida, urlDeLectura } from "@/lib/servidor/blob";
 import type { RefModulo } from "./editar";
 
 async function contexto(ref: RefModulo) {
@@ -40,7 +41,16 @@ export async function crearAccion(ref: RefModulo, valores: Record<string, unknow
   if (!valores || typeof valores !== "object") return { ok: false, mensaje: "Datos inválidos" };
   const contador = crearContador();
   try {
-    const r = await crearFila(db(), clienteServidor(contador), c.s, c.u.empresa, c.u.modulo.id, c.crear, valores);
+    // Un archivo llega como su ruta en el almacén; a Airtable va una URL de lectura firmada.
+    const datos: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(valores)) {
+      if (v && typeof v === "object" && "ruta" in v) {
+        const a = v as { ruta: unknown; nombre?: unknown };
+        if (!rutaValida(a.ruta, "soportes")) return { ok: false, mensaje: "El soporte no se subió bien. Súbelo otra vez" };
+        datos[k] = { url: await urlDeLectura(a.ruta), nombre: String(a.nombre ?? "soporte") };
+      } else datos[k] = v;
+    }
+    const r = await crearFila(db(), clienteServidor(contador), c.s, c.u.empresa, c.u.modulo.id, c.crear, datos);
     await contador.volcar(db());
     if (r.ok) revalidatePath(c.ruta);
     return r;

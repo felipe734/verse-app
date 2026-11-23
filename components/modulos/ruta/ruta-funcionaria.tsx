@@ -1,6 +1,6 @@
 "use client";
 
-import { upload } from "@vercel/blob/client";
+import { uploadPresigned } from "@vercel/blob/client";
 import { Check, Clock, KeyRound, Loader2, Video } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -48,17 +48,17 @@ function Reporte({ parada, video, alCerrar }: { parada: Parada; video: boolean; 
 
   async function enviar() {
     setEnviando(true);
-    let subido: { url: string; nombre: string } | undefined;
+    let subido: { ruta: string; nombre: string } | undefined;
     try {
       if (archivo) {
         setAvance(0);
-        const b = await upload(`servicios/${parada.recId}-${archivo.name}`, archivo, {
-          access: "public",
+        const b = await uploadPresigned(`servicios/${parada.recId}-${archivo.name.replace(/[^\w.-]/g, "_")}`, archivo, {
+          access: "private",
           handleUploadUrl: "/api/ruta/video",
           multipart: archivo.size > 50 * 1024 * 1024,
           onUploadProgress: (p) => setAvance(Math.round(p.percentage)),
         });
-        subido = { url: b.url, nombre: archivo.name };
+        subido = { ruta: b.pathname, nombre: archivo.name };
       }
     } catch {
       setEnviando(false);

@@ -14,6 +14,8 @@ Segunda parte del plan de edición, aprobado por Felipe el 2026-11-23.
 
 ## Soporte
 
+El almacén es privado y conectado por OIDC (`BLOB_STORE_ID`). La subida usa una URL firmada y Airtable recibe una URL de lectura firmada por 24 horas (`lib/servidor/blob.ts`).
+
 - La foto o el PDF van directo del celular a Vercel Blob, con un token que solo da `/api/finanzas/soporte` a quien edita Finanzas de esa empresa.
 - Solo acepta imagen o PDF, de hasta 15 MB, y el nombre del archivo lleva un sufijo aleatorio.
 - La URL pasa a Airtable, que guarda su propia copia.

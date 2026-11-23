@@ -1,6 +1,6 @@
 "use client";
 
-import { upload } from "@vercel/blob/client";
+import { uploadPresigned } from "@vercel/blob/client";
 import { Loader2, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -44,8 +44,8 @@ export function CrearFila({ refModulo, titulo, subidas }: { refModulo: RefModulo
         const f = archivos[c.campo];
         delete datos[c.campo];
         if (!f) continue;
-        const b = await upload(`soportes/${refModulo.empresa}-${f.name}`, f, { access: "public", handleUploadUrl: "/api/finanzas/soporte", clientPayload: refModulo.empresa });
-        datos[c.campo] = { url: b.url, nombre: f.name };
+        const b = await uploadPresigned(`soportes/${refModulo.empresa}-${f.name.replace(/[^\w.-]/g, "_")}`, f, { access: "private", handleUploadUrl: "/api/finanzas/soporte", clientPayload: refModulo.empresa });
+        datos[c.campo] = { ruta: b.pathname, nombre: f.name };
       }
     } catch {
       setOcupado(false);

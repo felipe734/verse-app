@@ -6,6 +6,7 @@ import { fechaLarga } from "@/lib/hoy/fechas";
 import { crearContador } from "@/lib/medicion/contador";
 import { funcionariaDe, funcionarias, rutaDe, turnoAbierto, type Parada, type Turno } from "@/lib/ruta/ruta";
 import { clienteServidor } from "@/lib/servidor/airtable";
+import { subidasActivas } from "@/lib/servidor/blob";
 import { Badge } from "@/components/ui/badge";
 import { EncabezadoModulo } from "../encabezado";
 import { RutaFuncionaria } from "./ruta-funcionaria";
@@ -53,7 +54,7 @@ export async function ModuloRuta({ sesion }: { sesion: Sesion }) {
           paradas={propia.paradas}
           turno={propia.turno}
           codigos={sensibles(sesion, "verse", "verse-host").codigos}
-          video={Boolean(process.env.BLOB_READ_WRITE_TOKEN)}
+          video={subidasActivas()}
         />
       </>
     );
