@@ -18,6 +18,7 @@ const esquema = z.object({
   // Interruptores: se activan solo con el valor exacto "1". Texto libre para que un valor
   // distinto no tumbe todas las rutas al validar el entorno.
   WEBHOOKS_ACTIVOS: z.string().optional(),
+  LECTURA_COPIA: z.string().optional(),
   CORRIDAS_ACTIVAS: z.string().optional(),
 });
 

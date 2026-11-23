@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 export async function leerAlertas(sesion: Sesion, modulo?: string): Promise<Alerta[]> {
   const contador = crearContador();
-  const r = await alertasDe({ airtable: clienteServidor(contador), s: sesion, estructura: sesion.estructura ?? ESTRUCTURA, hoy: hoyBogota() }, modulo).catch(() => []);
+  const r = await alertasDe({ airtable: clienteServidor(contador), s: sesion, estructura: sesion.estructura ?? ESTRUCTURA, hoy: hoyBogota(), db: db() }, modulo).catch(() => []);
   await contador.volcar(db()).catch(() => undefined);
   return r;
 }

@@ -10,7 +10,8 @@ import { ESTRUCTURA } from "@/lib/acceso/estructura";
 import { REGISTRO, segmentoVertical } from "@/lib/modulos/registro";
 import { leerTabla } from "@/lib/modulos/tabla";
 import { leerFecha } from "@/lib/vistas/fechas";
-import { leerPeriodo } from "@/lib/vistas/periodo";
+import { leerPeriodo, sumarDias } from "@/lib/vistas/periodo";
+import { copiaLista, reservasPorUnidad } from "@/lib/copias/leer";
 
 export interface Resultado {
   tipo: "pendiente" | "unidad" | "reserva" | "registro";
@@ -69,7 +70,20 @@ export async function buscarGlobal(db: Db, s: Sesion, texto: string, airtable?: 
     }
   }
 
-  if (airtable && q.length >= 3 && puede(s, "verse", "host-operacion", "ver")) {
+  const reservasDeCopia =
+    q.length >= 3 && puede(s, "verse", "host-operacion", "ver") && (await copiaLista(db, ["reservasHost"]).catch(() => false))
+      ? await reservasPorUnidad(db, q, hoyBogota(), sumarDias(hoyBogota(), 8)).catch(() => null)
+      : null;
+  for (const x of reservasDeCopia ?? []) {
+    salida.push({
+      tipo: "reserva",
+      id: x.recId,
+      titulo: `${x.unidad} · ${x.ingreso} a ${x.salida}`,
+      detalle: "Reserva",
+      pregunta: `Dame el detalle de la reserva de ${x.unidad} del ${x.ingreso}.`,
+    });
+  }
+  if (!reservasDeCopia && airtable && q.length >= 3 && puede(s, "verse", "host-operacion", "ver")) {
     const hoy = hoyBogota();
     const r = await buscarReservas(airtable, s, { unidad: q, desde: hoy }, hoy).catch(() => null);
     if (r && "reservas" in r) {

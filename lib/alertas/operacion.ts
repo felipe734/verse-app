@@ -5,6 +5,8 @@ import { REGISTRO, segmentoVertical } from "@/lib/modulos/registro";
 import { leerFecha } from "@/lib/vistas/fechas";
 import { sumarDias } from "@/lib/vistas/periodo";
 import { ids } from "@/lib/modulos/tablas-equipo";
+import type { Db } from "@/db/cliente";
+import { COPIAS_ALERTAS, copiaLista, filasPorFecha, igual, nombresLiving, nombresOperacion, vacio, valor, vinculo } from "@/lib/copias/leer";
 
 /**
  * Alertas de la operación: lo que se cae entre las sillas y hoy solo aparece en los briefs.
@@ -32,6 +34,10 @@ interface Contexto {
   s: Sesion;
   estructura: EmpresaBase[];
   hoy: string;
+  /** Con la base, las alertas de reservas, limpiezas y cobros se leen de la copia si está lista. */
+  db?: Db;
+  /** Se calcula una vez en alertasDe. */
+  copia?: boolean;
 }
 
 /** Ruta del módulo de un tipo, si la persona lo ve. */
@@ -47,6 +53,16 @@ function lugar(c: Contexto, empresa: string, tipo: string, consulta = ""): strin
 async function reservasSinLimpieza(c: Contexto): Promise<Alerta | null> {
   const href = lugar(c, "verse", "limpiezas");
   if (!href || !lugar(c, "verse", "operacion")) return null;
+  if (c.copia && c.db) {
+    const [salidas, limpiezas] = await Promise.all([
+      filasPorFecha(c.db, "reservasHost", "salida", { desde: c.hoy, hasta: sumarDias(c.hoy, 4) }),
+      filasPorFecha(c.db, "limpiezasHost", "fecha", { desde: c.hoy, hasta: sumarDias(c.hoy, 5) }),
+    ]);
+    const hechas = new Set(limpiezas.flatMap((l) => vinculo(valor(l, "limpiezasHost", "unidad")).map((u) => `${u}|${l.dia}`)));
+    const faltan = salidas.flatMap((r) => vinculo(valor(r, "reservasHost", "unidad")).filter((u) => !hechas.has(`${u}|${r.dia}`)).map((u) => ({ u, fecha: r.dia })));
+    const nombres = await nombresOperacion(c.db, faltan.map((f) => f.u));
+    return armarSinLimpieza(faltan.map((f) => ({ unidad: nombres.get(f.u) || "Unidad", fecha: f.fecha })), href);
+  }
   const R = ids("6. OPERACION 360", "RESERVAS");
   const L = ids("6. OPERACION 360", "LIMPIEZA");
   const desde = num(c.hoy);
@@ -59,13 +75,17 @@ async function reservasSinLimpieza(c: Contexto): Promise<Alerta | null> {
   const faltan = salidas
     .map((r) => ({ unidad: texto(r.fields["Unidad"]), fecha: leerFecha(texto(r.fields["Salida"]))?.fecha }))
     .filter((r) => r.unidad && r.fecha && !hechas.has(`${r.unidad}|${r.fecha}`));
+  return armarSinLimpieza(faltan as { unidad: string; fecha: string }[], href);
+}
+
+function armarSinLimpieza(faltan: { unidad: string; fecha: string }[], href: string): Alerta | null {
   if (!faltan.length) return null;
   return {
     id: "reservas-sin-limpieza",
     modulo: "limpiezas",
     nivel: "alta",
     titulo: faltan.length === 1 ? "1 salida sin limpieza" : `${faltan.length} salidas sin limpieza`,
-    detalle: `En los próximos 3 días: ${lista(faltan.map((f) => `${f.unidad} (${Number(f.fecha!.slice(8))})`))}`,
+    detalle: `En los próximos 3 días: ${lista(faltan.map((f) => `${f.unidad} (${Number(f.fecha.slice(8))})`))}`,
     cuenta: faltan.length,
     href,
   };
@@ -75,20 +95,29 @@ async function reservasSinLimpieza(c: Contexto): Promise<Alerta | null> {
 async function limpiezasSinFuncionaria(c: Contexto): Promise<Alerta | null> {
   const href = lugar(c, "verse", "limpiezas", "?v=lista&quien=todo&f.Funcionario=(vac%C3%ADo)");
   if (!href) return null;
-  const L = ids("6. OPERACION 360", "LIMPIEZA");
-  const filas = await c.airtable.consultar(L.idBase, L.idTabla, {
-    campos: ["Unidad", "Fecha"],
-    formula: `AND({Fecha}, {Funcionario} = BLANK(), ${dia("Fecha")} >= ${num(c.hoy)}, ${dia("Fecha")} <= ${num(sumarDias(c.hoy, 7))})`,
-    max: 50,
-  });
-  if (!filas.length) return null;
+  let unidadesSin: string[];
+  if (c.copia && c.db) {
+    const filas = await filasPorFecha(c.db, "limpiezasHost", "fecha", { desde: c.hoy, hasta: sumarDias(c.hoy, 8) }, [vacio("limpiezasHost", "funcionario")]);
+    const ids_ = filas.map((f) => vinculo(valor(f, "limpiezasHost", "unidad"))[0] ?? "");
+    const nombres = await nombresOperacion(c.db, ids_.filter(Boolean));
+    unidadesSin = ids_.map((u) => nombres.get(u) || "Unidad");
+  } else {
+    const L = ids("6. OPERACION 360", "LIMPIEZA");
+    const filas = await c.airtable.consultar(L.idBase, L.idTabla, {
+      campos: ["Unidad", "Fecha"],
+      formula: `AND({Fecha}, {Funcionario} = BLANK(), ${dia("Fecha")} >= ${num(c.hoy)}, ${dia("Fecha")} <= ${num(sumarDias(c.hoy, 7))})`,
+      max: 50,
+    });
+    unidadesSin = filas.map((f) => texto(f.fields["Unidad"]));
+  }
+  if (!unidadesSin.length) return null;
   return {
     id: "limpiezas-sin-funcionaria",
     modulo: "limpiezas",
     nivel: "alta",
-    titulo: filas.length === 1 ? "1 limpieza sin funcionaria" : `${filas.length} limpiezas sin funcionaria`,
-    detalle: `Esta semana: ${lista(filas.map((f) => texto(f.fields["Unidad"])))}`,
-    cuenta: filas.length,
+    titulo: unidadesSin.length === 1 ? "1 limpieza sin funcionaria" : `${unidadesSin.length} limpiezas sin funcionaria`,
+    detalle: `Esta semana: ${lista(unidadesSin)}`,
+    cuenta: unidadesSin.length,
     href,
   };
 }
@@ -97,16 +126,26 @@ async function limpiezasSinFuncionaria(c: Contexto): Promise<Alerta | null> {
 async function cobrosVencidos(c: Contexto): Promise<Alerta | null> {
   const href = lugar(c, "verse", "cobros", "?v=lista&f.Estado=POR%20PAGAR");
   if (!href) return null;
-  const I = ids("7. LIVING", "INGRESOS");
-  const filas = await c.airtable.consultar(I.idBase, I.idTabla, { campos: ["Unidad"], formula: `AND({Estado} = 'POR PAGAR', {Fecha}, ${dia("Fecha")} < ${num(c.hoy)})`, max: 50 });
-  if (!filas.length) return null;
+  let vencidos: string[];
+  if (c.copia && c.db) {
+    const filas = await filasPorFecha(c.db, "ingresosLivingCopia", "fecha", { hasta: c.hoy }, [igual("ingresosLivingCopia", "estado", "POR PAGAR")]);
+    // En INGRESOS "Unidad" es texto; si algún día pasa a vínculo, se resuelve con las unidades de Living.
+    const crudos = filas.map((f) => valor(f, "ingresosLivingCopia", "unidad"));
+    const nombres = await nombresLiving(c.db, crudos.flatMap(vinculo));
+    vencidos = crudos.map((v) => (typeof v === "string" ? v : nombres.get(vinculo(v)[0] ?? "")) || "Unidad");
+  } else {
+    const I = ids("7. LIVING", "INGRESOS");
+    const filas = await c.airtable.consultar(I.idBase, I.idTabla, { campos: ["Unidad"], formula: `AND({Estado} = 'POR PAGAR', {Fecha}, ${dia("Fecha")} < ${num(c.hoy)})`, max: 50 });
+    vencidos = filas.map((f) => texto(f.fields["Unidad"]));
+  }
+  if (!vencidos.length) return null;
   return {
     id: "cobros-vencidos",
     modulo: "cobros",
     nivel: "alta",
-    titulo: filas.length === 1 ? "1 cobro vencido" : `${filas.length} cobros vencidos`,
-    detalle: lista(filas.map((f) => texto(f.fields["Unidad"]))),
-    cuenta: filas.length,
+    titulo: vencidos.length === 1 ? "1 cobro vencido" : `${vencidos.length} cobros vencidos`,
+    detalle: lista(vencidos),
+    cuenta: vencidos.length,
     href,
   };
 }
@@ -165,6 +204,7 @@ const REGLAS: { modulo: string; f: (c: Contexto) => Promise<Alerta | null> }[] =
 
 /** Todas las alertas, o solo las de un módulo (sin consultar las demás). */
 export async function alertasDe(c: Contexto, modulo?: string): Promise<Alerta[]> {
+  if (c.db && c.copia === undefined) c = { ...c, copia: await copiaLista(c.db, [...COPIAS_ALERTAS, "unidadesLiving"]).catch(() => false) };
   const todas = await Promise.all(
     REGLAS.filter((r) => !modulo || r.modulo === modulo).map(({ f }) =>
       f(c).catch((e) => {

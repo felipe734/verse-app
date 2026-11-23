@@ -1456,6 +1456,97 @@ export const MAPEO = {
           "tipo": "singleSelect"
         }
       }
+    },
+    "reservasHost": {
+      "base": "6. OPERACION 360",
+      "tabla": "RESERVAS",
+      "workspace": "Verse",
+      "idBase": "appOJopQhmyaON16G",
+      "idTabla": "tblVrwSgN0doLGXuq",
+      "campos": {
+        "unidad": {
+          "id": "fldx9Lhb6x8ub9OF2",
+          "nombre": "Unidad",
+          "tipo": "multipleRecordLinks"
+        },
+        "ingreso": {
+          "id": "fldljxOpEpmoJdulL",
+          "nombre": "Ingreso",
+          "tipo": "date"
+        },
+        "salida": {
+          "id": "fldTSJWyU4vVXne5p",
+          "nombre": "Salida",
+          "tipo": "date"
+        }
+      }
+    },
+    "limpiezasHost": {
+      "base": "6. OPERACION 360",
+      "tabla": "LIMPIEZA",
+      "workspace": "Verse",
+      "idBase": "appOJopQhmyaON16G",
+      "idTabla": "tblTmsKaL9UuVWEap",
+      "campos": {
+        "unidad": {
+          "id": "fldfCDSwX42IXyNIr",
+          "nombre": "Unidad",
+          "tipo": "multipleRecordLinks"
+        },
+        "fecha": {
+          "id": "fld3a5oAln5BSYhcY",
+          "nombre": "Fecha",
+          "tipo": "dateTime"
+        },
+        "funcionario": {
+          "id": "fld4C24g5wTVYEOrn",
+          "nombre": "Funcionario",
+          "tipo": "singleSelect"
+        }
+      }
+    },
+    "ingresosLivingCopia": {
+      "base": "7. LIVING",
+      "tabla": "INGRESOS",
+      "workspace": "Verse",
+      "idBase": "appzaNZaaYKfdZObP",
+      "idTabla": "tbl78wGPkauBzuxHE",
+      "campos": {
+        "unidad": {
+          "id": "fldr2PwRDzVjM9E4O",
+          "nombre": "Unidad",
+          "tipo": "singleLineText"
+        },
+        "fecha": {
+          "id": "fldbbrCdOxpOxIFqS",
+          "nombre": "Fecha",
+          "tipo": "date"
+        },
+        "estado": {
+          "id": "fldRb7d840duChklm",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        }
+      }
+    },
+    "unidadesOperacionCopia": {
+      "base": "6. OPERACION 360",
+      "tabla": "UNIDADES",
+      "workspace": "Verse",
+      "idBase": "appOJopQhmyaON16G",
+      "idTabla": "tbl6276d73BpmrCWS",
+      "campos": {
+        "unidad": {
+          "id": "fldld4r7ZV92sFll0",
+          "nombre": "Unidad",
+          "tipo": "singleLineText"
+        },
+        "edificio": {
+          "id": "fldsrL3hmkzraoINO",
+          "nombre": "Edificio",
+          "tipo": "singleLineText"
+        }
+      }
     }
   },
   "escritura": {
