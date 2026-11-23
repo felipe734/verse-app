@@ -12,4 +12,6 @@ Ejecución: Vercel Cron a las 2:30 Bogotá en `/api/cron/respaldo`. Una tarea po
 
 Retención: se conservan las 30 carpetas de fecha más recientes y el día 1 de los 12 meses más recientes. Las demás van a la papelera de la unidad, que Google vacía a los 30 días. Carpetas que no son fechas no se tocan.
 
-Pendiente en otros PR: adjuntos y videos semanales; restauración a tabla nueva; Corrida "Respaldo" en TRAZABILIDAD.
+Adjuntos: cada adjunto de las tablas respaldadas se registra en `respaldo_adjuntos` por su ID y se guarda una sola vez en `Adjuntos / base / tabla / <id>-<nombre>`, fuera de las carpetas de fecha (la retención no lo toca). Se descarga de Airtable y se sube a Drive por flujo, sin cargarlo en memoria. Si el enlace guardado tiene más de una hora, se pide uno nuevo a Airtable; si el adjunto ya no existe, se olvida. Los videos de SERVICIOS solo se registran los domingos. El día no se cierra hasta guardar los adjuntos pendientes; la primera vez puede tomar varias vueltas.
+
+Pendiente en otro PR: restauración a tabla nueva; Corrida "Respaldo" en TRAZABILIDAD.

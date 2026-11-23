@@ -137,6 +137,27 @@ describe("cliente de Drive", () => {
   });
 });
 
+describe("subida por flujo", () => {
+  it("abre la sesión con el tamaño y manda el archivo como flujo", async () => {
+    let cuerpo = "";
+    let inicio: Headers | undefined;
+    const f = async (url: string | URL | Request, init?: RequestInit) => {
+      const u = String(url);
+      if (u.includes("uploadType=resumable")) {
+        inicio = new Headers(init?.headers);
+        return new Response(null, { headers: { location: "https://subida/9" } });
+      }
+      cuerpo = await new Response(init?.body as ReadableStream).text();
+      return Response.json({ id: "video1" });
+    };
+    const drive = crearDrive({ token: async () => "t", idUnidad: "u", fetch: f as typeof fetch });
+    const flujo = new Response("contenido-largo").body!;
+    expect(await drive.subirFlujo("aseo.mp4", "c", flujo, "video/mp4", 15)).toBe("video1");
+    expect(inicio?.get("x-upload-content-length")).toBe("15");
+    expect(cuerpo).toBe("contenido-largo");
+  });
+});
+
 describe("corrida del respaldo", () => {
   const catalogo = [fila({}), fila({ tabla: "OTRA", idTabla: "tblBBBBBBBBBBBBBB" })];
 
@@ -159,7 +180,7 @@ describe("corrida del respaldo", () => {
     expect(await db.select().from(respaldoTareas)).toHaveLength(2);
 
     const r = await procesarDia({ db, airtable: airtableConDatos(), drive, idUnidad: "unidad" }, "2026-11-22", 60_000);
-    expect(r).toEqual({ hechas: 2, fallidas: 0, pendientes: 0, terminado: true });
+    expect(r).toEqual({ hechas: 2, fallidas: 0, pendientes: 0, adjuntosGuardados: 0, adjuntosPendientes: 0, terminado: true });
 
     const rutas = drive.archivos.map((a) => `${drive.ruta(a.padre)}/${a.name}`);
     expect(rutas).toContain("unidad/2026-11-22/BASE PRUEBA/TAREAS.json");

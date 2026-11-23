@@ -21,6 +21,10 @@ export class DriveFalso implements Drive {
     this.archivos.push({ name: nombre, padre, contenido: typeof contenido === "string" ? contenido : "<bytes>", tipo });
     return `archivo${++this.n}`;
   }
+  async subirFlujo(nombre: string, padre: string, flujo: ReadableStream<Uint8Array>, tipo: string) {
+    const contenido = await new Response(flujo).text();
+    return this.subir(nombre, padre, contenido, tipo);
+  }
   async aPapelera(id: string) {
     const c = this.carpetasPorId.get(id);
     if (c) c.papelera = true;
