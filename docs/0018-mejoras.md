@@ -102,3 +102,11 @@ Regla general: **todo abre en lo actual y en lo tuyo**.
 - El servidor acepta la hora del toque solo si no es futura ni de más de 12 horas atrás. Si no, usa la hora de llegada. Todo queda en AUDITORIA como cualquier otra escritura.
 - Lo que el servidor rechace al llegar (por ejemplo, un turno ya cerrado) se avisa en pantalla y sale de la cola.
 - Límite: la página tiene que haberse abierto con señal al menos una vez en la sesión. Abrir la app desde cero sin conexión requiere un service worker con caché de páginas, que queda para una siguiente versión.
+
+## 11. Salud y uso
+
+- **Uso de la app.** Cada vez que alguien abre Inicio o un módulo se suma una visita en `uso_pantallas`: persona, pantalla y día, sin más datos. En Sistema, solo el Maestro ve el bloque "Uso de la app en 7 días", con las pantallas más abiertas, cuántas personas las usan y las visitas y días activos de cada persona. Sirve para saber qué se usa, qué no y a quién acompañar.
+- **`/api/salud`.** Responde si la base de datos, Airtable y Composio contestan, con la versión desplegada. Es pública pero no trae datos. Da 503 si falla la base o Airtable. Composio solo avisa, porque el correo puede estar apagado sin que la app se caiga. Guarda la respuesta 30 segundos.
+- **Monitor.** `.github/workflows/salud.yml` la consulta cada 30 minutos. Si falla dos veces seguidas, abre un issue con la etiqueta `salud` (o comenta el que ya está abierto). Cuando vuelve a responder bien, lo cierra. GitHub avisa por correo a quien vigila el repositorio.
+- **Registros.** El plan Hobby guarda los registros de Vercel una hora y no permite enviarlos a otro servicio (eso requiere Pro). Por eso el monitor deja la huella en el issue.
+- **Impresión.** La regla de impresión ahora oculta solo la barra superior (`.barra-superior`), no todos los `header`. Antes también ocultaba los títulos de los bloques.

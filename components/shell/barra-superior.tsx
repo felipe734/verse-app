@@ -101,7 +101,7 @@ function Avisos({ d }: { d: DatosShell }) {
 export function BarraSuperior({ d }: { d: DatosShell }) {
   const { alternarAsistente, asistente, asistenteHabilitado } = useShell();
   return (
-    <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:px-4">
+    <header className="barra-superior sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/80 md:px-4">
       <SidebarTrigger className="-ml-1" aria-label="Abrir o cerrar el menú" />
       <Separator orientation="vertical" className="mr-1 data-[orientation=vertical]:h-4" />
       <Ruta d={d} />

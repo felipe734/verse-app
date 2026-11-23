@@ -1,0 +1,41 @@
+name: salud
+
+# Cada 30 minutos revisa app.verseliving.com/api/salud. Si falla dos veces seguidas abre
+# (o comenta) un issue con la etiqueta "salud"; cuando vuelve, lo cierra.
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consultar salud
+        id: salud
+        run: |
+          for intento in 1 2; do
+            codigo=$(curl -s -o cuerpo.json -w '%{http_code}' --max-time 30 https://app.verseliving.com/api/salud || echo 000)
+            [ "$codigo" = "200" ] && break
+            sleep 60
+          done
+          echo "codigo=$codigo" >> "$GITHUB_OUTPUT"
+          echo "cuerpo=$(tr -d '\n' < cuerpo.json 2>/dev/null | head -c 500)" >> "$GITHUB_OUTPUT"
+      - name: Abrir o cerrar issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          CODIGO: ${{ steps.salud.outputs.codigo }}
+          CUERPO: ${{ steps.salud.outputs.cuerpo }}
+        run: |
+          gh label create salud --color B60205 --description "Monitor de salud" 2>/dev/null || true
+          abierto=$(gh issue list --label salud --state open --json number -q '.[0].number')
+          if [ "$CODIGO" = "200" ]; then
+            [ -n "$abierto" ] && gh issue close "$abierto" -c "Volvió a responder bien: $CUERPO"
+            exit 0
+          fi
+          texto="La app respondió $CODIGO en /api/salud. Respuesta: \`$CUERPO\`"
+          if [ -n "$abierto" ]; then gh issue comment "$abierto" -b "$texto"; else gh issue create --label salud -t "La app no está sana" -b "$texto"; fi

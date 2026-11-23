@@ -16,6 +16,7 @@ import { hoyBogota } from "@/lib/hoy/clasificar";
 import { hoyDe } from "@/lib/hoy/datos";
 import { fechaLarga } from "@/lib/hoy/fechas";
 import { inicioDe, navegacion, REGISTRO } from "@/lib/modulos/registro";
+import { registrarUso } from "@/lib/medicion/uso";
 
 export const metadata: Metadata = { title: `Inicio · ${PLATFORM_NAME}` };
 
@@ -26,6 +27,7 @@ const saludo = () => {
 
 async function Contenido() {
   const sesion = await sesionActual();
+  await registrarUso(db(), sesion.usuarioId, "/inicio", hoyBogota());
   const estructura = sesion.estructura ?? ESTRUCTURA;
   const visibles = empresasVisibles(sesion);
   const porEmpresa = visibles.map((id) => ({ id, nombre: estructura.find((e) => e.id === id)?.nombre ?? id, grupos: navegacion(sesion, estructura, id) }));
