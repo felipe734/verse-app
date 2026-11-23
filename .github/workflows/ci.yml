@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main]
+  schedule:
+    - cron: "0 11 * * *" # 6:00 en Bogotá: revisa que ningún ID del mapeo haya desaparecido
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -33,3 +35,31 @@ jobs:
           name: playwright-report
           path: playwright-report
           retention-days: 7
+
+  mapeo-vivo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      AIRTABLE_TOKEN: ${{ secrets.AIRTABLE_TOKEN }}
+    steps:
+      - id: token
+        run: |
+          if [ -z "$AIRTABLE_TOKEN" ]; then
+            echo "::warning::Falta el secreto AIRTABLE_TOKEN en GitHub. La prueba en vivo del mapeo no corrió."
+            echo "hay=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "hay=si" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.token.outputs.hay == 'si'
+        uses: actions/checkout@v4
+      - if: steps.token.outputs.hay == 'si'
+        uses: pnpm/action-setup@v4
+      - if: steps.token.outputs.hay == 'si'
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - if: steps.token.outputs.hay == 'si'
+        run: pnpm install --frozen-lockfile
+      - if: steps.token.outputs.hay == 'si'
+        run: pnpm test:vivo
