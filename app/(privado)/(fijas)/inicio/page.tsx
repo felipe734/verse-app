@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { AlertasInicio } from "@/components/inicio/alertas";
+import { ResumenDia } from "@/components/inicio/resumen";
 import { EsqueletoTarjeta, TarjetaModulo } from "@/components/inicio/tarjeta-modulo";
 import { EncabezadoModulo, EsqueletoModulo } from "@/components/modulos/encabezado";
 import { db } from "@/db/cliente";
@@ -37,6 +38,11 @@ async function Contenido() {
   const cuenta = (id: string) => hoy?.secciones.find((s) => s.id === id)?.items.length ?? 0;
   const porAprobar = aprobaciones.filter((a) => !a.aprobadaEnApp && a.puedeResponder).length;
   const nombre = (sesion.nombreAirtable ?? sesion.correo.split("@")[0] ?? "").split(" ")[0];
+  const lineas = (id: string, titulo: string) => {
+    const items = hoy?.secciones.find((x) => x.id === id)?.items ?? [];
+    return items.length ? `${titulo}: ${items.slice(0, 6).map((t) => t.asunto ?? "").filter(Boolean).join("; ")}` : null;
+  };
+  const baseResumen = [lineas("critico", "Críticos"), lineas("vencido", "Vencidos"), lineas("hoy", "Para hoy"), porAprobar ? `Para aprobar: ${porAprobar}` : null].filter(Boolean).join("\n");
 
   return (
     <>
@@ -57,6 +63,9 @@ async function Contenido() {
             ))}
           </section>
         )}
+        <Suspense fallback={null}>
+          <ResumenDia sesion={sesion} nombre={nombre ?? ""} base={baseResumen} />
+        </Suspense>
         <Suspense fallback={<div className="h-16 animate-pulse rounded-lg bg-muted/50" aria-hidden />}>
           <AlertasInicio sesion={sesion} />
         </Suspense>
