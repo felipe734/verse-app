@@ -102,6 +102,28 @@ export const TABLAS_SINCRONIZADAS = {
       webProducto: "Web · Producto",
     },
   },
+  // Copias para leer sin ir a Airtable (alertas, Inicio). Solo los campos que se leen de la copia.
+  reservasHost: {
+    base: "6. OPERACION 360",
+    tabla: "RESERVAS",
+    campos: { unidad: "Unidad", ingreso: "Ingreso", salida: "Salida" },
+  },
+  limpiezasHost: {
+    base: "6. OPERACION 360",
+    tabla: "LIMPIEZA",
+    campos: { unidad: "Unidad", fecha: "Fecha", funcionario: "Funcionario" },
+  },
+  ingresosLivingCopia: {
+    base: "7. LIVING",
+    tabla: "INGRESOS",
+    campos: { unidad: "Unidad", fecha: "Fecha", estado: "Estado" },
+  },
+  /** Nombres de las unidades a las que apuntan RESERVAS y LIMPIEZA. Solo de noche, sin webhook. */
+  unidadesOperacionCopia: {
+    base: "6. OPERACION 360",
+    tabla: "UNIDADES",
+    campos: { unidad: "Unidad", edificio: "Edificio" },
+  },
 } as const satisfies Record<string, TablaDefinida>;
 
 export type ClaveTabla = keyof typeof TABLAS_SINCRONIZADAS;
