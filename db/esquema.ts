@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import type { Casillas } from "../lib/acceso/casillas";
 import {
   bigserial,
   boolean,
@@ -11,6 +12,8 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
+  uuid,
 } from "drizzle-orm/pg-core";
 
 const ahora = () => timestamp({ withTimezone: true }).notNull().defaultNow();
@@ -216,3 +219,73 @@ export const respaldoAdjuntos = pgTable(
   },
   (t) => [index("adjuntos_pendientes").on(t.estado)],
 );
+
+/** Empresas de la app (no son workspaces de Airtable). Editables desde Ajustes. */
+export const empresas = pgTable("empresas", {
+  id: text().primaryKey(),
+  nombre: text().notNull(),
+  orden: integer().notNull().default(0),
+  cuentas: jsonb().$type<{ id: string; nombre: string }[]>().notNull().default([]),
+  creado: ahora(),
+});
+
+export const verticales = pgTable("verticales", {
+  id: text().primaryKey(),
+  empresaId: text("empresa_id").notNull().references(() => empresas.id),
+  nombre: text().notNull(),
+  orden: integer().notNull().default(0),
+});
+
+export const modulos = pgTable("modulos", {
+  id: text().primaryKey(),
+  verticalId: text("vertical_id").notNull().references(() => verticales.id),
+  nombre: text().notNull(),
+  descripcion: text().notNull().default(""),
+  orden: integer().notNull().default(0),
+});
+
+export const plantillas = pgTable("plantillas", {
+  id: text().primaryKey(),
+  empresaId: text("empresa_id").notNull().references(() => empresas.id),
+  nombre: text().notNull(),
+  casillas: jsonb().$type<Casillas>().notNull(),
+});
+
+export const usuarios = pgTable(
+  "usuarios",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    nombre: text().notNull(),
+    /** Correo de Google, en minúsculas. */
+    correo: text().notNull(),
+    celular: text(),
+    estado: text().$type<"invitado" | "activo" | "suspendido">().notNull().default("invitado"),
+    maestro: boolean().notNull().default(false),
+    nombreAirtable: text("nombre_airtable"),
+    creado: ahora(),
+    ultimoIngreso: timestamp("ultimo_ingreso", { withTimezone: true }),
+  },
+  (t) => [uniqueIndex("usuarios_correo").on(t.correo)],
+);
+
+/** Usuario × empresa, con sus casillas. */
+export const accesos = pgTable(
+  "accesos",
+  {
+    usuarioId: uuid("usuario_id").notNull().references(() => usuarios.id),
+    empresaId: text("empresa_id").notNull().references(() => empresas.id),
+    plantillaId: text("plantilla_id").references(() => plantillas.id),
+    casillas: jsonb().$type<Casillas>().notNull(),
+    actualizado: ahora(),
+  },
+  (t) => [primaryKey({ columns: [t.usuarioId, t.empresaId] })],
+);
+
+export const invitaciones = pgTable("invitaciones", {
+  /** Solo se guarda el hash del enlace. */
+  hash: text().primaryKey(),
+  usuarioId: uuid("usuario_id").notNull().references(() => usuarios.id),
+  vence: timestamp({ withTimezone: true }).notNull(),
+  usada: timestamp({ withTimezone: true }),
+  creado: ahora(),
+});

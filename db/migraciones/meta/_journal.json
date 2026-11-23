@@ -29,6 +29,13 @@
       "when": 1795398637879,
       "tag": "0003_clumsy_wendigo",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1795401006207,
+      "tag": "0004_perfect_hairball",
+      "breakpoints": true
     }
   ]
 }
