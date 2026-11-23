@@ -7,7 +7,7 @@ import type { Columna, DefTabla } from "./tabla";
  * (RNT, FONTUR) y cuentas bancarias de propietarios y contratistas no se piden nunca.
  */
 
-function ids(base: string, tabla: string) {
+export function ids(base: string, tabla: string) {
   const sinTilde = (x: string) => x.normalize("NFD").replace(/[̀-ͯ]/g, "");
   const f = CATALOGO.find((x) => sinTilde(x.base) === sinTilde(base) && x.tabla === tabla);
   if (!f) throw new Error(`${base} / ${tabla} no está en el catálogo`);

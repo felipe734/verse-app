@@ -120,3 +120,20 @@ test("el Maestro abre el detalle de una fila de tabla", async ({ page }) => {
   await page.locator("tbody tr").first().click();
   await expect(page.getByRole("dialog").getByText("A pagar", { exact: true })).toBeVisible();
 });
+
+test("Finanzas de Verse muestra el cierre y cambia de pestaña", async ({ page }) => {
+  await page.goto("/verse/general/finanzas");
+  await expect(page.getByRole("heading", { name: "Finanzas", level: 1 })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Cierre del mes" }).getByText("Margen neto")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Movimientos" })).toHaveAttribute("aria-current", "page");
+  await page.getByRole("link", { name: "Cruces" }).click();
+  await expect(page).toHaveURL(/pestana=cruces/);
+  await expect(page.getByRole("link", { name: "Cruces" })).toHaveAttribute("aria-current", "page");
+});
+
+test("Finanzas C&C no muestra números de cuenta", async ({ page, isMobile }) => {
+  await page.goto("/cyc/general/finanzas?pestana=referencias");
+  await expect(page.getByRole("link", { name: "Referencias bancarias" })).toHaveAttribute("aria-current", "page");
+  if (!isMobile) await expect(page.getByRole("button", { name: "Tipo de cuenta" })).toBeVisible();
+  await expect(page.getByText("# CUENTA")).toHaveCount(0);
+});
