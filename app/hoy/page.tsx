@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { signOut } from "@/auth";
 import { Encabezado, Tarjeta } from "@/components/ajustes/encabezado";
+import { Botones, Deslizable } from "@/components/hoy/acciones";
 import { Item } from "@/components/hoy/item";
 import { Button } from "@/components/ui/button";
 import { db } from "@/db/cliente";
@@ -11,6 +12,7 @@ import { sesionPorId } from "@/lib/acceso/sesion";
 import { TODAS, vistaHoy } from "@/lib/acceso/vista";
 import { auditar } from "@/lib/auditoria";
 import { hoyDe } from "@/lib/hoy/datos";
+import { accionPendiente } from "./acciones";
 
 export const metadata: Metadata = { title: "Hoy · Verse App" };
 
@@ -71,9 +73,16 @@ async function Panel({ searchParams }: { searchParams: Promise<Parametros> }) {
               <span>{sec.items.length}</span>
             </h2>
             <div className="mt-1 divide-y divide-[var(--verse-filete-suave)]">
-              {sec.items.map((t) => (
-                <Item key={t.recId} t={t} conEmpresa={conEmpresa} />
-              ))}
+              {sec.items.map((t) => {
+                // En "Ver como" todo es de solo lectura.
+                const activo = t.puedeEditar && !otra;
+                const ejecutar = accionPendiente.bind(null, t.recId);
+                return (
+                  <Deslizable key={t.recId} ejecutar={ejecutar} hoy={hoy.hoy} activo={activo}>
+                    <Item t={t} conEmpresa={conEmpresa} acciones={activo ? <Botones ejecutar={ejecutar} hoy={hoy.hoy} /> : undefined} />
+                  </Deslizable>
+                );
+              })}
             </div>
           </section>
         ),
