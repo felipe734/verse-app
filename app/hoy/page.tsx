@@ -5,6 +5,7 @@ import { signOut } from "@/auth";
 import { Encabezado, Tarjeta } from "@/components/ajustes/encabezado";
 import { Botones, Deslizable } from "@/components/hoy/acciones";
 import { Item } from "@/components/hoy/item";
+import { ActivarAvisos } from "@/components/avisos/activar";
 import { Button } from "@/components/ui/button";
 import { db } from "@/db/cliente";
 import { sesionActual } from "@/lib/acceso/actual";
@@ -114,6 +115,8 @@ async function Panel({ searchParams }: { searchParams: Promise<Parametros> }) {
           </div>
         </details>
       )}
+
+      {process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && !otra && <ActivarAvisos clavePublica={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY} />}
 
       <div className="flex items-center justify-between gap-3 border-t pt-4 text-[12.5px] text-muted-foreground">
         <span>

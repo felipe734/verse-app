@@ -41,3 +41,12 @@ test("sin sesión, Ajustes manda a entrar", async ({ page }) => {
   await expect(page).toHaveURL(/\/entrar/);
   await expect(page.getByText("Nuevo usuario")).toHaveCount(0);
 });
+
+test("la app es instalable: manifiesto e ícono", async ({ request }) => {
+  const m = await request.get("/manifest.webmanifest");
+  expect(m.ok()).toBe(true);
+  expect(await m.json()).toMatchObject({ name: "Verse App", start_url: "/hoy", display: "standalone" });
+  const icono = await request.get("/icono/192");
+  expect(icono.headers()["content-type"]).toContain("image/png");
+  expect((await request.get("/icono/77")).status()).toBe(404);
+});

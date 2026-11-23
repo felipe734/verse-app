@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db/cliente";
 import { syncEstado } from "@/db/esquema";
 import { crearContador } from "@/lib/medicion/contador";
+import { avisarCambios } from "@/lib/notificaciones/avisos";
+import { enviarWebPush } from "@/lib/notificaciones/webpush";
 import { clienteServidor } from "@/lib/servidor/airtable";
 import { aplicarAviso, firmaValida } from "@/lib/sync/webhooks";
 
@@ -31,7 +33,8 @@ export async function POST(request: Request) {
     try {
       const r = await aplicarAviso(base, clienteServidor(contador), webhookId);
       await contador.volcar(base);
-      console.info("[webhook]", JSON.stringify({ clave: estado.clave, ...r }));
+      const avisos = r.clave?.startsWith("trazabilidad") ? await avisarCambios(base, r.tocadas, enviarWebPush()) : null;
+      console.info("[webhook]", JSON.stringify({ clave: estado.clave, guardadas: r.guardadas, borradas: r.borradas, avisos }));
     } catch (e) {
       console.error("[webhook]", estado.clave, e instanceof Error ? e.message : "error");
       await base
