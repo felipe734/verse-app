@@ -59,7 +59,8 @@ export function Calendario({ def, filas, periodo, hoy, alAbrir }: { def: DefCale
   );
   const unidades = useMemo(() => [...new Set(reservas.map((r) => r.unidad))].sort((a, b) => a.localeCompare(b, "es", { numeric: true })), [reservas]);
   const colores = useMemo(() => [...new Set(reservas.map((r) => r.color).filter(Boolean))].sort(), [reservas]);
-  const noches = reservas.reduce((s, r) => s + ds.filter((d) => d >= r.ini && d < r.fin).length, 0);
+  // Noches ocupadas por unidad sin contar dos veces una noche con reservas que se pisan.
+  const noches = unidades.reduce((s, u) => s + ds.filter((d) => reservas.some((r) => r.unidad === u && d >= r.ini && d < r.fin)).length, 0);
   const ocupacion = unidades.length ? Math.round((noches / (unidades.length * ds.length)) * 100) : 0;
 
   const llegadas = reservas.filter((r) => r.ini === hoy);
@@ -70,8 +71,8 @@ export function Calendario({ def, filas, periodo, hoy, alAbrir }: { def: DefCale
       {periodo.actual && (
         <section aria-label="Hoy" className="grid gap-2 sm:grid-cols-2">
           {[
-            ["Llegan hoy", llegadas],
-            ["Salen hoy", salidas],
+            [def.textos?.entran ?? "Llegan hoy", llegadas],
+            [def.textos?.salen ?? "Salen hoy", salidas],
           ].map(([titulo, lista]) => (
             <div key={titulo as string} className="rounded-lg border bg-card p-3">
               <p className="text-xs text-muted-foreground">
@@ -95,7 +96,7 @@ export function Calendario({ def, filas, periodo, hoy, alAbrir }: { def: DefCale
 
       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
         <span>
-          Ocupación de las unidades con reservas: <strong className="text-foreground tabular-nums">{ocupacion}%</strong>
+          {def.textos?.ocupacion ?? "Ocupación de las unidades con reservas"}: <strong className="text-foreground tabular-nums">{ocupacion}%</strong>
         </span>
         {colores.map((c) => (
           <span key={c} className="inline-flex items-center gap-1">
