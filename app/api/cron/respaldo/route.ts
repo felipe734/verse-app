@@ -7,6 +7,8 @@ import { auditar } from "@/lib/auditoria";
 import { registrarCorrida } from "@/lib/corridas";
 import { detalleRespaldo } from "@/lib/corridas-texto";
 import { crearContador, diaBogota } from "@/lib/medicion/contador";
+import { avisoDeFallaApp, enviarAvisos } from "@/lib/notificaciones/avisos";
+import { enviarWebPush } from "@/lib/notificaciones/webpush";
 import { prepararDia, procesarDia } from "@/lib/respaldo/correr";
 import { clienteServidor, esCronAutorizado, urlProduccion } from "@/lib/servidor/airtable";
 import { driveRespaldo } from "@/lib/servidor/google";
@@ -81,6 +83,7 @@ export async function GET(request: Request) {
     const mensaje = errorTexto(e);
     console.error("[cron/respaldo]", fecha, vuelta, mensaje);
     await auditar(base, { autor: "sistema", accion: "respaldo.error", detalle: mensaje });
+    await enviarAvisos(base, [avisoDeFallaApp(`respaldo:${fecha}`, "Falló el respaldo de Airtable", mensaje)], enviarWebPush()).catch(() => undefined);
     await registrarCorrida(base, clienteServidor(), {
       proceso: "Respaldo",
       asunto: "Respaldo de Airtable falló",

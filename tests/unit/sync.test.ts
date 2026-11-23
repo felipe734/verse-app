@@ -131,7 +131,7 @@ describe("webhooks", () => {
     ];
 
     const r = await aplicarAviso(db, at, estado!.webhookId!);
-    expect(r).toEqual({ guardadas: 1, borradas: 1 });
+    expect(r).toEqual({ guardadas: 1, borradas: 1, clave: "trazabilidadVerse", tocadas: [nueva.id] });
     const t = await db.select().from(tareas);
     expect(t.map((x) => x.asunto)).toEqual(["Nueva"]);
     const [despues] = await db.select().from(syncEstado).where(eq(syncEstado.clave, "trazabilidadVerse"));

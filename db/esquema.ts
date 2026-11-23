@@ -291,3 +291,31 @@ export const invitaciones = pgTable("invitaciones", {
   usada: timestamp({ withTimezone: true }),
   creado: ahora(),
 });
+
+/** Dispositivos donde cada persona activó los avisos (Web Push). */
+export const suscripcionesPush = pgTable(
+  "suscripciones_push",
+  {
+    id: bigserial({ mode: "number" }).primaryKey(),
+    usuarioId: uuid("usuario_id").notNull().references(() => usuarios.id),
+    endpoint: text().notNull(),
+    p256dh: text().notNull(),
+    auth: text().notNull(),
+    creado: ahora(),
+    ultimoEnvio: timestamp("ultimo_envio", { withTimezone: true }),
+    activa: boolean().notNull().default(true),
+  },
+  (t) => [uniqueIndex("suscripciones_endpoint").on(t.endpoint)],
+);
+
+/** Cada aviso sale una sola vez por fila y motivo. */
+export const avisos = pgTable("avisos", {
+  clave: text().primaryKey(),
+  tipo: text().$type<"critico" | "aprobar" | "falla">().notNull(),
+  recId: text("rec_id"),
+  destinatarios: integer().notNull().default(0),
+  enviados: integer().notNull().default(0),
+  /** true = registrado sin enviar (no había claves VAPID). */
+  sembrado: boolean().notNull().default(false),
+  creado: ahora(),
+});

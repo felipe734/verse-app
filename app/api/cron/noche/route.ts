@@ -8,6 +8,8 @@ import { detalleApp } from "@/lib/corridas-texto";
 import { leerEntorno } from "@/lib/entorno";
 import { crearContador, diaBogota } from "@/lib/medicion/contador";
 import { guardarCostoNeon, leerCostoNeon, type CostoNeon } from "@/lib/medicion/neon";
+import { avisoDeFallaApp, enviarAvisos } from "@/lib/notificaciones/avisos";
+import { enviarWebPush } from "@/lib/notificaciones/webpush";
 import { clienteServidor, esCronAutorizado, urlWebhook } from "@/lib/servidor/airtable";
 import { reconciliar, type ResultadoReconciliacion } from "@/lib/sync/reconciliar";
 import { CLAVES } from "@/lib/sync/tablas";
@@ -86,6 +88,11 @@ export async function GET(request: Request) {
   }).catch((e: unknown) => errores.push(`corrida: ${e instanceof Error ? e.message : "error"}`));
 
   await contador.volcar(base);
+
+  if (!todoBien) {
+    const motivo = respaldoMal ? `El respaldo del ${ayer} ${estadoRespaldo}` : errores.join("; ");
+    await enviarAvisos(base, [avisoDeFallaApp(`noche:${hoy}`, "La sincronización de la app tiene fallas", motivo)], enviarWebPush()).catch(() => undefined);
+  }
 
   const informe = { resultados, webhooks, cola, llamadas, neon, respaldoAyer: estadoRespaldo, errores };
   // Resumen sin datos de negocio ni secretos: solo conteos, para verificar cada corrida en los logs de Vercel.

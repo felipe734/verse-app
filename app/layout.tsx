@@ -17,6 +17,8 @@ const lato = Lato({
 export const metadata: Metadata = {
   title: "Verse App",
   description: "Operación de Verse Group y C&C Group sobre Airtable",
+  appleWebApp: { capable: true, title: "Verse", statusBarStyle: "default" },
+  icons: { apple: "/icono/180" },
 };
 
 export const viewport: Viewport = {

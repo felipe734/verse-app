@@ -85,9 +85,13 @@ export function firmaValida(cuerpo: string, encabezado: string | null, macSecret
  * Procesa un aviso de webhook: lee los cambios desde el último cursor, vuelve a traer
  * las filas tocadas y borra las destruidas. Así la copia queda igual a Airtable.
  */
-export async function aplicarAviso(db: Db, cliente: ClienteAirtable, webhookId: string): Promise<{ guardadas: number; borradas: number }> {
+export async function aplicarAviso(
+  db: Db,
+  cliente: ClienteAirtable,
+  webhookId: string,
+): Promise<{ guardadas: number; borradas: number; clave?: ClaveTabla; tocadas: string[] }> {
   const [estado] = await db.select().from(syncEstado).where(eq(syncEstado.webhookId, webhookId));
-  if (!estado) return { guardadas: 0, borradas: 0 };
+  if (!estado) return { guardadas: 0, borradas: 0, tocadas: [] };
   const clave = estado.clave as ClaveTabla;
   const { idBase, idTabla } = TABLAS[clave];
 
@@ -95,6 +99,7 @@ export async function aplicarAviso(db: Db, cliente: ClienteAirtable, webhookId: 
   let hayMas = true;
   let guardadas = 0;
   let borradas = 0;
+  const todas: string[] = [];
   while (hayMas) {
     const r = await cliente.payloads(idBase, webhookId, cursor);
     const tocadas = new Set<string>();
@@ -113,11 +118,12 @@ export async function aplicarAviso(db: Db, cliente: ClienteAirtable, webhookId: 
     await borrar(db, clave, [...destruidas]);
     guardadas += filas.length;
     borradas += destruidas.size;
+    todas.push(...filas.map((f) => f.id));
 
     cursor = r.cursor;
     hayMas = r.mightHaveMore;
     await db.update(syncEstado).set({ webhookCursor: cursor, error: null }).where(eq(syncEstado.clave, clave));
   }
   await db.update(syncEstado).set({ filas: sql`(select count(*) from registros where id_tabla = ${idTabla} and id_base = ${idBase})::int` }).where(eq(syncEstado.clave, clave));
-  return { guardadas, borradas };
+  return { guardadas, borradas, clave, tocadas: todas };
 }
