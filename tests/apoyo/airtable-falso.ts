@@ -67,6 +67,16 @@ export class AirtableFalso implements ClienteAirtable {
     this.fallar();
     return structuredClone(this.poner(idBase, idTabla, campos));
   }
+  tablasCreadas: { idBase: string; nombre: string; campos: import("@/lib/airtable/cliente").CampoNuevo[]; id: string }[] = [];
+  async crearTabla(idBase: string, nombre: string, campos: import("@/lib/airtable/cliente").CampoNuevo[]) {
+    const id = `tbl${String(this.tablasCreadas.length + 1).padStart(14, "R")}`;
+    this.tablasCreadas.push({ idBase, nombre, campos, id });
+    return { id };
+  }
+  async crearVarios(idBase: string, idTabla: string, filas: Record<string, unknown>[]) {
+    for (const f of filas) this.poner(idBase, idTabla, f);
+    return filas.length;
+  }
   async crearWebhook(idBase: string, idTabla: string, url: string) {
     const id = `ach${String(this.webhooks.length + 1).padStart(14, "0")}`;
     this.webhooks.push({ idBase, idTabla, url, id });

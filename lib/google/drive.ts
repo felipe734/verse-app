@@ -17,6 +17,9 @@ export interface Drive {
   /** Sube un archivo grande por flujo, sin cargarlo en memoria. */
   subirFlujo(nombre: string, padre: string, flujo: ReadableStream<Uint8Array>, tipo: string, bytes?: number): Promise<string>;
   aPapelera(id: string): Promise<void>;
+  /** Busca un archivo (no carpeta) por nombre dentro de una carpeta. */
+  archivo(nombre: string, padre: string): Promise<string | null>;
+  descargarTexto(id: string): Promise<string>;
 }
 
 const comillas = (s: string) => s.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
@@ -100,6 +103,19 @@ export function crearDrive({
       const r = await f(ubicacion, { method: "PUT", headers: { "Content-Type": tipo }, body: new Blob([cuerpo as Uint8Array<ArrayBuffer>]) });
       if (!r.ok) throw new ErrorGoogle(`Drive respondió ${r.status} al subir ${nombre}`, r.status);
       return ((await r.json()) as { id: string }).id;
+    },
+
+    async archivo(nombre, padre) {
+      const q = new URLSearchParams({
+        q: [`'${comillas(padre)}' in parents`, `name='${comillas(nombre)}'`, `mimeType!='${CARPETA}'`, "trashed=false"].join(" and "),
+        fields: "files(id,name)",
+      });
+      const r = (await (await pedir(`${API}/files?${q}&${enUnidad}`)).json()) as { files: ArchivoDrive[] };
+      return r.files[0]?.id ?? null;
+    },
+
+    async descargarTexto(id) {
+      return (await pedir(`${API}/files/${id}?alt=media&supportsAllDrives=true`)).text();
     },
 
     async aPapelera(id) {

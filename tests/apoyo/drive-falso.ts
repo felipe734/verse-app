@@ -25,6 +25,13 @@ export class DriveFalso implements Drive {
     const contenido = await new Response(flujo).text();
     return this.subir(nombre, padre, contenido, tipo);
   }
+  async archivo(nombre: string, padre: string) {
+    const i = this.archivos.findIndex((a) => a.name === nombre && a.padre === padre);
+    return i === -1 ? null : `idx${i}`;
+  }
+  async descargarTexto(id: string) {
+    return this.archivos[Number(id.replace("idx", ""))]!.contenido;
+  }
   async aPapelera(id: string) {
     const c = this.carpetasPorId.get(id);
     if (c) c.papelera = true;
