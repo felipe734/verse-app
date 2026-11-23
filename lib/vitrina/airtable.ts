@@ -2,8 +2,10 @@ import type { ClienteAirtable, RegistroAirtable } from "@/lib/airtable/cliente";
 
 /** Airtable de solo lectura para la vitrina: filas inventadas con los campos pedidos. */
 export function airtableVitrina(): ClienteAirtable {
+  const DINERO = new Set(["TOTAL INGRESOS", "CONTRIBUCIÓN TOTAL", "OVERHEAD COSTO", "MARGEN NETO", "Débito", "Crédito", "Egreso"]);
   const valor = (campo: string, i: number): string => {
     const c = campo.toLowerCase();
+    if (DINERO.has(campo)) return `$${(campo === "MARGEN NETO" ? 4_200_000 - i * 310_000 : 38_000_000 - i * 1_250_000).toLocaleString("es-CO")}`;
     if (/fecha|ingreso|salida|inicio|fin|día|dia|corte/.test(c)) return `${(i % 27) + 1}/11/2026`;
     if (/valor|total|monto|canon|pago|tot|aseo|alojamiento|precio|saldo|costo/.test(c)) return `$${(450000 + i * 37500).toLocaleString("es-CO")}`;
     if (/estado/.test(c)) return ["Activo", "Pendiente", "Hecho"][i % 3]!;
@@ -22,7 +24,8 @@ export function airtableVitrina(): ClienteAirtable {
       return Array.from({ length: 8 }, (_, i): RegistroAirtable => ({
         id: `recVITRINATAB${String(i).padStart(4, "0")}`,
         createdTime: "2026-11-01T00:00:00.000Z",
-        fields: Object.fromEntries(o.campos.map((c: string) => [c, valor(c, i)])),
+        // El cierre (AGREGADO) trae un mes por fila.
+        fields: Object.fromEntries(o.campos.map((c: string) => [c, c === "Fecha" && o.campos.includes("MARGEN NETO") ? `1/${10 - i}/2026` : valor(c, i)])),
       }));
     },
     esquema: no,

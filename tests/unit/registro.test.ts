@@ -27,11 +27,11 @@ describe("registro de módulos", () => {
     const g = navegacion(maestro, ESTRUCTURA, "verse");
     expect(g.map((x) => x.nombre)).toEqual(["General", "Host", "Living"]);
     expect(hrefs(maestro, "verse")).toEqual([
-      "/verse/general/hoy", "/verse/general/aprobar", "/verse/general/correo", "/verse/general/equipo", "/verse/general/sistema",
+      "/verse/general/hoy", "/verse/general/aprobar", "/verse/general/correo", "/verse/general/finanzas", "/verse/general/equipo", "/verse/general/sistema",
       "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/unidades", "/verse/host/liquidaciones", "/verse/host/alistamiento", "/verse/host/comercial",
       "/verse/living/unidades", "/verse/living/contratos", "/verse/living/cobros", "/verse/living/comercial",
     ]);
-    expect(hrefs(maestro, "cyc")).toEqual(["/cyc/general/hoy", "/cyc/general/aprobar", "/cyc/general/correo", "/cyc/general/sistema", "/cyc/obra/actas", "/cyc/obra/pagos", "/cyc/obra/contratistas", "/cyc/obra/calidad"]);
+    expect(hrefs(maestro, "cyc")).toEqual(["/cyc/general/hoy", "/cyc/general/aprobar", "/cyc/general/correo", "/cyc/general/finanzas", "/cyc/general/sistema", "/cyc/obra/actas", "/cyc/obra/pagos", "/cyc/obra/contratistas", "/cyc/obra/calidad"]);
   });
 
   it("un módulo sin construir no aparece en la barra ni se puede abrir, pero sí en Ajustes como no disponible", () => {
@@ -50,7 +50,7 @@ describe("registro de módulos", () => {
   describe("por plantilla, nada fuera de su acceso", () => {
     const esperado: Record<string, string[]> = {
       "administrador-verse": [
-        "/verse/general/hoy", "/verse/general/correo", "/verse/general/sistema",
+        "/verse/general/hoy", "/verse/general/correo", "/verse/general/finanzas", "/verse/general/sistema",
         "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/unidades", "/verse/host/liquidaciones", "/verse/host/alistamiento", "/verse/host/comercial",
         "/verse/living/unidades", "/verse/living/contratos", "/verse/living/cobros", "/verse/living/comercial",
       ],

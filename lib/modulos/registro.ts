@@ -1,6 +1,7 @@
 import { puede, type Sesion } from "@/lib/acceso/permisos";
 import type { EmpresaBase } from "@/lib/acceso/estructura";
 import { veAprobar } from "@/lib/hoy/aprobar";
+import { PESTANAS, type Pestana } from "./finanzas";
 import type { DefTabla } from "./tabla";
 import { TABLAS_EQUIPO } from "./tablas-equipo";
 
@@ -33,6 +34,8 @@ export interface DefModulo {
   descripcion?: string;
   /** Módulo de tabla: lista sobre una tabla de Airtable leída en el momento (lib/modulos/tabla.ts). */
   tabla?: DefTabla;
+  /** Módulo con pestañas: cada una una tabla; se lee solo la abierta (lib/modulos/finanzas.ts). */
+  pestanas?: Pestana[];
 }
 
 export const REGISTRO: DefModulo[] = [
@@ -51,7 +54,16 @@ export const REGISTRO: DefModulo[] = [
   },
   { tipo: "correo", nombre: "Correo", icono: "mail", segmento: "correo", fuentes: ["Gmail por Composio"], construido: true },
   { tipo: "sistema", nombre: "Sistema", icono: "activity", segmento: "sistema", fuentes: ["TRAZABILIDAD", "Postgres"], construido: true },
-  { tipo: "finanzas", nombre: "Finanzas", icono: "landmark", segmento: "finanzas", fuentes: ["AGREGADO", "CRUCES", "EXTRACTOS", "OVERHEAD"], construido: false },
+  {
+    tipo: "finanzas",
+    nombre: "Finanzas",
+    icono: "landmark",
+    segmento: "finanzas",
+    fuentes: ["AGREGADO", "CRUCES", "EXTRACTOS", "MOVIMIENTOS", "OVERHEAD", "REPORTES", "CAJA MENOR VERSE", "GLOBAL VERSE", "MOVIMIENTOS VERSE"],
+    construido: true,
+    descripcion: "Cierre del mes, bancos, cruces, overhead y caja menor",
+    pestanas: PESTANAS["finanzas"],
+  },
   { tipo: "equipo", nombre: "Equipo", icono: "users", segmento: "equipo", fuentes: ["CONTROL HORAS", "OBJETIVOS", "NOMINA"], construido: true, descripcion: "Control de horas de las últimas dos semanas", tabla: TABLAS_EQUIPO["equipo"] },
   { tipo: "operacion", nombre: "Operación", icono: "calendar-days", segmento: "operacion", fuentes: ["RESERVAS", "HUESPEDES", "ADICIONALES"], construido: true, descripcion: "Reservas de ayer a dos semanas", tabla: TABLAS_EQUIPO["operacion"] },
   { tipo: "limpiezas", nombre: "Limpiezas", icono: "sparkles", segmento: "limpiezas", fuentes: ["LIMPIEZA", "SERVICIOS"], construido: true, descripcion: "Limpiezas de las últimas dos semanas y la próxima", tabla: TABLAS_EQUIPO["limpiezas"] },
@@ -65,7 +77,16 @@ export const REGISTRO: DefModulo[] = [
   { tipo: "cobros", nombre: "Cobros", icono: "wallet", segmento: "cobros", fuentes: ["INGRESOS", "VL"], construido: true, descripcion: "Cánones de los últimos dos meses", tabla: TABLAS_EQUIPO["cobros"] },
   { tipo: "balcony", nombre: "Balcony PH", icono: "hotel", segmento: "balcony", fuentes: ["EDIFICIO BALCONY PH"], construido: false },
   { tipo: "comercial-living", nombre: "Comercial Living", icono: "megaphone", segmento: "comercial", fuentes: ["WEB LEADS"], construido: true, descripcion: "Leads de la web", tabla: TABLAS_EQUIPO["comercial-living"] },
-  { tipo: "finanzas-cyc", nombre: "Finanzas", icono: "landmark", segmento: "finanzas", fuentes: ["EXTRACTOS", "BANCOS", "MOVIMIENTOS C&C"], construido: false },
+  {
+    tipo: "finanzas-cyc",
+    nombre: "Finanzas",
+    icono: "landmark",
+    segmento: "finanzas",
+    fuentes: ["BANCOS", "EXTRACTOS", "MOVIMIENTOS C&C", "GLOBAL C&C", "REFERENCIAS BANCARIAS"],
+    construido: true,
+    descripcion: "Pagos, extractos, caja y referencias bancarias",
+    pestanas: PESTANAS["finanzas-cyc"],
+  },
   { tipo: "actas", nombre: "Actas", icono: "clipboard-list", segmento: "actas", fuentes: ["ACTAS", "ITEMS ACTAS"], construido: true, descripcion: "Actas de corte por contratista", tabla: TABLAS_EQUIPO["actas"] },
   { tipo: "pagos-obra", nombre: "Pagos de obra", icono: "banknote", segmento: "pagos", fuentes: ["CONTABILIDAD (12. EDIFICIO 54-47)"], construido: true, descripcion: "Pagos de obra de los últimos dos meses", tabla: TABLAS_EQUIPO["pagos-obra"] },
   { tipo: "contratistas", nombre: "Contratistas", icono: "hard-hat", segmento: "contratistas", fuentes: ["CONTRATISTAS", "ANTICIPOS"], construido: true, descripcion: "Contratistas, contratos y retenciones", tabla: TABLAS_EQUIPO["contratistas"] },
