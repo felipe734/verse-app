@@ -67,3 +67,25 @@ test("un módulo sin construir no se abre y una empresa ajena lleva al inicio", 
   await page.goto("/otra/general/hoy");
   await expect(page).toHaveURL(/\/verse\/general\/hoy$/);
 });
+
+test("Correo abre el hilo en panel lateral, en texto", async ({ page }) => {
+  await page.goto("/verse/general/correo");
+  await expect(page.getByRole("heading", { name: "Correo", level: 1 })).toBeVisible();
+  await page.getByRole("button", { name: /Estado de cuenta de noviembre/ }).click();
+  const panel = page.getByRole("dialog");
+  await expect(panel.getByText(/Adjuntamos el estado de cuenta/)).toBeVisible();
+  await expect(panel).toHaveAttribute("data-seleccion", /hilo 1a2000000000a01 de la cuenta verse-felipe/);
+});
+
+test("el administrador de Verse solo lee contabilidad@ y contacto@", async ({ page, baseURL }) => {
+  await page.context().addCookies([{ name: "vitrina_usuario", value: "admin@vitrina.test", url: baseURL! }]);
+  await page.goto("/verse/general/correo");
+  await expect(page.getByText("Quiero poner mi apartamento en arriendo")).toBeVisible();
+  await expect(page.getByText("Estado de cuenta de noviembre")).toHaveCount(0);
+});
+
+test("Sistema muestra indicadores y corridas", async ({ page }) => {
+  await page.goto("/sistema");
+  await expect(page).toHaveURL(/\/verse\/general\/sistema$/);
+  await expect(page.getByText("Fallas en 7 días")).toBeVisible();
+});

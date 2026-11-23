@@ -63,9 +63,9 @@ function aCorreo(cuenta: IdCuenta, m: MensajeComposio): Omit<CorreoBandeja, "rut
 
 const claveDuplicado = (c: { de: string; asunto: string; fecha: string }) => `${c.de.toLowerCase()}|${c.asunto.toLowerCase()}|${c.fecha.slice(0, 16)}`;
 
-export async function bandejaDe(cliente: ClienteComposio, s: Sesion, opciones: { horas?: number; porCuenta?: number; cuenta?: string } = {}) {
+export async function bandejaDe(cliente: ClienteComposio, s: Sesion, opciones: { horas?: number; porCuenta?: number; cuenta?: string; empresa?: string } = {}) {
   const horas = opciones.horas ?? 48;
-  const legibles = cuentasLegibles(s).filter((c) => !opciones.cuenta || c.id === opciones.cuenta);
+  const legibles = cuentasLegibles(s).filter((c) => (!opciones.cuenta || c.id === opciones.cuenta) && (!opciones.empresa || c.empresa === opciones.empresa));
   const { mapa, faltan } = await cuentasConectadas(cliente);
   const avisos: string[] = faltan.filter((f) => legibles.some((l) => l.id === f)).map((f) => `La cuenta ${f} no está conectada en Composio.`);
 

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ModuloAprobar } from "@/components/modulos/aprobar/modulo-aprobar";
+import { ModuloCorreo } from "@/components/modulos/correo/modulo-correo";
+import { ModuloSistema } from "@/components/modulos/sistema/modulo-sistema";
 import { EsqueletoModulo } from "@/components/modulos/encabezado";
 import { ModuloHoy } from "@/components/modulos/hoy/modulo-hoy";
 import { sesionActual } from "@/lib/acceso/actual";
@@ -10,7 +12,7 @@ import { PLATFORM_NAME } from "@/lib/config";
 import { ubicar } from "@/lib/modulos/registro";
 
 type Params = { empresa: string; vertical: string; modulo: string };
-type Busqueda = { verComo?: string };
+type Busqueda = { verComo?: string; cuenta?: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { modulo } = await params;
@@ -29,11 +31,10 @@ async function Contenido({ params, searchParams }: { params: Promise<Params>; se
       return <ModuloHoy sesion={sesion} empresa={empresa} verComo={busqueda.verComo} />;
     case "aprobar":
       return <ModuloAprobar sesion={sesion} empresa={empresa} />;
-    // Correo y Sistema conservan su pantalla hasta su PR de rediseño.
     case "correo":
-      redirect("/correo");
+      return <ModuloCorreo sesion={sesion} empresa={empresa} cuenta={busqueda.cuenta} />;
     case "sistema":
-      redirect(`/sistema?empresa=${empresa}`);
+      return <ModuloSistema sesion={sesion} empresa={empresa} />;
     default:
       notFound();
   }
