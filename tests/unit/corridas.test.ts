@@ -13,12 +13,12 @@ const k = TV.campos;
 
 const corrida: Corrida = {
   proceso: "Respaldo",
-  asunto: "Respaldo Airtable 2026-11-23",
+  asunto: "Respaldo de Airtable completo",
   estado: "OK",
   detalle: "Tablas: 107 de 107",
   link: "https://drive.google.com/drive/folders/prueba",
   mes: "2026-11",
-  pendiente: { asunto: "Revisar respaldo de Airtable del 2026-11-23", fechaLimite: "2026-11-23" },
+  pendiente: { asunto: "Respaldo de Airtable por revisar", accion: "Revisar el respaldo de Airtable del 2026-11-23", fechaLimite: "2026-11-23" },
 };
 
 function airtableConProcesos(opciones: string[]) {
@@ -70,6 +70,8 @@ describe("Corridas en TRAZABILIDAD VERSE", () => {
     const r = await registrarCorrida(db, at, { ...corrida, estado: "Con pendientes" });
     const pendiente = filas(at).find((f) => f[k.tipo.id] === "Pendiente");
     expect(pendiente).toMatchObject({ [k.estado.id]: "Abierto", [k.responsable.id]: "Felipe", [k.fechaLimite.id]: "2026-11-23", [k.corrida.id]: [r!.corrida] });
+    expect(String(pendiente?.[k.detalle.id]).split("\n")[0]).toBe("Revisar el respaldo de Airtable del 2026-11-23");
+    expect(String(pendiente?.[k.asunto.id])).not.toMatch(/\d{4}-\d{2}/);
   });
 });
 

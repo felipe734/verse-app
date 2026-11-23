@@ -15,8 +15,11 @@ export interface Corrida {
   detalle: string;
   link?: string;
   mes: string;
-  /** Si el estado no es OK, se deja también un Pendiente para Felipe. */
-  pendiente?: { asunto: string; fechaLimite: string };
+  /**
+   * Si el estado no es OK, se deja también un Pendiente para Felipe. Asunto sin fechas
+   * (regla de verse-trazabilidad); `accion` es la primera línea del Detalle, verbo primero.
+   */
+  pendiente?: { asunto: string; accion: string; fechaLimite: string };
 }
 
 export const PROCESO_RESPALDO = "Verse OS";
@@ -73,7 +76,7 @@ export async function registrarCorrida(db: Db, cliente: ClienteAirtable, c: Corr
       [k.mes.id]: c.mes,
       [k.asunto.id]: c.pendiente.asunto,
       [k.fechaLimite.id]: c.pendiente.fechaLimite,
-      [k.detalle.id]: c.detalle,
+      [k.detalle.id]: `${c.pendiente.accion}\n${c.detalle}`,
       [k.corrida.id]: [recCorrida],
     },
     autor: AUTOR,
