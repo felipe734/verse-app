@@ -155,3 +155,37 @@ export const costosNeon = pgTable("costos_neon", {
   usdTotal: doublePrecision("usd_total").notNull(),
   tomado: ahora(),
 });
+
+/** Una fila por noche de respaldo. */
+export const respaldos = pgTable("respaldos", {
+  fecha: date().primaryKey(),
+  estado: text().$type<"en_curso" | "completo" | "con_fallas">().notNull().default("en_curso"),
+  carpetaId: text("carpeta_id"),
+  tablas: integer().notNull().default(0),
+  hechas: integer().notNull().default(0),
+  fallidas: integer().notNull().default(0),
+  filas: integer().notNull().default(0),
+  bytes: doublePrecision().notNull().default(0),
+  inicio: ahora(),
+  fin: timestamp({ withTimezone: true }),
+  error: text(),
+});
+
+/** Una tarea por tabla y noche; el respaldo se reparte en varias corridas. */
+export const respaldoTareas = pgTable(
+  "respaldo_tareas",
+  {
+    fecha: date().notNull(),
+    idBase: text("id_base").notNull(),
+    idTabla: text("id_tabla").notNull(),
+    base: text().notNull(),
+    tabla: text().notNull(),
+    estado: text().$type<"pendiente" | "hecha" | "fallida">().notNull().default("pendiente"),
+    intentos: integer().notNull().default(0),
+    filas: integer(),
+    bytes: integer(),
+    error: text(),
+    actualizado: ahora(),
+  },
+  (t) => [primaryKey({ columns: [t.fecha, t.idBase, t.idTabla] })],
+);

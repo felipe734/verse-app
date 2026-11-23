@@ -35,8 +35,10 @@ export class AirtableFalso implements ClienteAirtable {
     }
   }
 
-  async esquema() {
-    return [];
+  esquemas = new Map<string, import("@/lib/airtable/construir-mapeo").EsquemaTabla[]>();
+  async esquema(idBase: string) {
+    this.llamadas.push("esquema");
+    return this.esquemas.get(idBase) ?? [];
   }
   async todos(idBase: string, idTabla: string) {
     this.llamadas.push("todos");

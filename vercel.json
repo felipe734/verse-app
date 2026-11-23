@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/noche",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/cron/respaldo",
+      "schedule": "30 7 * * *"
     }
   ]
 }
