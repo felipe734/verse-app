@@ -288,3 +288,11 @@ test("sin editar no hay acciones de un toque", async ({ page, baseURL }) => {
   await page.locator("table:not(.sr-only) tbody tr:visible, ul[aria-label$=', lista'] > li > button:visible").first().click();
   await expect(page.getByRole("dialog").getByRole("button", { name: "Conciliado" })).toHaveCount(0);
 });
+
+test("el detalle de una reserva muestra las limpiezas y liquidaciones de su unidad", async ({ page }) => {
+  await page.goto("/verse/host/operacion?v=lista");
+  await page.locator("table:not(.sr-only) tbody tr:visible, ul[aria-label$=', lista'] > li > button:visible").first().click();
+  const panel = page.getByRole("dialog");
+  await expect(panel.getByRole("region", { name: "Limpiezas de la unidad" })).toBeVisible();
+  await expect(panel.getByRole("region", { name: "Liquidaciones de la unidad" }).getByRole("link", { name: "Ir" })).toHaveAttribute("href", "/verse/host/liquidaciones");
+});

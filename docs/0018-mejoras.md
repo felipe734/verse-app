@@ -36,3 +36,19 @@ Regla general: **todo abre en lo actual y en lo tuyo**.
 
 - En celular, las listas se ven como tarjetas: el título, el estado y hasta tres datos con su nombre, en vez de una tabla con columnas escondidas. Los filtros se deslizan de lado en una sola línea.
 - Avisos: las claves VAPID ya están en Vercel, así que los avisos de críticos, aprobaciones y fallas salen con el cron de la noche y con los cambios de TRAZABILIDAD. Un aviso de "tu ruta de hoy" a las 6 a. m. necesita un tercer cron, y el plan Hobby de Vercel permite dos. Queda pendiente hasta pasar a Pro o mover un cron.
+
+## 5. Detalle con relacionados
+
+- `relacionados` en `DefTabla` declara bloques de otros módulos que se cargan al abrir el detalle (`lib/modulos/relacionados.ts`). Cada bloque se lee con los permisos de la persona: si no ve ese módulo, el bloque no aparece, y sin cifras no hay montos.
+- La búsqueda es por texto sobre el campo relacionado: `FIND(valor, ARRAYJOIN({campo}))`. Sirve para texto y para enlaces, que Airtable devuelve como nombres. Si el mismo nombre de unidad está escrito distinto en dos bases, el bloque sale vacío.
+- Relaciones de cada módulo:
+  - Reserva: limpiezas y liquidaciones de la unidad.
+  - Limpieza: reservas de la unidad.
+  - Unidad Host: reservas, limpiezas y liquidaciones.
+  - Liquidación: reservas.
+  - Unidad Living: contratos y cobros.
+  - Contrato: cobros.
+  - Cobro: contrato.
+  - Acta: pagos del contratista.
+  - Pago de obra: actas.
+  - Contratista: actas y pagos.

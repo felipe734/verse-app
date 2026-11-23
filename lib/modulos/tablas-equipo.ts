@@ -24,6 +24,10 @@ const codigo = (campo: string, etiqueta?: string): Columna => ({ campo, etiqueta
 
 export const TABLAS_EQUIPO: Record<string, DefTabla> = {
   operacion: {
+    relacionados: [
+      { titulo: "Limpiezas de la unidad", tipo: "limpiezas", campo: "Unidad", columna: "Unidad" },
+      { titulo: "Liquidaciones de la unidad", tipo: "liquidaciones", campo: "Unidad", columna: "Unidad", max: 4 },
+    ],
     calendario: { inicio: "Ingreso", fin: "Salida", fila: "Unidad", color: "Plataforma" },
     vistaInicial: "calendario",
     editar: { tabla: "reservas", campos: [{ campo: "novedades", etiqueta: "Novedades" }, { campo: "comentario", etiqueta: "Comentario" }, { campo: "requiereLimpieza", etiqueta: "Requiere limpieza" }] },
@@ -39,6 +43,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 400,
   },
   limpiezas: {
+    relacionados: [{ titulo: "Reservas de la unidad", tipo: "operacion", campo: "Unidad", columna: "Unidad" }],
     rapidas: [{ etiqueta: "Terminada", campo: "estado", valor: "Terminado", columna: "Estado" }],
     persona: "Funcionario",
     agenda: { fecha: "Fecha", fila: "Funcionario", etiquetaFila: "Funcionaria", titulo: "Unidad", estado: "Estado" },
@@ -55,6 +60,11 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     indicadores: [{ etiqueta: "Limpiezas", tipo: "conteo" }, { etiqueta: "Terminadas", tipo: "conteo", donde: { campo: "Estado", valores: ["Terminado"] } }, { etiqueta: "Total", tipo: "suma", campo: "Total" }],
   },
   "unidades-host": {
+    relacionados: [
+      { titulo: "Reservas", tipo: "operacion", campo: "Unidad", columna: "Unidad" },
+      { titulo: "Limpiezas", tipo: "limpiezas", campo: "Unidad", columna: "Unidad" },
+      { titulo: "Liquidaciones", tipo: "liquidaciones", campo: "Unidad", columna: "Unidad", max: 4 },
+    ],
     editar: { tabla: "unidadesHost", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("5. INVENTARIO", "UNIDADES"),
     titulo: "Unidad",
@@ -68,6 +78,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     indicadores: [{ etiqueta: "Unidades", tipo: "conteo" }, { etiqueta: "Edificios", tipo: "distintos", campo: "Edificio" }],
   },
   liquidaciones: {
+    relacionados: [{ titulo: "Reservas de la unidad", tipo: "operacion", campo: "Unidad", columna: "Unidad" }],
     editar: { tabla: "fCortas", campos: [{ campo: "estado", etiqueta: "Estado" }, { campo: "comentario", etiqueta: "Comentario" }] },
     ...ids("6. OPERACION 360", "F_CORTAS"),
     titulo: "Unidad",
@@ -107,6 +118,10 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     indicadores: [{ etiqueta: "Leads", tipo: "conteo" }],
   },
   "unidades-living": {
+    relacionados: [
+      { titulo: "Contratos", tipo: "contratos", campo: "Unidad", columna: "Unidad", max: 4 },
+      { titulo: "Cobros", tipo: "cobros", campo: "Unidad", columna: "Unidad", max: 6 },
+    ],
     editar: { tabla: "unidadesLiving", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("7. LIVING", "UNIDADES"),
     titulo: "Unidad",
@@ -125,6 +140,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     vistaInicial: "tablero",
   },
   contratos: {
+    relacionados: [{ titulo: "Cobros de la unidad", tipo: "cobros", campo: "Unidad", columna: "Unidad", max: 6 }],
     rapidas: [{ etiqueta: "Firmado", campo: "estado", valor: "Firmado", columna: "Estado" }],
     editar: { tabla: "contratos", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("7. LIVING", "CONTRATO"),
@@ -145,6 +161,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 300,
   },
   cobros: {
+    relacionados: [{ titulo: "Contrato de la unidad", tipo: "contratos", campo: "Unidad", columna: "Unidad", max: 3 }],
     rapidas: [{ etiqueta: "Pagado", campo: "estado", valor: "PAGO", columna: "Estado" }],
     editar: { tabla: "ingresosLiving", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("7. LIVING", "INGRESOS"),
@@ -189,6 +206,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     indicadores: [{ etiqueta: "Turnos", tipo: "conteo" }, { etiqueta: "Horas", tipo: "suma", campo: "Horas" }],
   },
   actas: {
+    relacionados: [{ titulo: "Pagos al contratista", tipo: "pagos-obra", campo: "Contratista", columna: "Contratista" }],
     editar: { tabla: "actas", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("11. ACTAS OBRA", "ACTAS"),
     titulo: "Acta",
@@ -202,6 +220,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     indicadores: [{ etiqueta: "Actas", tipo: "conteo" }, { etiqueta: "Total corte", tipo: "suma", campo: "Total Corte" }, { etiqueta: "A pagar", tipo: "suma", campo: "A pagar" }],
   },
   "pagos-obra": {
+    relacionados: [{ titulo: "Actas del contratista", tipo: "actas", campo: "Contratista", columna: "Contratista" }],
     editar: { tabla: "contabilidadObra", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("12. EDIFICIO 54-47", "CONTABILIDAD"),
     titulo: "Concepto",
@@ -214,6 +233,10 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     indicadores: [{ etiqueta: "Pagos", tipo: "conteo" }, { etiqueta: "Monto", tipo: "suma", campo: "Monto" }],
   },
   contratistas: {
+    relacionados: [
+      { titulo: "Actas", tipo: "actas", campo: "Contratista", columna: "Contratista" },
+      { titulo: "Pagos", tipo: "pagos-obra", campo: "Contratista", columna: "Contratista" },
+    ],
     ...ids("11. ACTAS OBRA", "CONTRATISTAS"),
     titulo: "Contratista",
     columnas: [t("Contratista"), t("Razón social"), t("Contrato N.º", "Contrato"), tercero("NIT"), plata("Valor contrato"), plata("Base retención")],

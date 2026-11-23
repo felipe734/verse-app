@@ -20,6 +20,7 @@ import { esMio } from "@/lib/vistas/mio";
 import { Actualizar, aplicarFiltros, Filtros, InterruptorMio, filtrosDeUrl, Indicadores, MenuVistas, SelectorPeriodo, SelectorVista, Tablero, type VistaGuardada } from "./controles";
 import { Agenda, Calendario } from "./calendario";
 import { Edicion } from "./edicion";
+import { Relacionados } from "./relacionados";
 
 const derecha = (c: Columna) => c.tipo === "dinero" || c.tipo === "numero";
 const etiqueta = (c: Columna) => c.etiqueta ?? c.campo;
@@ -56,6 +57,7 @@ export function VistaTabla({
   tablas,
   rapidas = [],
   campoTablero,
+  relacionados,
 }: {
   titulo: string;
   modulo: string;
@@ -89,6 +91,8 @@ export function VistaTabla({
   rapidas?: { etiqueta: string; campo: string; valor: string; columna: string }[];
   /** Campo editable del tablero: mover tarjetas lo cambia. */
   campoTablero?: string;
+  /** Dónde está el módulo, para cargar los registros relacionados del detalle. */
+  relacionados?: RefModulo;
 }) {
   const router = useRouter();
   const [ocupado, setOcupado] = useState<string | null>(null);
@@ -313,7 +317,8 @@ export function VistaTabla({
                 <SheetDescription>{modulo}</SheetDescription>
                 <SheetTitle className="text-base">{abierta.celdas[columnas[0]?.campo ?? ""] || "—"}</SheetTitle>
               </SheetHeader>
-              <dl className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
+              <div className="flex-1 overflow-y-auto">
+              <dl className="space-y-3 p-4 text-sm">
                 {[...columnas.slice(1), ...detalle].map((c) => (
                   <div key={c.campo} className="grid grid-cols-[130px_1fr] gap-3">
                     <dt className="text-muted-foreground">{etiqueta(c)}</dt>
@@ -321,6 +326,8 @@ export function VistaTabla({
                   </div>
                 ))}
               </dl>
+              {relacionados && <Relacionados key={abierta.id} refModulo={relacionados} celdas={abierta.celdas} />}
+              </div>
               {aplicables(abierta).length > 0 && (
                 <div className="flex flex-wrap gap-2 border-t p-4">
                   {aplicables(abierta).map((a) => (

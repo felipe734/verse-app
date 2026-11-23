@@ -49,6 +49,7 @@ export async function ModuloTabla({ sesion, u, p }: { sesion: Sesion; u: Ubicaci
         vistaInicial={def.vistaInicial}
         hoy={hoy}
         tablas={[def.idTabla]}
+        relacionados={def.relacionados?.length ? { empresa: u.empresa, vertical: u.vertical.segmento, modulo: u.def.segmento } : undefined}
         rapidas={puedeEditar ? def.rapidas : undefined}
         campoTablero={puedeEditar ? (campoPorNombre(def.editar, def.tablero) ?? undefined) : undefined}
         persona={

@@ -7,6 +7,8 @@ import { ESTRUCTURA } from "@/lib/acceso/estructura";
 import { crearContador } from "@/lib/medicion/contador";
 import { formularioEdicion, guardarEdicion, idDeCampo, type Formulario, type Guardado } from "@/lib/modulos/editar";
 import { pestanaDe } from "@/lib/modulos/finanzas";
+import { leerRelacionados, type BloqueRelacionado } from "@/lib/modulos/relacionados";
+import { hoyBogota } from "@/lib/hoy/clasificar";
 import { ubicar } from "@/lib/modulos/registro";
 import { clienteServidor } from "@/lib/servidor/airtable";
 
@@ -74,5 +76,24 @@ export async function cambiarRapido(ref: RefModulo, recId: string, campo: string
   } catch (e) {
     console.error("[editar/rapido]", e instanceof Error ? e.message : e);
     return { ok: false, mensaje: "Airtable no respondió. Intenta de nuevo" };
+  }
+}
+
+/** Registros relacionados de una fila abierta, con los permisos de la persona. */
+export async function relacionadosDe(ref: RefModulo, celdas: Record<string, string>): Promise<BloqueRelacionado[]> {
+  const s = await sesionActual();
+  const estructura = s.estructura ?? ESTRUCTURA;
+  const u = ubicar(s, estructura, String(ref.empresa), String(ref.vertical), String(ref.modulo));
+  const relaciones = u?.def.tabla?.relacionados;
+  if (!u || !relaciones?.length || !celdas || typeof celdas !== "object") return [];
+  const limpias = Object.fromEntries(Object.entries(celdas).filter(([k, v]) => typeof k === "string" && typeof v === "string" && v.length < 300));
+  const contador = crearContador();
+  try {
+    const r = await leerRelacionados(clienteServidor(contador), s, estructura, u.empresa, relaciones, limpias, hoyBogota());
+    await contador.volcar(db());
+    return r;
+  } catch (e) {
+    console.error("[relacionados]", e instanceof Error ? e.message : e);
+    return [];
   }
 }
