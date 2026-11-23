@@ -2,6 +2,7 @@ import type { ClienteAirtable } from "@/lib/airtable/cliente";
 import { sensibles, type Sesion } from "@/lib/acceso/permisos";
 import { formulaCruza, formulaDentro, type Periodo, type UnidadPeriodo } from "@/lib/vistas/periodo";
 import type { DefEdicion } from "./editar";
+import type { Relacion } from "./relacionados";
 
 /**
  * Módulo de tabla: una lista densa sobre una tabla de Airtable, leída en el momento y solo
@@ -59,6 +60,8 @@ export interface DefTabla {
    * columna `columna` no tiene ya ese valor (por ejemplo, "Terminada" si no está Terminado).
    */
   rapidas?: { etiqueta: string; campo: string; valor: string; columna: string }[];
+  /** Registros de otros módulos que se muestran en el detalle. */
+  relacionados?: Relacion[];
   /** Campos que se editan desde el detalle, con el módulo en "editar" (lib/modulos/editar.ts). */
   editar?: DefEdicion;
 }
