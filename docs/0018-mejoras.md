@@ -85,3 +85,12 @@ Regla general: **todo abre en lo actual y en lo tuyo**.
 - Cada alerta solo sale para quien ve el módulo. No trae montos.
 - Aparecen arriba en Inicio y en la cabecera de su módulo, con enlace al lugar donde se resuelven, ya filtrado cuando se puede.
 - Cada módulo consulta solo sus propias alertas.
+
+## 9. Resumen del día y asistente con contexto
+
+- **Resumen del día** en Inicio:
+  - Dos o tres frases con lo que la persona debe atender hoy, escritas por Claude (Sonnet 5.5) a partir de sus críticos, vencidos, pendientes de hoy, aprobaciones y alertas.
+  - Se guarda una hora por persona y contenido (`"use cache"`): si nada cambió, no se vuelve a pedir.
+  - Sin `ANTHROPIC_API_KEY` o sin datos, no aparece. Carga aparte y no frena Inicio.
+  - Costo aproximado: menos de un centavo de dólar por persona y por hora con cambios.
+- **El asistente ve lo que la persona ve.** El encabezado del mensaje describe en palabras el módulo, el período, la pestaña, los filtros, la vista, si está en Mío y la fila abierta (`lib/asistente/pantalla.ts`). Así "¿cuáles de estas están atrasadas?" se entiende solo.

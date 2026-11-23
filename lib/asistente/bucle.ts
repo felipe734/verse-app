@@ -1,3 +1,4 @@
+import { describirPantalla } from "./pantalla";
 import { asc, eq, sql } from "drizzle-orm";
 import type Anthropic from "@anthropic-ai/sdk";
 import type { Db } from "@/db/cliente";
@@ -108,7 +109,7 @@ export async function conversar(opciones: {
   alEvento({ tipo: "conversacion", id: conversacionId });
 
   const hoy = hoyBogota(opciones.ahora);
-  const encabezado = [`Fecha de hoy en Bogotá: ${hoy}.`, opciones.pantalla ? `Pantalla: ${opciones.pantalla.ruta}${opciones.pantalla.seleccion ? ` · seleccionado: ${opciones.pantalla.seleccion}` : ""}.` : null]
+  const encabezado = [`Fecha de hoy en Bogotá: ${hoy}.`, opciones.pantalla ? describirPantalla(opciones.pantalla.ruta, opciones.pantalla.seleccion, hoy) : null]
     .filter(Boolean)
     .join(" ");
   const mensajeUsuario: MensajeParam = { role: "user", content: [{ type: "text", text: `${encabezado}\n\n${opciones.texto}` }] };
