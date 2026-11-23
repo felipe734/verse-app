@@ -14,6 +14,8 @@ export interface Drive {
   carpeta(nombre: string, padre: string): Promise<string>;
   carpetas(padre: string): Promise<ArchivoDrive[]>;
   subir(nombre: string, padre: string, contenido: Uint8Array | string, tipo: string): Promise<string>;
+  /** Sube un archivo grande por flujo, sin cargarlo en memoria. */
+  subirFlujo(nombre: string, padre: string, flujo: ReadableStream<Uint8Array>, tipo: string, bytes?: number): Promise<string>;
   aPapelera(id: string): Promise<void>;
 }
 
@@ -51,8 +53,35 @@ export function crearDrive({
     return todos;
   }
 
+  async function abrirSesion(nombre: string, padre: string, tipo: string, bytes?: number): Promise<string> {
+    const inicio = await pedir(`${SUBIDA}/files?uploadType=resumable&supportsAllDrives=true&fields=id`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8",
+        "X-Upload-Content-Type": tipo,
+        ...(bytes ? { "X-Upload-Content-Length": String(bytes) } : {}),
+      },
+      body: JSON.stringify({ name: nombre, parents: [padre] }),
+    });
+    const ubicacion = inicio.headers.get("location");
+    if (!ubicacion) throw new ErrorGoogle("Drive no devolvió la URL de subida", 500);
+    return ubicacion;
+  }
+
   return {
     carpetas: (padre) => listarCarpetas(padre),
+
+    async subirFlujo(nombre, padre, flujo, tipo, bytes) {
+      const ubicacion = await abrirSesion(nombre, padre, tipo, bytes);
+      const r = await f(ubicacion, {
+        method: "PUT",
+        headers: { "Content-Type": tipo },
+        body: flujo,
+        duplex: "half",
+      } as RequestInit);
+      if (!r.ok) throw new ErrorGoogle(`Drive respondió ${r.status} al subir ${nombre}`, r.status);
+      return ((await r.json()) as { id: string }).id;
+    },
 
     async carpeta(nombre, padre) {
       const [existe] = await listarCarpetas(padre, nombre);
@@ -66,13 +95,7 @@ export function crearDrive({
     },
 
     async subir(nombre, padre, contenido, tipo) {
-      const inicio = await pedir(`${SUBIDA}/files?uploadType=resumable&supportsAllDrives=true&fields=id`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json; charset=UTF-8", "X-Upload-Content-Type": tipo },
-        body: JSON.stringify({ name: nombre, parents: [padre] }),
-      });
-      const ubicacion = inicio.headers.get("location");
-      if (!ubicacion) throw new ErrorGoogle("Drive no devolvió la URL de subida", 500);
+      const ubicacion = await abrirSesion(nombre, padre, tipo);
       const cuerpo = typeof contenido === "string" ? new TextEncoder().encode(contenido) : contenido;
       const r = await f(ubicacion, { method: "PUT", headers: { "Content-Type": tipo }, body: new Blob([cuerpo as Uint8Array<ArrayBuffer>]) });
       if (!r.ok) throw new ErrorGoogle(`Drive respondió ${r.status} al subir ${nombre}`, r.status);

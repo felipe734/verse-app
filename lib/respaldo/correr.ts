@@ -13,6 +13,7 @@ import {
 import type { ClienteAirtable } from "@/lib/airtable/cliente";
 import type { EsquemaTabla, FilaCatalogo } from "@/lib/airtable/construir-mapeo";
 import type { Drive } from "@/lib/google/drive";
+import { guardarAdjuntos, registrarAdjuntos } from "./adjuntos";
 import { exportarTabla } from "./exportar";
 import { carpetasAVencer, nombreCarpeta, tablasDelDia } from "./plan";
 
@@ -24,6 +25,7 @@ export interface Dependencias {
   drive: Drive;
   idUnidad: string;
   ahora?: () => number;
+  fetch?: typeof fetch;
 }
 
 /** Crea la fila del día y una tarea por tabla. Repetirlo no duplica nada. */
@@ -43,6 +45,8 @@ export interface ResultadoCorrida {
   hechas: number;
   fallidas: number;
   pendientes: number;
+  adjuntosGuardados: number;
+  adjuntosPendientes: number;
   terminado: boolean;
 }
 
@@ -82,6 +86,8 @@ export async function procesarDia(deps: Dependencias, fecha: string, presupuesto
       await drive.subir(`${nombre}.json`, carpeta, exp.json, "application/json");
       await drive.subir(`${nombre}.csv`, carpeta, exp.csv, "text/csv");
 
+      await registrarAdjuntos(db, { idBase: t.idBase, idTabla: t.idTabla, base: t.base, tabla: t.tabla }, esquema, registros);
+
       const bytes = exp.json.length + exp.csv.length;
       await db.update(respaldoTareas).set({ estado: "hecha", filas: exp.filas, bytes, error: null, actualizado: sql`now()` }).where(clave);
       await db
@@ -108,7 +114,13 @@ export async function procesarDia(deps: Dependencias, fecha: string, presupuesto
     .from(respaldoTareas)
     .where(and(eq(respaldoTareas.fecha, fecha), eq(respaldoTareas.estado, "pendiente")));
 
-  if (pendientes > 0) return { hechas, fallidas, pendientes, terminado: false };
+  if (pendientes > 0) return { hechas, fallidas, pendientes, adjuntosGuardados: 0, adjuntosPendientes: -1, terminado: false };
+
+  // Con todas las tablas listas, el tiempo que queda va a los adjuntos.
+  const adj = await guardarAdjuntos({ db, airtable, drive, idUnidad, fetch: deps.fetch, ahora: reloj }, fecha, limite);
+  if (adj.pendientes > 0) {
+    return { hechas, fallidas, pendientes: 0, adjuntosGuardados: adj.guardados, adjuntosPendientes: adj.pendientes, terminado: false };
+  }
 
   await respaldarApp(db, drive, carpetaDia, fecha);
   const [dia] = await db.select().from(respaldos).where(eq(respaldos.fecha, fecha));
@@ -117,7 +129,7 @@ export async function procesarDia(deps: Dependencias, fecha: string, presupuesto
     .set({ estado: (dia?.fallidas ?? 0) > 0 ? "con_fallas" : "completo", fin: sql`now()` })
     .where(eq(respaldos.fecha, fecha));
   await aplicarRetencion(drive, idUnidad);
-  return { hechas, fallidas, pendientes: 0, terminado: true };
+  return { hechas, fallidas, pendientes: 0, adjuntosGuardados: adj.guardados, adjuntosPendientes: 0, terminado: true };
 }
 
 /** Las tablas propias de la app también van al respaldo; nunca los secretos de los webhooks. */

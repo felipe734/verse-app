@@ -166,6 +166,8 @@ export const respaldos = pgTable("respaldos", {
   fallidas: integer().notNull().default(0),
   filas: integer().notNull().default(0),
   bytes: doublePrecision().notNull().default(0),
+  adjuntos: integer().notNull().default(0),
+  bytesAdjuntos: doublePrecision("bytes_adjuntos").notNull().default(0),
   inicio: ahora(),
   fin: timestamp({ withTimezone: true }),
   error: text(),
@@ -188,4 +190,29 @@ export const respaldoTareas = pgTable(
     actualizado: ahora(),
   },
   (t) => [primaryKey({ columns: [t.fecha, t.idBase, t.idTabla] })],
+);
+
+/** Cada adjunto de Airtable se guarda una vez en Drive; los enlaces de Airtable vencen en horas. */
+export const respaldoAdjuntos = pgTable(
+  "respaldo_adjuntos",
+  {
+    idAdjunto: text("id_adjunto").primaryKey(),
+    idBase: text("id_base").notNull(),
+    idTabla: text("id_tabla").notNull(),
+    base: text().notNull(),
+    tabla: text().notNull(),
+    recId: text("rec_id").notNull(),
+    idCampo: text("id_campo").notNull(),
+    nombre: text().notNull(),
+    tipo: text(),
+    bytes: doublePrecision(),
+    url: text().notNull(),
+    urlTomada: timestamp("url_tomada", { withTimezone: true }).notNull().defaultNow(),
+    estado: text().$type<"pendiente" | "guardado" | "fallido">().notNull().default("pendiente"),
+    intentos: integer().notNull().default(0),
+    idDrive: text("id_drive"),
+    error: text(),
+    guardado: timestamp({ withTimezone: true }),
+  },
+  (t) => [index("adjuntos_pendientes").on(t.estado)],
 );
