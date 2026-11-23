@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowDown, ArrowUp, EyeOff, Search, Sparkles, Table2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { AccionesModulo } from "@/components/shell/barra-superior";
 import { useShell } from "@/components/shell/contexto";
@@ -9,9 +10,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { Columna, FilaTabla } from "@/lib/modulos/tabla";
+import type { Columna, FilaTabla, Indicador } from "@/lib/modulos/tabla";
+import type { Periodo } from "@/lib/vistas/periodo";
 import { cn } from "@/lib/utils";
 import type { RefModulo } from "@/app/modulos/editar";
+import { aplicarFiltros, Filtros, filtrosDeUrl, Indicadores, MenuVistas, SelectorPeriodo, SelectorVista, Tablero, type VistaGuardada } from "./controles";
 import { Edicion } from "./edicion";
 
 const derecha = (c: Columna) => c.tipo === "dinero" || c.tipo === "numero";
@@ -36,6 +39,11 @@ export function VistaTabla({
   vacio,
   error,
   edicion,
+  periodo,
+  filtros = [],
+  tablero,
+  indicadores = [],
+  vistas,
 }: {
   titulo: string;
   modulo: string;
@@ -47,15 +55,29 @@ export function VistaTabla({
   error?: string;
   /** Si la persona puede editar en este módulo: dónde está, para la acción del servidor. */
   edicion?: RefModulo;
+  /** Período de la vista (selector ‹ ›). */
+  periodo?: Periodo;
+  /** Columnas filtrables con chips. */
+  filtros?: string[];
+  /** Columna que arma el tablero. */
+  tablero?: string;
+  indicadores?: Indicador[];
+  /** Vistas guardadas de la persona; sin esto no se muestra el menú. */
+  vistas?: VistaGuardada[];
 }) {
   const { abrirAsistente, asistenteHabilitado } = useShell();
+  const params = useSearchParams();
+  const activos = useMemo(() => filtrosDeUrl(new URLSearchParams(params.toString()), filtros), [params, filtros]);
+  const tableroVisible = tablero && columnas.some((c) => c.campo === tablero) ? tablero : undefined;
+  const vista = params.get("v") === "tablero" && tableroVisible ? "tablero" : "lista";
+  const filtradas = useMemo(() => aplicarFiltros(filas, activos), [filas, activos]);
   const [texto, setTexto] = useState("");
   const [orden, setOrden] = useState<{ campo: string; desc: boolean } | null>(null);
   const [abierta, setAbierta] = useState<FilaTabla | null>(null);
 
   const visibles = useMemo(() => {
     const t = texto.toLowerCase();
-    const lista = t ? filas.filter((f) => Object.values(f.celdas).some((v) => v.toLowerCase().includes(t))) : filas;
+    const lista = t ? filtradas.filter((f) => Object.values(f.celdas).some((v) => v.toLowerCase().includes(t))) : filtradas;
     if (!orden) return lista;
     return [...lista].sort((a, b) => {
       const x = clave(a.celdas[orden.campo] ?? "");
@@ -63,7 +85,7 @@ export function VistaTabla({
       const r = x < y ? -1 : x > y ? 1 : 0;
       return orden.desc ? -r : r;
     });
-  }, [filas, texto, orden]);
+  }, [filtradas, texto, orden]);
 
   const ordenar = (campo: string) => setOrden((o) => (o?.campo === campo ? (o.desc ? null : { campo, desc: true }) : { campo, desc: false }));
 
@@ -76,6 +98,25 @@ export function VistaTabla({
         </div>
       </AccionesModulo>
       <div className="px-4 pb-10 md:px-6">
+        {(periodo || tableroVisible || vistas) && (
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+            {periodo ? <SelectorPeriodo periodo={periodo} /> : <span />}
+            <div className="flex items-center gap-2">
+              <SelectorVista vista={vista} tablero={tableroVisible} />
+              {vistas && <MenuVistas vistas={vistas} />}
+            </div>
+          </div>
+        )}
+        {filtros.length > 0 && !error && (
+          <div className="mb-3">
+            <Filtros campos={filtros} columnas={columnas} filas={filas} activos={activos} />
+          </div>
+        )}
+        {indicadores.length > 0 && !error && (
+          <div className="mb-4">
+            <Indicadores indicadores={indicadores} columnas={columnas} filas={visibles} />
+          </div>
+        )}
         <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <span className="tabular-nums">
             {visibles.length} {visibles.length === 1 ? "fila" : "filas"}
@@ -103,6 +144,8 @@ export function VistaTabla({
               </Button>
             )}
           </div>
+        ) : vista === "tablero" && tableroVisible ? (
+          <Tablero campo={tableroVisible} columnas={columnas} filas={visibles} alAbrir={setAbierta} />
         ) : (
           <div className="overflow-x-auto rounded-lg border">
             <Table>

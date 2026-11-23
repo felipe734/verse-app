@@ -365,3 +365,23 @@ export const propuestas = pgTable("propuestas", {
   resultado: text(),
   creado: ahora(),
 });
+
+/**
+ * Vistas guardadas por persona: filtros y tipo de vista de un módulo con un nombre.
+ */
+export const vistasGuardadas = pgTable(
+  "vistas_guardadas",
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    usuarioId: uuid("usuario_id")
+      .notNull()
+      .references(() => usuarios.id, { onDelete: "cascade" }),
+    /** Ruta del módulo: /verse/host/operacion */
+    modulo: text().notNull(),
+    nombre: text().notNull(),
+    /** Parámetros de la URL: vista, filtros, pestaña. El período no se guarda: siempre abre en lo actual. */
+    parametros: jsonb().$type<Record<string, string>>().notNull(),
+    creado: ahora(),
+  },
+  (t) => [uniqueIndex("vistas_guardadas_usuario_modulo_nombre").on(t.usuarioId, t.modulo, t.nombre)],
+);

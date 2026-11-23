@@ -191,3 +191,27 @@ test("con Finanzas solo en ver no aparece Nuevo gasto", async ({ page, baseURL }
   await expect(page.getByRole("heading", { name: "Finanzas", level: 1 })).toBeVisible();
   await expect(page.getByRole("button", { name: "Nuevo gasto" })).toHaveCount(0);
 });
+
+test("las vistas abren en el período actual, filtran, cambian a tablero y se guardan", async ({ page, isMobile }) => {
+  await page.goto("/verse/host/limpiezas");
+  const periodo = page.getByRole("group", { name: "Período" });
+  await expect(periodo).toBeVisible();
+  await expect(page.getByRole("button", { name: "Esta semana" })).toHaveCount(0);
+  await expect(page.getByRole("definition").first()).toBeVisible();
+  await periodo.getByRole("link", { name: "Período anterior" }).click();
+  await expect(page).toHaveURL(/p=\d{4}-W\d{2}/);
+  await expect(page.getByRole("link", { name: "Esta semana" })).toBeVisible();
+
+  await page.getByRole("button", { name: /Estado:/ }).first().click();
+  await page.getByRole("menuitemcheckbox", { name: "Pendiente" }).click();
+  await expect(page).toHaveURL(/f\.Estado=Pendiente/);
+  await page.getByRole("radio", { name: "Tablero" }).click();
+  await expect(page.getByLabel("Tablero por Estado")).toBeVisible();
+
+  if (!isMobile) {
+    await page.getByRole("button", { name: "Vistas" }).click();
+    await page.getByLabel("Nombre de la vista").fill("Pendientes");
+    await page.getByRole("button", { name: "Guardar" }).click();
+    await expect(page.getByText('Vista "Pendientes" guardada')).toBeVisible();
+  }
+});

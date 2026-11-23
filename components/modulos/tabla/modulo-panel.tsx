@@ -11,6 +11,8 @@ import { subidasActivas } from "@/lib/servidor/blob";
 import { cn } from "@/lib/utils";
 import { EncabezadoModulo } from "../encabezado";
 import { CrearFila } from "./crear-fila";
+import { leerPeriodo } from "@/lib/vistas/periodo";
+import { vistasDe } from "@/lib/vistas/guardadas";
 import { VistaTabla } from "./vista-tabla";
 
 const pesos = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
@@ -33,8 +35,10 @@ function Indicador({ etiqueta, valor, antes }: { etiqueta: string; valor: number
   );
 }
 
-function Cierre({ meses }: { meses: MesCierre[] }) {
-  const [actual, anterior] = meses;
+function Cierre({ meses, mes }: { meses: MesCierre[]; mes?: string }) {
+  // El cierre del mes elegido; si todavía no existe (se llena el día 5), el último cerrado.
+  const i = Math.max(0, mes ? meses.findIndex((m) => m.mes === mes) : 0);
+  const [actual, anterior] = [meses[i], meses[i + 1]];
   if (!actual) return null;
   return (
     <section aria-label="Cierre del mes" className="space-y-2 px-4 pb-4 md:px-6">
@@ -50,11 +54,13 @@ function Cierre({ meses }: { meses: MesCierre[] }) {
 }
 
 /** Módulo con pestañas (Finanzas): cada pestaña es una tabla de Airtable; se lee solo la abierta. */
-export async function ModuloPanel({ sesion, u, pestana }: { sesion: Sesion; u: Ubicacion; pestana?: string }) {
+export async function ModuloPanel({ sesion, u, pestana, p }: { sesion: Sesion; u: Ubicacion; pestana?: string; p?: string }) {
   const lista = u.def.pestanas!;
   const activa = pestanaDe(u.def.tipo, pestana)!;
   const puedeEditar = Boolean(activa.tabla.editar?.campos.length) && puede(sesion, u.empresa, u.modulo.id, "editar");
   const ruta = `/${u.empresa}/${u.vertical.segmento}/${u.def.segmento}`;
+  const hoy = hoyBogota();
+  const periodo = activa.tabla.periodo ? leerPeriodo(activa.tabla.periodo.unidad, p, hoy) : undefined;
   const contador = crearContador();
   const airtable = clienteServidor(contador);
   let r: ResultadoTabla | null = null;
@@ -62,8 +68,8 @@ export async function ModuloPanel({ sesion, u, pestana }: { sesion: Sesion; u: U
   let error: string | undefined;
   try {
     [r, cierre] = await Promise.all([
-      leerTabla(airtable, sesion, u.empresa, u.vertical.id, activa.tabla, hoyBogota()),
-      u.def.tipo === "finanzas" ? leerCierre(airtable, sesion) : Promise.resolve(null),
+      leerTabla(airtable, sesion, u.empresa, u.vertical.id, activa.tabla, hoy, periodo),
+      u.def.tipo === "finanzas" ? leerCierre(airtable, sesion, 13) : Promise.resolve(null),
     ]);
     await contador.volcar(db());
   } catch (e) {
@@ -81,7 +87,7 @@ export async function ModuloPanel({ sesion, u, pestana }: { sesion: Sesion; u: U
           />
         )}
       </EncabezadoModulo>
-      {cierre && <Cierre meses={cierre} />}
+      {cierre && <Cierre meses={cierre} mes={periodo?.unidad === "mes" ? periodo.clave : undefined} />}
       <nav aria-label={`Secciones de ${u.modulo.nombre}`} className="flex gap-1 overflow-x-auto border-b px-4 md:px-6">
         {lista.map((p) => (
           <Link
@@ -108,6 +114,11 @@ export async function ModuloPanel({ sesion, u, pestana }: { sesion: Sesion; u: U
         ocultos={r?.ocultos ?? []}
         vacio={activa.tabla.vacio}
         error={error}
+        periodo={periodo}
+        filtros={activa.tabla.filtros}
+        tablero={activa.tabla.tablero}
+        indicadores={activa.tabla.indicadores}
+        vistas={await vistasDe(db(), sesion.usuarioId, ruta).catch(() => [])}
         edicion={puedeEditar ? { empresa: u.empresa, vertical: u.vertical.segmento, modulo: u.def.segmento, pestana: activa.id } : undefined}
       />
     </>
