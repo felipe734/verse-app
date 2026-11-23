@@ -42,6 +42,13 @@ test("sin sesión, Ajustes manda a entrar", async ({ page }) => {
   await expect(page.getByText("Nuevo usuario")).toHaveCount(0);
 });
 
+test("sin sesión, Correo manda a entrar y no lee bandejas", async ({ page }) => {
+  await page.goto("/correo");
+  await expect(page).toHaveURL(/\/entrar/);
+  await page.goto("/correo/verse-felipe/1a2063103bb432fa");
+  await expect(page).toHaveURL(/\/entrar/);
+});
+
 test("la app es instalable: manifiesto e ícono", async ({ request }) => {
   const m = await request.get("/manifest.webmanifest");
   expect(m.ok()).toBe(true);
