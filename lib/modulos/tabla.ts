@@ -44,16 +44,50 @@ export interface DefTabla {
   filtros?: string[];
   /** Columna que arma el tablero (una columna por valor). */
   tablero?: string;
+  /** Vista de calendario tipo Airbnb (filas × días). */
+  calendario?: DefCalendario;
+  /** Vista de agenda semanal (personas × días). */
+  agenda?: DefAgenda;
+  /** Vista con la que abre el módulo si la URL no dice otra. */
+  vistaInicial?: TipoVista;
   /** Cifras arriba de la vista, calculadas sobre lo filtrado. */
   indicadores?: Indicador[];
   /** Campos que se editan desde el detalle, con el módulo en "editar" (lib/modulos/editar.ts). */
   editar?: DefEdicion;
 }
 
+export interface DefCalendario {
+  /** Campo con la fecha de inicio (Ingreso). */
+  inicio: string;
+  /** Campo con la fecha de fin (Salida). La noche de salida no cuenta. */
+  fin: string;
+  /** Campo que arma las filas (Unidad). */
+  fila: string;
+  /** Campo que da el color (Plataforma). */
+  color?: string;
+  /** Campo que se muestra en la barra (Huésped o Plataforma). */
+  etiqueta?: string;
+}
+
+export interface DefAgenda {
+  /** Campo con fecha y hora (Fecha). */
+  fecha: string;
+  /** Encabezado de las filas; por defecto, el nombre del campo. */
+  etiquetaFila?: string;
+  /** Campo que arma las filas (Funcionario). */
+  fila: string;
+  /** Campo que se muestra en cada tarjeta (Unidad). */
+  titulo: string;
+  /** Campo de estado para atenuar lo terminado. */
+  estado?: string;
+}
+
 export type Indicador =
   | { etiqueta: string; tipo: "conteo"; donde?: { campo: string; valores: string[] } }
   | { etiqueta: string; tipo: "suma"; campo: string }
   | { etiqueta: string; tipo: "distintos"; campo: string };
+
+export type TipoVista = "lista" | "tablero" | "calendario" | "agenda";
 
 export interface FilaTabla {
   id: string;

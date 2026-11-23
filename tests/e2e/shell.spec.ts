@@ -160,7 +160,7 @@ test("quien coordina ve la ruta de todas", async ({ page }) => {
 });
 
 test("en un módulo con editar, el detalle abre el formulario con las opciones de Airtable", async ({ page }) => {
-  await page.goto("/verse/host/limpiezas");
+  await page.goto("/verse/host/limpiezas?v=lista");
   await page.locator("tbody tr").first().click();
   const panel = page.getByRole("dialog");
   await panel.getByRole("button", { name: "Editar" }).click();
@@ -214,4 +214,19 @@ test("las vistas abren en el período actual, filtran, cambian a tablero y se gu
     await page.getByRole("button", { name: "Guardar" }).click();
     await expect(page.getByText('Vista "Pendientes" guardada')).toBeVisible();
   }
+});
+
+test("Operación abre en el calendario del mes y Limpiezas en la agenda de la semana", async ({ page, isMobile }) => {
+  await page.goto("/verse/host/operacion");
+  await expect(page.getByRole("radio", { name: "Calendario" })).toHaveAttribute("aria-checked", "true");
+  if (isMobile) await expect(page.getByRole("list", { name: "Agenda de reservas" })).toBeVisible();
+  else {
+    const cal = page.getByRole("grid", { name: "Calendario de reservas" });
+    await expect(cal.getByRole("rowheader").first()).toBeVisible();
+    await cal.getByRole("button").first().click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+  }
+  await page.goto("/verse/host/limpiezas");
+  await expect(page.getByRole("radio", { name: "Agenda" })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByLabel(isMobile ? "Agenda por día" : "Agenda de la semana")).toBeVisible();
 });

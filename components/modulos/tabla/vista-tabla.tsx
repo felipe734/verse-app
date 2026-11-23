@@ -10,11 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { Columna, FilaTabla, Indicador } from "@/lib/modulos/tabla";
+import type { Columna, DefAgenda, DefCalendario, FilaTabla, Indicador, TipoVista } from "@/lib/modulos/tabla";
 import type { Periodo } from "@/lib/vistas/periodo";
 import { cn } from "@/lib/utils";
 import type { RefModulo } from "@/app/modulos/editar";
 import { aplicarFiltros, Filtros, filtrosDeUrl, Indicadores, MenuVistas, SelectorPeriodo, SelectorVista, Tablero, type VistaGuardada } from "./controles";
+import { Agenda, Calendario } from "./calendario";
 import { Edicion } from "./edicion";
 
 const derecha = (c: Columna) => c.tipo === "dinero" || c.tipo === "numero";
@@ -44,6 +45,10 @@ export function VistaTabla({
   tablero,
   indicadores = [],
   vistas,
+  calendario,
+  agenda,
+  vistaInicial = "lista",
+  hoy,
 }: {
   titulo: string;
   modulo: string;
@@ -64,12 +69,24 @@ export function VistaTabla({
   indicadores?: Indicador[];
   /** Vistas guardadas de la persona; sin esto no se muestra el menú. */
   vistas?: VistaGuardada[];
+  calendario?: DefCalendario;
+  agenda?: DefAgenda;
+  vistaInicial?: TipoVista;
+  /** AAAA-MM-DD de Bogotá, para marcar hoy en calendario y agenda. */
+  hoy?: string;
 }) {
   const { abrirAsistente, asistenteHabilitado } = useShell();
   const params = useSearchParams();
   const activos = useMemo(() => filtrosDeUrl(new URLSearchParams(params.toString()), filtros), [params, filtros]);
   const tableroVisible = tablero && columnas.some((c) => c.campo === tablero) ? tablero : undefined;
-  const vista = params.get("v") === "tablero" && tableroVisible ? "tablero" : "lista";
+  const opciones: TipoVista[] = [
+    ...(calendario && periodo ? (["calendario"] as const) : []),
+    ...(agenda && periodo ? (["agenda"] as const) : []),
+    "lista",
+    ...(tableroVisible ? (["tablero"] as const) : []),
+  ];
+  const pedida = (params.get("v") as TipoVista | null) ?? vistaInicial;
+  const vista: TipoVista = opciones.includes(pedida) ? pedida : "lista";
   const filtradas = useMemo(() => aplicarFiltros(filas, activos), [filas, activos]);
   const [texto, setTexto] = useState("");
   const [orden, setOrden] = useState<{ campo: string; desc: boolean } | null>(null);
@@ -98,11 +115,11 @@ export function VistaTabla({
         </div>
       </AccionesModulo>
       <div className="px-4 pb-10 md:px-6">
-        {(periodo || tableroVisible || vistas) && (
+        {(periodo || opciones.length > 1 || vistas) && (
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             {periodo ? <SelectorPeriodo periodo={periodo} /> : <span />}
             <div className="flex items-center gap-2">
-              <SelectorVista vista={vista} tablero={tableroVisible} />
+              <SelectorVista vista={vista} opciones={opciones} inicial={opciones.includes(vistaInicial) ? vistaInicial : "lista"} />
               {vistas && <MenuVistas vistas={vistas} />}
             </div>
           </div>
@@ -144,6 +161,10 @@ export function VistaTabla({
               </Button>
             )}
           </div>
+        ) : vista === "calendario" && calendario && periodo ? (
+          <Calendario def={calendario} filas={visibles} periodo={periodo} hoy={hoy ?? periodo.inicio} alAbrir={setAbierta} />
+        ) : vista === "agenda" && agenda && periodo ? (
+          <Agenda def={agenda} filas={visibles} periodo={periodo} hoy={hoy ?? periodo.inicio} alAbrir={setAbierta} />
         ) : vista === "tablero" && tableroVisible ? (
           <Tablero campo={tableroVisible} columnas={columnas} filas={visibles} alAbrir={setAbierta} />
         ) : (

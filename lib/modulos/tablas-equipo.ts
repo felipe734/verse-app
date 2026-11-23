@@ -24,6 +24,8 @@ const codigo = (campo: string, etiqueta?: string): Columna => ({ campo, etiqueta
 
 export const TABLAS_EQUIPO: Record<string, DefTabla> = {
   operacion: {
+    calendario: { inicio: "Ingreso", fin: "Salida", fila: "Unidad", color: "Plataforma" },
+    vistaInicial: "calendario",
     editar: { tabla: "reservas", campos: [{ campo: "novedades", etiqueta: "Novedades" }, { campo: "comentario", etiqueta: "Comentario" }, { campo: "requiereLimpieza", etiqueta: "Requiere limpieza" }] },
     ...ids("6. OPERACION 360", "RESERVAS"),
     titulo: "Unidad",
@@ -37,6 +39,8 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 400,
   },
   limpiezas: {
+    agenda: { fecha: "Fecha", fila: "Funcionario", etiquetaFila: "Funcionaria", titulo: "Unidad", estado: "Estado" },
+    vistaInicial: "agenda",
     editar: { tabla: "limpieza", campos: [{ campo: "estado", etiqueta: "Estado" }, { campo: "comentario", etiqueta: "Comentario" }] },
     ...ids("6. OPERACION 360", "LIMPIEZA"),
     titulo: "Unidad",

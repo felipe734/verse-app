@@ -33,3 +33,14 @@ Primer PR del plan de vistas, aprobado por Felipe el 2026-11-23.
 Unidades Host, Unidades Living, Alistamiento y Contratistas no tienen período: son listas vigentes con filtros, tablero y cifras.
 
 En Finanzas, el cierre de arriba es el del mes elegido. Si ese mes todavía no tiene cierre (se llena el día 5 del mes siguiente), muestra el último cerrado.
+
+## Calendario y agenda (segundo PR)
+
+- **Operación abre en un calendario tipo Airbnb:**
+  - Una fila por unidad con reservas en el mes y una columna por día.
+  - Cada reserva es una barra de la tarde de llegada a la mañana de salida, con un color por plataforma.
+  - En el mes actual, arriba aparecen "Llegan hoy" y "Salen hoy", y la ocupación de las unidades con reservas.
+  - Al tocar una barra se abre el detalle.
+  - En celular se ve como agenda de llegadas y salidas por día.
+- **Limpiezas abre en una agenda semanal:** una fila por funcionaria y una columna por día, con la hora y la unidad. Lo terminado sale atenuado. En celular se ve como lista por día.
+- Lista y Tablero siguen disponibles en los dos módulos. La vista inicial de cada módulo es `vistaInicial`.
