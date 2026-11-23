@@ -19,15 +19,25 @@ async function conCliente<T>(f: (a: ReturnType<typeof clienteServidor>) => Promi
   return r;
 }
 
+/** Hora real del toque cuando se envía sin señal: no futura ni de más de 12 horas atrás. */
+function horaDelToque(cuando: unknown): Date | undefined {
+  if (typeof cuando !== "string") return undefined;
+  const d = new Date(cuando);
+  const ahora = Date.now();
+  if (Number.isNaN(d.getTime()) || d.getTime() > ahora + 2 * 60_000 || d.getTime() < ahora - 12 * 3_600_000) return undefined;
+  return d;
+}
+
 const fallo = (e: unknown): Resultado => {
   console.error("[ruta]", e instanceof Error ? e.message : e);
   return { ok: false, mensaje: "Airtable no respondió. Intenta de nuevo" };
 };
 
-export async function iniciarTurnoAccion(): Promise<Resultado> {
+export async function iniciarTurnoAccion(cuando?: string): Promise<Resultado> {
   const s = await sesionActual();
   try {
-    const r = await conCliente((a) => iniciarTurno(db(), a, s, hoyBogota()));
+    const t = horaDelToque(cuando);
+    const r = await conCliente((a) => iniciarTurno(db(), a, s, hoyBogota(t), t));
     revalidatePath(RUTA);
     return r;
   } catch (e) {
@@ -35,10 +45,11 @@ export async function iniciarTurnoAccion(): Promise<Resultado> {
   }
 }
 
-export async function cerrarTurnoAccion(): Promise<Resultado> {
+export async function cerrarTurnoAccion(cuando?: string): Promise<Resultado> {
   const s = await sesionActual();
   try {
-    const r = await conCliente((a) => cerrarTurno(db(), a, s, hoyBogota()));
+    const t = horaDelToque(cuando);
+    const r = await conCliente((a) => cerrarTurno(db(), a, s, hoyBogota(t), t));
     revalidatePath(RUTA);
     return r;
   } catch (e) {
@@ -68,7 +79,7 @@ const ReporteEntrada = z.object({
   video: z.object({ ruta: z.string().max(400), nombre: z.string().max(200) }).optional(),
 });
 
-export async function reportarAccion(entrada: unknown): Promise<Resultado> {
+export async function reportarAccion(entrada: unknown, cuando?: string): Promise<Resultado> {
   const r = ReporteEntrada.safeParse(entrada);
   if (!r.success) return { ok: false, mensaje: "Revisa el reporte" };
   // El video solo puede venir del almacenamiento de la app, en su carpeta.
@@ -76,7 +87,8 @@ export async function reportarAccion(entrada: unknown): Promise<Resultado> {
   const s = await sesionActual();
   try {
     const video = r.data.video ? { url: await urlDeLectura(r.data.video.ruta), nombre: r.data.video.nombre } : undefined;
-    const res = await conCliente((a) => reportar(db(), a, s, hoyBogota(), { ...r.data, video }));
+    const t = horaDelToque(cuando);
+    const res = await conCliente((a) => reportar(db(), a, s, hoyBogota(t), { ...r.data, video }, t));
     revalidatePath(RUTA);
     return res;
   } catch (e) {

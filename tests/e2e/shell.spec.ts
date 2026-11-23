@@ -330,3 +330,17 @@ test("Inicio muestra las alertas de la operación y cada una lleva a su módulo"
   await expect(alertas).toBeVisible();
   await expect(alertas.getByRole("link").first()).toHaveAttribute("href", /\/verse\//);
 });
+
+test("sin señal, iniciar turno queda guardado en el celular y se envía al volver", async ({ page, context, baseURL }) => {
+  await context.addCookies([{ name: "vitrina_usuario", value: "edy@vitrina.test", url: baseURL! }]);
+  await page.goto("/verse/host/ruta");
+  await expect(page.getByRole("button", { name: "Iniciar turno" })).toBeVisible();
+  await context.setOffline(true);
+  await page.getByRole("button", { name: "Iniciar turno" }).click();
+  await expect(page.getByText(/el turno quedó iniciado en el celular/)).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "1 cosa guardada sin señal" })).toBeVisible();
+  await expect(page.getByText("Turno abierto desde las ahora (sin enviar)")).toBeVisible();
+  await context.setOffline(false);
+  // Al volver la señal se intenta enviar (la vitrina es de solo lectura, así que Airtable no lo acepta).
+  await expect(page.getByRole("status").filter({ hasText: "guardada sin señal" })).toHaveCount(0, { timeout: 15_000 });
+});
