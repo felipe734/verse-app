@@ -52,3 +52,13 @@ En Finanzas, el cierre de arriba es el del mes elegido. Si ese mes todavía no t
 - **Unidades Living** abre en tablero por estado (Actual, Salida, Futuro, Vacío, Pasado), con ocupadas, con salida y vacías.
 - Las cifras de suma aceptan `donde`, para sumar solo un estado.
 - La ocupación del calendario cuenta cada noche una sola vez aunque dos registros se pisen.
+
+## Resto de módulos (cuarto PR)
+
+- **Unidades Host**: tablero por edificio.
+- **Liquidaciones**: tablero por estado.
+- **Alistamiento**: tablero por estado del pedido.
+- **Comercial Host**: embudo por estado del lead.
+- **Actas (Obra)**: tablero por contratista para el corte del mes.
+- **Equipo**: agenda de la semana con las horas de cada turno por funcionaria.
+- **Finanzas**: debajo del cierre, las barras de ingresos y margen neto de los últimos seis meses, con una tabla para lectores de pantalla.
