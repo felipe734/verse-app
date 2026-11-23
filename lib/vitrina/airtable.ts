@@ -1,5 +1,27 @@
 import type { ClienteAirtable, RegistroAirtable } from "@/lib/airtable/cliente";
 
+const reg = (id: string, fields: Record<string, unknown>): RegistroAirtable => ({ id, createdTime: "2026-11-01T00:00:00.000Z", fields });
+
+/** Ruta de aseo de la vitrina: dos funcionarias inventadas, tres limpiezas hoy y ningún turno abierto. */
+function rutaVitrina(o: { campos: string[]; formula?: string }): RegistroAirtable[] | null {
+  if (o.campos.includes("Nombre en LIMPIEZA"))
+    return [
+      reg("recVITRINAFUN0001", { Nombre: "Edy Prueba", Activa: "checked", Correo: "edy@vitrina.test", "Nombre en LIMPIEZA": "Edy Prueba", "Nombre en SERVICIOS": "Edy Prueba", "Nombre en CONTROL HORAS": "Edy" }),
+      reg("recVITRINAFUN0002", { Nombre: "Sara Prueba", Activa: "checked", Correo: "", "Nombre en LIMPIEZA": "Sara Prueba", "Nombre en SERVICIOS": "", "Nombre en CONTROL HORAS": "" }),
+    ];
+  if (o.formula?.includes("ARRAYJOIN({Funcionaria enlace})") && o.campos.includes("Comentario")) {
+    const hoy = new Date(Date.now() - 5 * 3_600_000);
+    const d = `${hoy.getUTCDate()}/${hoy.getUTCMonth() + 1}/${hoy.getUTCFullYear()}`;
+    return [
+      reg("recVITRINALIM0001", { Unidad: "Torre Norte 603", Fecha: `${d} 8:30am`, Estado: "Terminado", Comentario: "Salida huésped de prueba" }),
+      reg("recVITRINALIM0002", { Unidad: "Parque 1104", Fecha: `${d} 11:00am`, Estado: "Programado", Comentario: "Alistamiento ingreso" }),
+      reg("recVITRINALIM0003", { Unidad: "Balcony 302", Fecha: `${d} 2:00pm`, Estado: "Programado", Comentario: "Salida huésped de prueba" }),
+    ];
+  }
+  if (o.formula?.includes("ARRAYJOIN({Funcionaria enlace})")) return [];
+  return null;
+}
+
 /** Airtable de solo lectura para la vitrina: filas inventadas con los campos pedidos. */
 export function airtableVitrina(): ClienteAirtable {
   const DINERO = new Set(["TOTAL INGRESOS", "CONTRIBUCIÓN TOTAL", "OVERHEAD COSTO", "MARGEN NETO", "Débito", "Crédito", "Egreso"]);
@@ -20,7 +42,9 @@ export function airtableVitrina(): ClienteAirtable {
     throw new Error("La vitrina es de solo lectura");
   };
   return {
-    async consultar(_b: string, _t: string, o: { campos: string[] }) {
+    async consultar(_b: string, _t: string, o: { campos: string[]; formula?: string }) {
+      const especial = rutaVitrina(o);
+      if (especial) return especial;
       return Array.from({ length: 8 }, (_, i): RegistroAirtable => ({
         id: `recVITRINATAB${String(i).padStart(4, "0")}`,
         createdTime: "2026-11-01T00:00:00.000Z",

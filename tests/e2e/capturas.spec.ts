@@ -6,11 +6,12 @@ import { test } from "@playwright/test";
  * Solo con CAPTURAS=nombre-del-pr; quedan en docs/capturas/<nombre>/.
  */
 const carpeta = process.env.CAPTURAS;
-const PANTALLAS: { nombre: string; ruta: string; accion?: "comandos" | "detalle" | "asistente" }[] = (process.env.CAPTURAS_RUTAS ?? "hoy:/verse/general/hoy")
+const PANTALLAS: { nombre: string; ruta: string; accion?: "comandos" | "detalle" | "asistente"; usuario?: string }[] = (process.env.CAPTURAS_RUTAS ?? "hoy:/verse/general/hoy")
   .split(",")
   .map((x) => {
-    const [nombre, ruta, accion] = x.split(":");
-    return { nombre: nombre!, ruta: ruta!, accion: accion as never };
+    // nombre:ruta[:accion][:usuario de la vitrina]
+    const [nombre, ruta, accion, usuario] = x.split(":");
+    return { nombre: nombre!, ruta: ruta!, accion: (accion || undefined) as never, usuario: usuario || undefined };
   });
 
 test.describe("capturas", () => {
@@ -25,7 +26,7 @@ test.describe("capturas", () => {
       for (const tema of ["light", "dark"] as const)
         test(`${p.nombre} ${disp} ${tema}`, async ({ page, baseURL }) => {
           mkdirSync(`docs/capturas/${carpeta}`, { recursive: true });
-          await page.context().addCookies([{ name: "vitrina_usuario", value: "maestro", url: baseURL! }]);
+          await page.context().addCookies([{ name: "vitrina_usuario", value: p.usuario ?? "maestro", url: baseURL! }]);
           await page.setViewportSize({ width: ancho, height: alto });
           await page.emulateMedia({ colorScheme: tema });
           await page.goto(p.ruta);

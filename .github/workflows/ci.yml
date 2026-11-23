@@ -66,3 +66,19 @@ jobs:
         run: pnpm install --frozen-lockfile
       - if: steps.token.outputs.hay == 'si'
         run: pnpm test:vivo
+      # Regenera el mapeo con el catálogo vivo y lo deja como artefacto: si cambió, se
+      # descarga y se sube en el PR (nadie escribe IDs a mano).
+      - if: steps.token.outputs.hay == 'si'
+        run: |
+          pnpm mapeo:generar
+          if git diff --quiet -I '^// Fuente:' lib/airtable/mapeo.ts; then
+            echo "El mapeo está al día."
+          else
+            echo "::warning::El mapeo cambió frente al catálogo vivo. Descarga el artefacto mapeo y súbelo."
+          fi
+      - if: steps.token.outputs.hay == 'si'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mapeo
+          path: lib/airtable/mapeo.ts
+          retention-days: 7

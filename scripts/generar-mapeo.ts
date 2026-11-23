@@ -14,7 +14,7 @@ import {
   type FilaCatalogo,
   type Workspace,
 } from "../lib/airtable/construir-mapeo";
-import { ARRANQUE_CATALOGO, TABLAS_SINCRONIZADAS } from "../lib/airtable/definicion";
+import { ARRANQUE_CATALOGO, TABLAS_ESCRITURA, TABLAS_SINCRONIZADAS } from "../lib/airtable/definicion";
 
 interface Instantanea {
   catalogo: FilaCatalogo[];
@@ -51,7 +51,7 @@ async function leerEnVivo(token: string): Promise<Instantanea> {
     .filter((f) => f.tabla && f.idBase && f.idTabla);
 
   const bases = new Set<string>();
-  for (const def of Object.values(TABLAS_SINCRONIZADAS)) {
+  for (const def of [...Object.values(TABLAS_SINCRONIZADAS), ...Object.values(TABLAS_ESCRITURA)]) {
     const fila = catalogo.find((f) => f.base === def.base && f.tabla === def.tabla);
     if (fila) bases.add(fila.idBase);
   }

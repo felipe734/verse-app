@@ -28,7 +28,7 @@ const esquemas = {
 
 describe("construirMapeo", () => {
   it("resuelve nombres a IDs desde el catálogo y el esquema", () => {
-    const m = construirMapeo([fila({})], esquemas, definicion);
+    const m = construirMapeo([fila({})], esquemas, definicion, {});
     expect(m.tablas.tareas?.idTabla).toBe("tblAAAAAAAAAAAAAA");
     expect(m.tablas.tareas?.campos.asunto).toEqual({
       id: "fldAAAAAAAAAAAAAA",
@@ -38,7 +38,7 @@ describe("construirMapeo", () => {
   });
 
   it("falla si la tabla no está en el catálogo", () => {
-    expect(() => construirMapeo([], esquemas, definicion)).toThrow(ErrorMapeo);
+    expect(() => construirMapeo([], esquemas, definicion, {})).toThrow(ErrorMapeo);
   });
 
   it("falla si la tabla del catálogo ya no existe en Airtable", () => {

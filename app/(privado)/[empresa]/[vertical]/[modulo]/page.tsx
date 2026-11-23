@@ -8,6 +8,7 @@ import { ModuloPanel } from "@/components/modulos/tabla/modulo-panel";
 import { ModuloTabla } from "@/components/modulos/tabla/modulo-tabla";
 import { EsqueletoModulo } from "@/components/modulos/encabezado";
 import { ModuloHoy } from "@/components/modulos/hoy/modulo-hoy";
+import { ModuloRuta } from "@/components/modulos/ruta/modulo-ruta";
 import { sesionActual } from "@/lib/acceso/actual";
 import { ESTRUCTURA } from "@/lib/acceso/estructura";
 import { PLATFORM_NAME } from "@/lib/config";
@@ -39,6 +40,8 @@ async function Contenido({ params, searchParams }: { params: Promise<Params>; se
       return <ModuloAprobar sesion={sesion} empresa={empresa} />;
     case "correo":
       return <ModuloCorreo sesion={sesion} empresa={empresa} cuenta={busqueda.cuenta} />;
+    case "ruta":
+      return <ModuloRuta sesion={sesion} />;
     case "sistema":
       return <ModuloSistema sesion={sesion} empresa={empresa} />;
     default:
