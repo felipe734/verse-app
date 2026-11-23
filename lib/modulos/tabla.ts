@@ -1,5 +1,6 @@
 import type { ClienteAirtable } from "@/lib/airtable/cliente";
 import { sensibles, type Sesion } from "@/lib/acceso/permisos";
+import { formulaCruza, formulaDentro, type Periodo, type UnidadPeriodo } from "@/lib/vistas/periodo";
 import type { DefEdicion } from "./editar";
 
 /**
@@ -33,9 +34,26 @@ export interface DefTabla {
   max?: number;
   /** Texto del estado vacío. */
   vacio?: string;
+  /**
+   * Período de la vista: abre en lo actual y se mueve con ‹ ›. `campo` es la fecha que
+   * cae en el período; con `campoFin`, el rango [campo, campoFin] se cruza con él.
+   * Reemplaza a `formula`.
+   */
+  periodo?: { unidad: UnidadPeriodo; campo: string; campoFin?: string; /** El campo es texto "AAAA-MM" (solo mes). */ mesTexto?: boolean };
+  /** Columnas por las que se filtra con chips (valores que aparecen en el período). */
+  filtros?: string[];
+  /** Columna que arma el tablero (una columna por valor). */
+  tablero?: string;
+  /** Cifras arriba de la vista, calculadas sobre lo filtrado. */
+  indicadores?: Indicador[];
   /** Campos que se editan desde el detalle, con el módulo en "editar" (lib/modulos/editar.ts). */
   editar?: DefEdicion;
 }
+
+export type Indicador =
+  | { etiqueta: string; tipo: "conteo"; donde?: { campo: string; valores: string[] } }
+  | { etiqueta: string; tipo: "suma"; campo: string }
+  | { etiqueta: string; tipo: "distintos"; campo: string };
 
 export interface FilaTabla {
   id: string;
@@ -67,14 +85,21 @@ const texto = (v: unknown): string => {
   return String(v);
 };
 
-export async function leerTabla(airtable: ClienteAirtable, s: Sesion, empresa: string, vertical: string, def: DefTabla, hoy: string): Promise<ResultadoTabla> {
+/** Fórmula de la consulta: la del período si el módulo tiene, si no la fija. */
+export function formulaDe(def: DefTabla, hoy: string, periodo?: Periodo): string | undefined {
+  if (def.periodo?.mesTexto && periodo) return `{${def.periodo.campo}} = '${periodo.clave}'`;
+  if (def.periodo && periodo) return def.periodo.campoFin ? formulaCruza(def.periodo.campo, def.periodo.campoFin, periodo) : formulaDentro(def.periodo.campo, periodo);
+  return def.formula?.(hoy);
+}
+
+export async function leerTabla(airtable: ClienteAirtable, s: Sesion, empresa: string, vertical: string, def: DefTabla, hoy: string, periodo?: Periodo): Promise<ResultadoTabla> {
   const lista = columnasPermitidas(s, empresa, vertical, [{ campo: def.titulo }, ...def.columnas.filter((c) => c.campo !== def.titulo)]);
   const det = columnasPermitidas(s, empresa, vertical, def.detalle ?? []);
   const campos = [...new Set([...lista.visibles, ...det.visibles].map((c) => c.campo))];
   // El orden lo hace Airtable: con cellFormat string las fechas vienen como texto (D/M/AAAA).
   const registros = await airtable.consultar(def.idBase, def.idTabla, {
     campos,
-    formula: def.formula?.(hoy),
+    formula: formulaDe(def, hoy, periodo),
     max: def.max ?? 200,
     orden: def.orden ? { campo: def.orden.campo, desc: def.orden.desc ?? true } : undefined,
   });

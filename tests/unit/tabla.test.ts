@@ -4,6 +4,7 @@ import type { Sesion } from "@/lib/acceso/permisos";
 import { plantilla } from "@/lib/acceso/plantillas";
 import { columnasPermitidas, leerTabla } from "@/lib/modulos/tabla";
 import { TABLAS_EQUIPO } from "@/lib/modulos/tablas-equipo";
+import { leerPeriodo } from "@/lib/vistas/periodo";
 import { AirtableFalso } from "../apoyo/airtable-falso";
 
 const sesion = (accesos: Sesion["accesos"], extra: Partial<Sesion> = {}): Sesion => ({
@@ -42,10 +43,12 @@ describe("módulos de tabla", () => {
   it("el Maestro ve todo y Airtable ordena", async () => {
     const at = new AirtableFalso();
     const def = TABLAS_EQUIPO.operacion!;
-    await leerTabla(at, maestro, "verse", "verse-host", def, HOY);
+    await leerTabla(at, maestro, "verse", "verse-host", def, HOY, leerPeriodo("mes", undefined, HOY));
     expect(at.consultas[0]!.campos).toEqual(expect.arrayContaining(["Total_H", "Nombre", "Pass WIFI"]));
     expect(at.consultas[0]!.orden).toEqual({ campo: "Ingreso", desc: false });
-    expect(at.consultas[0]!.formula).toContain("DATETIME_PARSE('2026-11-25')");
+    // Reservas que se cruzan con el mes actual.
+    expect(at.consultas[0]!.formula).toContain("< 20261201");
+    expect(at.consultas[0]!.formula).toContain("{Salida} = BLANK()");
   });
 
   it("ninguna tabla pide credenciales de plataformas ni cuentas bancarias", () => {
