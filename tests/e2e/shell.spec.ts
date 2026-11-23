@@ -308,3 +308,18 @@ test("⌘K busca en los módulos y abre la fila encontrada", async ({ page, isMo
   await expect(page).toHaveURL(/\/verse\/host\/liquidaciones\?.*fila=rec/);
   await expect(page.getByRole("dialog")).toBeVisible();
 });
+
+test("exportar a CSV descarga lo que se ve y ? muestra los atajos", async ({ page, isMobile }) => {
+  await page.goto("/verse/host/limpiezas?v=lista");
+  await page.getByRole("button", { name: "Exportar" }).click();
+  const descarga = page.waitForEvent("download");
+  await page.getByRole("menuitem", { name: "CSV para Excel" }).click();
+  expect((await descarga).suggestedFilename()).toBe("limpiezas.csv");
+  if (!isMobile) {
+    await page.keyboard.press("?");
+    await expect(page.getByRole("dialog", { name: "Atajos de teclado" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("[");
+    await expect(page).toHaveURL(/p=\d{4}-W\d{2}/);
+  }
+});
