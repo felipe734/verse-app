@@ -7,6 +7,7 @@ import { ESTRUCTURA } from "@/lib/acceso/estructura";
 import { crearContador } from "@/lib/medicion/contador";
 import { formularioEdicion, guardarEdicion, idDeCampo, type Formulario, type Guardado } from "@/lib/modulos/editar";
 import { pestanaDe } from "@/lib/modulos/finanzas";
+import { actividadDe, type Evento } from "@/lib/modulos/actividad";
 import { leerRelacionados, type BloqueRelacionado } from "@/lib/modulos/relacionados";
 import { hoyBogota } from "@/lib/hoy/clasificar";
 import { ubicar } from "@/lib/modulos/registro";
@@ -96,4 +97,13 @@ export async function relacionadosDe(ref: RefModulo, celdas: Record<string, stri
     console.error("[relacionados]", e instanceof Error ? e.message : e);
     return [];
   }
+}
+
+/** Actividad de la app sobre una fila del módulo (AUDITORIA), solo para quien ve el módulo. */
+export async function actividadAccion(ref: RefModulo, recId: string, pestana?: string): Promise<Evento[]> {
+  const s = await sesionActual();
+  const u = ubicar(s, s.estructura ?? ESTRUCTURA, String(ref.empresa), String(ref.vertical), String(ref.modulo));
+  const tabla = u?.def.tabla ?? (u?.def.pestanas ? pestanaDe(u.def.tipo, pestana ?? ref.pestana)?.tabla : undefined);
+  if (!u || !tabla || !/^rec[A-Za-z0-9]{14}$/.test(String(recId))) return [];
+  return actividadDe(db(), tabla.idTabla, String(recId));
 }
