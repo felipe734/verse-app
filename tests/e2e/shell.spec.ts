@@ -296,3 +296,15 @@ test("el detalle de una reserva muestra las limpiezas y liquidaciones de su unid
   await expect(panel.getByRole("region", { name: "Limpiezas de la unidad" })).toBeVisible();
   await expect(panel.getByRole("region", { name: "Liquidaciones de la unidad" }).getByRole("link", { name: "Ir" })).toHaveAttribute("href", "/verse/host/liquidaciones");
 });
+
+test("⌘K busca en los módulos y abre la fila encontrada", async ({ page, isMobile }) => {
+  test.skip(isMobile, "En celular la búsqueda está en el menú");
+  await page.goto("/inicio");
+  await page.getByRole("button", { name: "Buscar" }).first().click();
+  await page.getByRole("combobox").fill("torre");
+  const item = page.getByRole("option", { name: /Liquidaciones/ }).first();
+  await expect(item).toBeVisible();
+  await item.click();
+  await expect(page).toHaveURL(/\/verse\/host\/liquidaciones\?.*fila=rec/);
+  await expect(page.getByRole("dialog")).toBeVisible();
+});

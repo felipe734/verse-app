@@ -52,3 +52,8 @@ Regla general: **todo abre en lo actual y en lo tuyo**.
   - Acta: pagos del contratista.
   - Pago de obra: actas.
   - Contratista: actas y pagos.
+
+## 6. ⌘K global y actividad por registro
+
+- **⌘K** también busca, por el nombre de la fila y sin importar el período, en Contratos, Cobros, Actas, Contratistas, Comercial Host y Living y Liquidaciones, siempre que la persona vea el módulo. El resultado abre el módulo en el período de la fila (`?p=`), en lista y Todo, con la fila abierta (`?fila=`).
+- **Actividad**: el detalle muestra quién cambió qué y cuándo desde la app (AUDITORIA, con nombres de campo legibles). Lo que se cambió a mano en Airtable o hizo una skill no aparece aquí.

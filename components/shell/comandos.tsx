@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, CheckSquare, Home, MessageSquare, Search } from "lucide-react";
+import { Building2, CheckSquare, FileText, Home, MessageSquare, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { buscar } from "@/app/shell/acciones";
@@ -11,7 +11,7 @@ import { Icono } from "./iconos";
 import { LogoEmpresa } from "./logo-empresa";
 import type { DatosShell } from "./tipos";
 
-const ICONO_RESULTADO = { pendiente: CheckSquare, unidad: Building2, reserva: Home } as const;
+const ICONO_RESULTADO = { pendiente: CheckSquare, unidad: Building2, reserva: Home, registro: FileText } as const;
 
 /** Paleta de comandos (⌘K): ir a un módulo, buscar pendiente, unidad o reserva, cambiar de empresa. */
 export function Comandos({ d }: { d: DatosShell }) {

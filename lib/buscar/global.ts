@@ -6,9 +6,14 @@ import { filtrarSuyo, puede, type Sesion } from "@/lib/acceso/permisos";
 import { buscarReservas } from "@/lib/asistente/vivo";
 import { accion, hoyBogota, type TareaHoy } from "@/lib/hoy/clasificar";
 import { HOY_POR_EMPRESA } from "@/lib/hoy/datos";
+import { ESTRUCTURA } from "@/lib/acceso/estructura";
+import { REGISTRO, segmentoVertical } from "@/lib/modulos/registro";
+import { leerTabla } from "@/lib/modulos/tabla";
+import { leerFecha } from "@/lib/vistas/fechas";
+import { leerPeriodo } from "@/lib/vistas/periodo";
 
 export interface Resultado {
-  tipo: "pendiente" | "unidad" | "reserva";
+  tipo: "pendiente" | "unidad" | "reserva" | "registro";
   id: string;
   titulo: string;
   detalle: string;
@@ -81,5 +86,49 @@ export async function buscarGlobal(db: Db, s: Sesion, texto: string, airtable?: 
       }
     }
   }
+  if (airtable && q.length >= 3) salida.push(...(await buscarEnModulos(airtable, s, q).catch(() => [])));
   return salida;
+}
+
+/** Módulos donde ⌘K busca por el nombre de la fila (contratos, actas, leads, contratistas, cobros). */
+const BUSCABLES = ["contratos", "cobros", "actas", "contratistas", "comercial-host", "comercial-living", "liquidaciones"];
+
+const literal = (t: string) => t.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+
+/**
+ * Busca en los módulos de tabla que la persona ve, por su campo título, sin período. El enlace
+ * abre el módulo en el período de la fila y con la fila abierta.
+ */
+async function buscarEnModulos(airtable: ClienteAirtable, s: Sesion, q: string): Promise<Resultado[]> {
+  const estructura = s.estructura ?? ESTRUCTURA;
+  const hoy = hoyBogota();
+  const tareasBusqueda = estructura.flatMap((e) =>
+    e.verticales.flatMap((v) =>
+      v.modulos
+        .filter((m) => BUSCABLES.includes(m.tipo ?? "") && puede(s, e.id, m.id, "ver"))
+        .map((m) => ({ e, v, m, def: REGISTRO.find((d) => d.tipo === m.tipo) }))
+        .filter((x) => x.def?.tabla),
+    ),
+  );
+  const listas = await Promise.all(
+    tareasBusqueda.map(async ({ e, v, m, def }) => {
+      const tabla = def!.tabla!;
+      const formula = `FIND(LOWER('${literal(q)}'), LOWER(ARRAYJOIN({${tabla.titulo}})))`;
+      const r = await leerTabla(airtable, s, e.id, v.id, { ...tabla, periodo: undefined, formula: () => formula, max: 4 }, hoy).catch(() => null);
+      if (!r) return [];
+      const base = `/${e.id}/${segmentoVertical(e.id, v.id)}/${def!.segmento}`;
+      return r.filas.map((f): Resultado => {
+        const fecha = tabla.periodo ? leerFecha(f.celdas[tabla.periodo.campo]) : null;
+        const p = fecha && tabla.periodo ? leerPeriodo(tabla.periodo.unidad, undefined, fecha.fecha).clave : null;
+        const params = new URLSearchParams({ v: "lista", quien: "todo", fila: f.id, ...(p ? { p } : {}) });
+        const detalle = r.columnas
+          .slice(1, 3)
+          .map((c) => f.celdas[c.campo])
+          .filter(Boolean)
+          .join(" · ");
+        return { tipo: "registro", id: f.id, titulo: f.celdas[tabla.titulo] || "—", detalle: `${m.nombre}${detalle ? ` · ${detalle}` : ""}`, href: `${base}?${params}` };
+      });
+    }),
+  );
+  return listas.flat().slice(0, 12);
 }

@@ -20,6 +20,7 @@ import { esMio } from "@/lib/vistas/mio";
 import { Actualizar, aplicarFiltros, Filtros, InterruptorMio, filtrosDeUrl, Indicadores, MenuVistas, SelectorPeriodo, SelectorVista, Tablero, type VistaGuardada } from "./controles";
 import { Agenda, Calendario } from "./calendario";
 import { Edicion } from "./edicion";
+import { Actividad } from "./actividad";
 import { Relacionados } from "./relacionados";
 
 const derecha = (c: Columna) => c.tipo === "dinero" || c.tipo === "numero";
@@ -128,6 +129,14 @@ export function VistaTabla({
   const [texto, setTexto] = useState("");
   const [orden, setOrden] = useState<{ campo: string; desc: boolean } | null>(null);
   const [abierta, setAbierta] = useState<FilaTabla | null>(null);
+  // ?fila=rec… (desde ⌘K): abre esa fila una vez, si está en lo que se ve.
+  const pedidaFila = params.get("fila");
+  const [filaUsada, setFilaUsada] = useState<string | null>(null);
+  if (pedidaFila && pedidaFila !== filaUsada) {
+    setFilaUsada(pedidaFila);
+    const f = filas.find((x) => x.id === pedidaFila);
+    if (f) setAbierta(f);
+  }
 
   const visibles = useMemo(() => {
     const t = texto.toLowerCase();
@@ -327,6 +336,7 @@ export function VistaTabla({
                 ))}
               </dl>
               {relacionados && <Relacionados key={abierta.id} refModulo={relacionados} celdas={abierta.celdas} />}
+              {(edicion ?? relacionados) && <Actividad key={`a${abierta.id}`} refModulo={(edicion ?? relacionados)!} recId={abierta.id} />}
               </div>
               {aplicables(abierta).length > 0 && (
                 <div className="flex flex-wrap gap-2 border-t p-4">

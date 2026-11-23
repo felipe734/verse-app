@@ -5,6 +5,7 @@ import { sesionActual } from "@/lib/acceso/actual";
 import { buscarGlobal, type Resultado } from "@/lib/buscar/global";
 import { crearContador } from "@/lib/medicion/contador";
 import { clienteServidor } from "@/lib/servidor/airtable";
+import { esVitrina } from "@/lib/vitrina/activa";
 
 /** Búsqueda de ⌘K. Sin clave de Airtable (vitrina, CI) no busca reservas. */
 export async function buscar(texto: string): Promise<Resultado[]> {
@@ -12,7 +13,7 @@ export async function buscar(texto: string): Promise<Resultado[]> {
   const s = await sesionActual();
   const contador = crearContador();
   try {
-    const r = await buscarGlobal(db(), s, texto, process.env.AIRTABLE_TOKEN ? clienteServidor(contador) : undefined);
+    const r = await buscarGlobal(db(), s, texto, process.env.AIRTABLE_TOKEN || esVitrina() ? clienteServidor(contador) : undefined);
     await contador.volcar(db());
     return r;
   } catch (e) {
