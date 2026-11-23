@@ -2,6 +2,7 @@ import { after } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/db/cliente";
 import { syncEstado } from "@/db/esquema";
+import { crearContador } from "@/lib/medicion/contador";
 import { clienteServidor } from "@/lib/servidor/airtable";
 import { aplicarAviso, firmaValida } from "@/lib/sync/webhooks";
 
@@ -26,8 +27,10 @@ export async function POST(request: Request) {
   }
 
   after(async () => {
+    const contador = crearContador();
     try {
-      await aplicarAviso(base, clienteServidor(), webhookId);
+      await aplicarAviso(base, clienteServidor(contador), webhookId);
+      await contador.volcar(base);
     } catch (e) {
       await base
         .update(syncEstado)

@@ -1,9 +1,10 @@
 import { crearCliente, type ClienteAirtable } from "@/lib/airtable/cliente";
 import { exigir, leerEntorno } from "@/lib/entorno";
+import type { Contador } from "@/lib/medicion/contador";
 
-/** Cliente de Airtable del servidor. El gancho de medición llega en el PR de medición. */
-export function clienteServidor(): ClienteAirtable {
-  return crearCliente({ token: exigir(leerEntorno(), "AIRTABLE_TOKEN") });
+/** Cliente de Airtable del servidor. Cada llamada se cuenta por base y workspace. */
+export function clienteServidor(contador?: Contador): ClienteAirtable {
+  return crearCliente({ token: exigir(leerEntorno(), "AIRTABLE_TOKEN"), alLlamar: contador?.contar });
 }
 
 export function urlWebhook(): string {
