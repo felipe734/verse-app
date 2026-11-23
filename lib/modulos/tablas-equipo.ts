@@ -28,6 +28,7 @@ const ventana = (campo: string, desde: number, hasta: number) => (hoy: string) =
 
 export const TABLAS_EQUIPO: Record<string, DefTabla> = {
   operacion: {
+    editar: { tabla: "reservas", campos: [{ campo: "novedades", etiqueta: "Novedades" }, { campo: "comentario", etiqueta: "Comentario" }, { campo: "requiereLimpieza", etiqueta: "Requiere limpieza" }] },
     ...ids("6. OPERACION 360", "RESERVAS"),
     titulo: "Unidad",
     columnas: [t("Unidad"), t("Edificio"), t("Plataforma"), fecha("Ingreso"), fecha("Salida"), num("Noches"), plata("Total_H", "Total")],
@@ -37,6 +38,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     vacio: "No hay reservas de ayer a dos semanas",
   },
   limpiezas: {
+    editar: { tabla: "limpieza", campos: [{ campo: "estado", etiqueta: "Estado" }, { campo: "comentario", etiqueta: "Comentario" }] },
     ...ids("6. OPERACION 360", "LIMPIEZA"),
     titulo: "Unidad",
     columnas: [t("Unidad"), fecha("Fecha"), t("Funcionario", "Funcionaria"), estado("Estado"), estado("Estado Pago", "Pago"), plata("Total")],
@@ -45,6 +47,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     vacio: "No hay limpiezas en estas tres semanas",
   },
   "unidades-host": {
+    editar: { tabla: "unidadesHost", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("5. INVENTARIO", "UNIDADES"),
     titulo: "Unidad",
     columnas: [t("Unidad"), t("Edificio"), t("Propietario"), estado("Estado"), t("Producto"), t("Tipo Servicio", "Servicio"), t("Canal")],
@@ -53,6 +56,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 300,
   },
   liquidaciones: {
+    editar: { tabla: "fCortas", campos: [{ campo: "estado", etiqueta: "Estado" }, { campo: "comentario", etiqueta: "Comentario" }] },
     ...ids("6. OPERACION 360", "F_CORTAS"),
     titulo: "Unidad",
     columnas: [t("Unidad"), fecha("Fecha"), t("Propietario"), t("Tipo Modelo", "Modelo"), estado("Estado"), plata("Factura_General", "Factura"), plata("Neto Propietario", "Neto propietario")],
@@ -61,12 +65,14 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 300,
   },
   alistamiento: {
+    editar: { tabla: "proyAmob", campos: [{ campo: "estadoPedido", etiqueta: "Estado del pedido" }] },
     ...ids("8. ALISTAMIENTO", "PROY_AMOB"),
     titulo: "Unidad",
     columnas: [t("Unidad"), t("Categoria", "Categoría"), t("Proveedor"), estado("Estado Pedido", "Pedido"), estado("Estado Pago", "Pago"), plata("Total"), plata("Pendiente")],
     max: 300,
   },
   "comercial-host": {
+    editar: { tabla: "leadsHost", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("10. LEAD GEN", "LEADS"),
     titulo: "Nombre",
     columnas: [t("Nombre"), fecha("Fecha de Envio", "Llegó"), estado("Estado"), t("SDR"), t("Tipo_Propiedad", "Propiedad"), t("Ubicacion", "Ubicación"), t("Canal")],
@@ -75,6 +81,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 150,
   },
   "unidades-living": {
+    editar: { tabla: "unidadesLiving", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("7. LIVING", "UNIDADES"),
     titulo: "Unidad",
     columnas: [t("Unidad"), estado("Estado"), tercero("Nombre", "Arrendatario"), fecha("Fecha Salida", "Salida"), num("Días Restantes", "Días"), plata("Total")],
@@ -83,6 +90,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 300,
   },
   contratos: {
+    editar: { tabla: "contratos", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("7. LIVING", "CONTRATO"),
     titulo: "Unidad",
     columnas: [t("Unidad"), t("Edificio"), tercero("Nombre", "Arrendatario"), estado("Estado"), fecha("Fecha_Inicio", "Inicio"), fecha("Fecha_Finalización", "Fin"), plata("Canon_Servicios", "Canon y servicios")],
@@ -91,6 +99,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 200,
   },
   cobros: {
+    editar: { tabla: "ingresosLiving", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("7. LIVING", "INGRESOS"),
     titulo: "Unidad",
     columnas: [t("Unidad"), fecha("Fecha"), t("Edificio"), tercero("Arrendatario"), estado("Estado"), plata("Canon"), plata("Total")],
@@ -116,6 +125,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     vacio: "No hay turnos registrados en dos semanas",
   },
   actas: {
+    editar: { tabla: "actas", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("11. ACTAS OBRA", "ACTAS"),
     titulo: "Acta",
     columnas: [t("Acta"), fecha("Fecha"), t("Contratista"), t("Fase"), estado("Estado"), plata("Total Corte", "Total corte"), plata("A pagar")],
@@ -123,6 +133,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 200,
   },
   "pagos-obra": {
+    editar: { tabla: "contabilidadObra", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("12. EDIFICIO 54-47", "CONTABILIDAD"),
     titulo: "Concepto",
     columnas: [t("Concepto"), fecha("Fecha Pago", "Fecha de pago"), t("Contratista"), t("Fuente"), estado("Estado"), plata("Monto")],

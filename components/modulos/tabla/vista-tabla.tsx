@@ -11,6 +11,8 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Columna, FilaTabla } from "@/lib/modulos/tabla";
 import { cn } from "@/lib/utils";
+import type { RefModulo } from "@/app/modulos/editar";
+import { Edicion } from "./edicion";
 
 const derecha = (c: Columna) => c.tipo === "dinero" || c.tipo === "numero";
 const etiqueta = (c: Columna) => c.etiqueta ?? c.campo;
@@ -33,6 +35,7 @@ export function VistaTabla({
   ocultos,
   vacio,
   error,
+  edicion,
 }: {
   titulo: string;
   modulo: string;
@@ -42,6 +45,8 @@ export function VistaTabla({
   ocultos: string[];
   vacio?: string;
   error?: string;
+  /** Si la persona puede editar en este módulo: dónde está, para la acción del servidor. */
+  edicion?: RefModulo;
 }) {
   const { abrirAsistente, asistenteHabilitado } = useShell();
   const [texto, setTexto] = useState("");
@@ -159,6 +164,11 @@ export function VistaTabla({
                   </div>
                 ))}
               </dl>
+              {edicion && (
+                <div className="border-t p-4">
+                  <Edicion key={abierta.id} refModulo={edicion} recId={abierta.id} alGuardar={() => setAbierta(null)} />
+                </div>
+              )}
               {asistenteHabilitado && (
                 <div className="border-t p-4">
                   <Button variant="ghost" className="gap-2" onClick={() => abrirAsistente(`Sobre ${abierta.celdas[columnas[0]?.campo ?? ""]} en ${modulo}: `)}>

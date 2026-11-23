@@ -1,5 +1,5 @@
 import Link from "next/link";
-import type { Sesion } from "@/lib/acceso/permisos";
+import { puede, type Sesion } from "@/lib/acceso/permisos";
 import { hoyBogota } from "@/lib/hoy/clasificar";
 import { crearContador } from "@/lib/medicion/contador";
 import { leerCierre, pestanaDe, type MesCierre } from "@/lib/modulos/finanzas";
@@ -51,6 +51,7 @@ function Cierre({ meses }: { meses: MesCierre[] }) {
 export async function ModuloPanel({ sesion, u, pestana }: { sesion: Sesion; u: Ubicacion; pestana?: string }) {
   const lista = u.def.pestanas!;
   const activa = pestanaDe(u.def.tipo, pestana)!;
+  const puedeEditar = Boolean(activa.tabla.editar?.campos.length) && puede(sesion, u.empresa, u.modulo.id, "editar");
   const ruta = `/${u.empresa}/${u.vertical.segmento}/${u.def.segmento}`;
   const contador = crearContador();
   const airtable = clienteServidor(contador);
@@ -97,6 +98,7 @@ export async function ModuloPanel({ sesion, u, pestana }: { sesion: Sesion; u: U
         ocultos={r?.ocultos ?? []}
         vacio={activa.tabla.vacio}
         error={error}
+        edicion={puedeEditar ? { empresa: u.empresa, vertical: u.vertical.segmento, modulo: u.def.segmento, pestana: activa.id } : undefined}
       />
     </>
   );

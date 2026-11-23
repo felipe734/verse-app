@@ -1,4 +1,22 @@
 import type { ClienteAirtable, RegistroAirtable } from "@/lib/airtable/cliente";
+import { ESCRITURA, TABLAS } from "@/lib/airtable/mapeo";
+
+type Mapeada = { idBase: string; campos: Record<string, { id: string; nombre: string; tipo: string }> };
+const MAPEADAS = [...Object.values(TABLAS), ...Object.values(ESCRITURA ?? {})] as unknown as Mapeada[];
+const OPCIONES = ["Pendiente", "En curso", "Hecho"];
+
+/** Para editar en la vitrina: los campos mapeados de la base con valores de ejemplo. */
+function filaVitrina(idBase: string, id: string): RegistroAirtable {
+  const fields: Record<string, unknown> = {};
+  for (const t of MAPEADAS.filter((x) => x.idBase === idBase))
+    for (const c of Object.values(t.campos)) fields[c.id] = c.tipo === "singleSelect" ? OPCIONES[0] : c.tipo === "checkbox" ? false : c.tipo.endsWith("Text") ? `${c.nombre} de prueba` : null;
+  return reg(id, fields);
+}
+
+function esquemaVitrina(idBase: string) {
+  const campos = MAPEADAS.filter((x) => x.idBase === idBase).flatMap((t) => Object.values(t.campos));
+  return [{ id: "tblVITRINA000000", name: "VITRINA", fields: campos.map((c) => ({ id: c.id, name: c.nombre, type: c.tipo, ...(c.tipo === "singleSelect" ? { options: { choices: OPCIONES.map((name) => ({ name })) } } : {}) })) }];
+}
 
 const reg = (id: string, fields: Record<string, unknown>): RegistroAirtable => ({ id, createdTime: "2026-11-01T00:00:00.000Z", fields });
 
@@ -52,10 +70,10 @@ export function airtableVitrina(): ClienteAirtable {
         fields: Object.fromEntries(o.campos.map((c: string) => [c, c === "Fecha" && o.campos.includes("MARGEN NETO") ? `1/${10 - i}/2026` : valor(c, i)])),
       }));
     },
-    esquema: no,
+    esquema: async (idBase: string) => esquemaVitrina(idBase) as never,
     todos: no,
     porIds: no,
-    obtener: no,
+    obtener: async (idBase: string, _t: string, id: string) => filaVitrina(idBase, id),
     actualizar: no,
     crear: no,
     crearTabla: no,

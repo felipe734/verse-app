@@ -158,3 +158,21 @@ test("quien coordina ve la ruta de todas", async ({ page }) => {
   await expect(page.getByRole("region", { name: "Ruta de Sara Prueba" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Iniciar turno" })).toHaveCount(0);
 });
+
+test("en un módulo con editar, el detalle abre el formulario con las opciones de Airtable", async ({ page }) => {
+  await page.goto("/verse/host/limpiezas");
+  await page.locator("tbody tr").first().click();
+  const panel = page.getByRole("dialog");
+  await panel.getByRole("button", { name: "Editar" }).click();
+  const form = panel.getByRole("form", { name: "Editar fila" });
+  await expect(form.getByRole("combobox")).toHaveValue("Pendiente");
+  await expect(form.getByRole("option", { name: "Hecho" })).toBeAttached();
+  await expect(form.getByRole("button", { name: "Guardar" })).toBeVisible();
+});
+
+test("con el módulo solo en ver no aparece Editar", async ({ page, baseURL }) => {
+  await page.context().addCookies([{ name: "vitrina_usuario", value: "admin@vitrina.test", url: baseURL! }]);
+  await page.goto("/verse/general/finanzas");
+  await page.locator("tbody tr").first().click();
+  await expect(page.getByRole("dialog").getByRole("button", { name: "Editar" })).toHaveCount(0);
+});

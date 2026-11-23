@@ -57,6 +57,7 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
         orden: { campo: "Fecha", desc: true },
         max: 400,
         vacio: "No hay movimientos bancarios en los últimos 45 días",
+        editar: { tabla: "movimientos", campos: [{ campo: "estado", etiqueta: "Estado" }, { campo: "categoria", etiqueta: "Categoría" }, { campo: "comentario", etiqueta: "Comentario" }] },
       },
     },
     {
