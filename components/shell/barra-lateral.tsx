@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, ChevronsUpDown, LogOut, Monitor, Moon, Search, Settings, Sun } from "lucide-react";
+import { Check, ChevronsUpDown, House, LogOut, Monitor, Moon, Search, Settings, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -150,6 +150,19 @@ export function BarraLateral({ d, salir }: { d: DatosShell; salir: () => Promise
               <Search className="size-4" aria-hidden />
               <span className="flex-1">Buscar</span>
               <Kbd className="group-data-[collapsible=icon]:hidden">⌘K</Kbd>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={ruta === "/inicio"}
+              tooltip="Inicio"
+              className="data-[active=true]:bg-acento-suave data-[active=true]:font-medium data-[active=true]:text-foreground [&[data-active=true]>svg]:text-acento"
+            >
+              <Link href="/inicio" onClick={cerrarEnCelular} aria-current={ruta === "/inicio" ? "page" : undefined}>
+                <House className="size-4" aria-hidden />
+                <span>Inicio</span>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

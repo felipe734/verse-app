@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Entrar · Verse App" };
 
 async function entrarConGoogle() {
   "use server";
-  await signIn("google", { redirectTo: "/hoy" });
+  await signIn("google", { redirectTo: "/inicio" });
 }
 
 async function Aviso({ searchParams }: { searchParams: Promise<{ error?: string }> }) {

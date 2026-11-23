@@ -19,7 +19,7 @@ const MOTIVOS = {
 async function aceptar(token: string) {
   "use server";
   (await cookies()).set(COOKIE_INVITACION, token, { httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: 7 * 24 * 3600 });
-  await signIn("google", { redirectTo: "/hoy" });
+  await signIn("google", { redirectTo: "/inicio" });
 }
 
 async function Contenido({ params }: { params: Promise<{ token: string }> }) {

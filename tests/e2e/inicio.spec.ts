@@ -52,7 +52,7 @@ test("sin sesión, Correo manda a entrar y no lee bandejas", async ({ page }) =>
 test("la app es instalable: manifiesto e ícono", async ({ request }) => {
   const m = await request.get("/manifest.webmanifest");
   expect(m.ok()).toBe(true);
-  expect(await m.json()).toMatchObject({ name: "Verse App", start_url: "/hoy", display: "standalone" });
+  expect(await m.json()).toMatchObject({ name: "Verse App", start_url: "/inicio", display: "standalone" });
   const icono = await request.get("/icono/192");
   expect(icono.headers()["content-type"]).toContain("image/png");
   expect((await request.get("/icono/77")).status()).toBe(404);

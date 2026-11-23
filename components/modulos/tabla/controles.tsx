@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { calcularIndicadores } from "@/lib/modulos/indicadores";
 import type { Columna, FilaTabla, Indicador, TipoVista } from "@/lib/modulos/tabla";
 import type { Periodo } from "@/lib/vistas/periodo";
 import { cn } from "@/lib/utils";
@@ -127,31 +128,9 @@ export function Filtros({ campos, columnas, filas, activos }: { campos: string[]
   );
 }
 
-const pesos = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
-const numero = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 1 });
-/** "$1.250.000", "12,5" o "8" → número. */
-export const aNumero = (v: string) => {
-  const limpio = v.replace(/[^\d,-]/g, "").replace(",", ".");
-  const n = Number(limpio);
-  return limpio && !Number.isNaN(n) ? n : 0;
-};
-
 /** Cifras del período sobre lo filtrado. Una suma de una columna que la persona no ve no aparece. */
 export function Indicadores({ indicadores, columnas, filas }: { indicadores: Indicador[]; columnas: Columna[]; filas: FilaTabla[] }) {
-  const items = indicadores
-    .map((i) => {
-      if (i.tipo === "conteo") {
-        const n = i.donde ? filas.filter((f) => i.donde!.valores.includes(f.celdas[i.donde!.campo] ?? "")).length : filas.length;
-        return { etiqueta: i.etiqueta, valor: numero.format(n) };
-      }
-      const col = columnas.find((c) => c.campo === i.campo);
-      if (!col) return null;
-      if (i.tipo === "distintos") return { etiqueta: i.etiqueta, valor: numero.format(new Set(filas.map((f) => f.celdas[i.campo]).filter(Boolean)).size) };
-      const base = i.donde ? filas.filter((f) => i.donde!.valores.includes(f.celdas[i.donde!.campo] ?? "")) : filas;
-      const total = base.reduce((s, f) => s + aNumero(f.celdas[i.campo] ?? ""), 0);
-      return { etiqueta: i.etiqueta, valor: col.tipo === "dinero" ? pesos.format(total) : numero.format(total) };
-    })
-    .filter(Boolean) as { etiqueta: string; valor: string }[];
+  const items = calcularIndicadores(indicadores, columnas, filas);
   if (!items.length) return null;
   return (
     <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Indicadores">

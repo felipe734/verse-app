@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: PLATFORM_NAME,
     short_name: PLATFORM_NAME,
     description: "Plataforma de operación sobre Airtable",
-    start_url: "/hoy",
+    start_url: "/inicio",
     display: "standalone",
     background_color: "#ffffff",
     theme_color: "#09090b",
