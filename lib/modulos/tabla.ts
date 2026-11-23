@@ -1,5 +1,6 @@
 import type { ClienteAirtable } from "@/lib/airtable/cliente";
 import { sensibles, type Sesion } from "@/lib/acceso/permisos";
+import type { DefEdicion } from "./editar";
 
 /**
  * Módulo de tabla: una lista densa sobre una tabla de Airtable, leída en el momento y solo
@@ -32,6 +33,8 @@ export interface DefTabla {
   max?: number;
   /** Texto del estado vacío. */
   vacio?: string;
+  /** Campos que se editan desde el detalle, con el módulo en "editar" (lib/modulos/editar.ts). */
+  editar?: DefEdicion;
 }
 
 export interface FilaTabla {

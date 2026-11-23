@@ -1,4 +1,4 @@
-import type { Sesion } from "@/lib/acceso/permisos";
+import { puede, type Sesion } from "@/lib/acceso/permisos";
 import { hoyBogota } from "@/lib/hoy/clasificar";
 import { crearContador } from "@/lib/medicion/contador";
 import type { Ubicacion } from "@/lib/modulos/registro";
@@ -11,6 +11,7 @@ import { VistaTabla } from "./vista-tabla";
 /** Un módulo de tabla del registro: lee Airtable en el momento, solo lo permitido. */
 export async function ModuloTabla({ sesion, u }: { sesion: Sesion; u: Ubicacion }) {
   const def = u.def.tabla!;
+  const puedeEditar = Boolean(def.editar?.campos.length) && puede(sesion, u.empresa, u.modulo.id, "editar");
   const contador = crearContador();
   let r: ResultadoTabla | null = null;
   let error: string | undefined;
@@ -33,6 +34,7 @@ export async function ModuloTabla({ sesion, u }: { sesion: Sesion; u: Ubicacion 
         ocultos={r?.ocultos ?? []}
         vacio={def.vacio}
         error={error}
+        edicion={puedeEditar ? { empresa: u.empresa, vertical: u.vertical.segmento, modulo: u.def.segmento } : undefined}
       />
     </>
   );

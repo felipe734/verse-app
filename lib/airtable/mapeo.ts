@@ -1688,6 +1688,157 @@ export const MAPEO = {
           "tipo": "singleLineText"
         }
       }
+    },
+    "reservas": {
+      "base": "6. OPERACION 360",
+      "tabla": "RESERVAS",
+      "workspace": "Verse",
+      "idBase": "appOJopQhmyaON16G",
+      "idTabla": "tblVrwSgN0doLGXuq",
+      "campos": {
+        "novedades": {
+          "id": "fldwjIAMOXMPzi1az",
+          "nombre": "NOVEDADES",
+          "tipo": "singleLineText"
+        },
+        "comentario": {
+          "id": "fld2E71b1fzJuKyPp",
+          "nombre": "Comentario",
+          "tipo": "multilineText"
+        },
+        "requiereLimpieza": {
+          "id": "fldTcFVRICnbEBX5u",
+          "nombre": "Requiere Limpieza",
+          "tipo": "checkbox"
+        }
+      }
+    },
+    "fCortas": {
+      "base": "6. OPERACION 360",
+      "tabla": "F_CORTAS",
+      "workspace": "Verse",
+      "idBase": "appOJopQhmyaON16G",
+      "idTabla": "tblnF3LRqBiNBQO8A",
+      "campos": {
+        "estado": {
+          "id": "fld24OqsAiRNDwY96",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        },
+        "comentario": {
+          "id": "fldYDyjDPXYOiX5QF",
+          "nombre": "Comentario",
+          "tipo": "singleLineText"
+        }
+      }
+    },
+    "proyAmob": {
+      "base": "8. ALISTAMIENTO",
+      "tabla": "PROY_AMOB",
+      "workspace": "Verse",
+      "idBase": "app6dTM45JYzmQUQ8",
+      "idTabla": "tbl67EoJWf2IeYa7F",
+      "campos": {
+        "estadoPedido": {
+          "id": "fldz7052Mi48I4hD5",
+          "nombre": "Estado Pedido",
+          "tipo": "singleSelect"
+        }
+      }
+    },
+    "leadsHost": {
+      "base": "10. LEAD GEN",
+      "tabla": "LEADS",
+      "workspace": "Verse",
+      "idBase": "appJDH9gDh8c5xOwy",
+      "idTabla": "tblNXfbVZsLlda3P6",
+      "campos": {
+        "estado": {
+          "id": "fldztDruA3bQuEN6H",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        }
+      }
+    },
+    "contratos": {
+      "base": "7. LIVING",
+      "tabla": "CONTRATO",
+      "workspace": "Verse",
+      "idBase": "appzaNZaaYKfdZObP",
+      "idTabla": "tblxQ4njsGL6uyAe3",
+      "campos": {
+        "estado": {
+          "id": "fldeiURO8INV2Co3n",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        }
+      }
+    },
+    "ingresosLiving": {
+      "base": "7. LIVING",
+      "tabla": "INGRESOS",
+      "workspace": "Verse",
+      "idBase": "appzaNZaaYKfdZObP",
+      "idTabla": "tbl78wGPkauBzuxHE",
+      "campos": {
+        "estado": {
+          "id": "fldRb7d840duChklm",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        }
+      }
+    },
+    "actas": {
+      "base": "11. ACTAS OBRA",
+      "tabla": "ACTAS",
+      "workspace": "Verse",
+      "idBase": "appBTNVFCXaMwwH0g",
+      "idTabla": "tblxVn06LsNlOmyFQ",
+      "campos": {
+        "estado": {
+          "id": "fldP6scXnzREuI6su",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        }
+      }
+    },
+    "contabilidadObra": {
+      "base": "12. EDIFICIO 54-47",
+      "tabla": "CONTABILIDAD",
+      "workspace": "Verse",
+      "idBase": "appwkYjrcdkyrgN7E",
+      "idTabla": "tblTh2K4S2ExZE1LN",
+      "campos": {
+        "estado": {
+          "id": "fldKg4MaC4QEq5FiY",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        }
+      }
+    },
+    "movimientos": {
+      "base": "1. VL PRIVADO",
+      "tabla": "MOVIMIENTOS",
+      "workspace": "Verse",
+      "idBase": "appLgl0G3iW4tdQFp",
+      "idTabla": "tbl2Dztj9OGDXDklA",
+      "campos": {
+        "estado": {
+          "id": "fldNQW2RnIsAS4yrR",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        },
+        "categoria": {
+          "id": "fldB4sqIZHCbKL8V5",
+          "nombre": "Categoría",
+          "tipo": "singleSelect"
+        },
+        "comentario": {
+          "id": "fldtm2tSXZXAD9Wpg",
+          "nombre": "Comentario",
+          "tipo": "multilineText"
+        }
+      }
     }
   }
 } as const satisfies Mapeo;

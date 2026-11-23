@@ -178,6 +178,51 @@ export const TABLAS_ESCRITURA = {
       wifiClave: "WIFI Contraseña",
     },
   },
+  reservas: {
+    base: "6. OPERACION 360",
+    tabla: "RESERVAS",
+    campos: { novedades: "NOVEDADES", comentario: "Comentario", requiereLimpieza: "Requiere Limpieza" },
+  },
+  fCortas: {
+    base: "6. OPERACION 360",
+    tabla: "F_CORTAS",
+    campos: { estado: "Estado", comentario: "Comentario" },
+  },
+  proyAmob: {
+    base: "8. ALISTAMIENTO",
+    tabla: "PROY_AMOB",
+    campos: { estadoPedido: "Estado Pedido" },
+  },
+  leadsHost: {
+    base: "10. LEAD GEN",
+    tabla: "LEADS",
+    campos: { estado: "Estado" },
+  },
+  contratos: {
+    base: "7. LIVING",
+    tabla: "CONTRATO",
+    campos: { estado: "Estado" },
+  },
+  ingresosLiving: {
+    base: "7. LIVING",
+    tabla: "INGRESOS",
+    campos: { estado: "Estado" },
+  },
+  actas: {
+    base: "11. ACTAS OBRA",
+    tabla: "ACTAS",
+    campos: { estado: "Estado" },
+  },
+  contabilidadObra: {
+    base: "12. EDIFICIO 54-47",
+    tabla: "CONTABILIDAD",
+    campos: { estado: "Estado" },
+  },
+  movimientos: {
+    base: "1. VL PRIVADO",
+    tabla: "MOVIMIENTOS",
+    campos: { estado: "Estado", categoria: "Categoría", comentario: "Comentario" },
+  },
 } as const satisfies Record<string, TablaDefinida>;
 
 export type ClaveEscritura = keyof typeof TABLAS_ESCRITURA;
