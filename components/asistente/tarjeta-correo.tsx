@@ -1,5 +1,6 @@
 "use client";
 
+import { Paperclip } from "lucide-react";
 import { useMemo, useState } from "react";
 import { cancelar, resolverCorreo } from "@/app/asistente/acciones";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export interface DatosTarjetaCorreo {
   respuesta: boolean;
   puedeEnviar: boolean;
   html: string;
+  adjuntos?: string[];
 }
 
 /**
@@ -55,6 +57,21 @@ export function TarjetaCorreo({ id, correo }: { id: string; correo: DatosTarjeta
           <>
             <dt className="text-muted-foreground">Cc</dt>
             <dd className="break-all">{correo.cc.join(", ")}</dd>
+          </>
+        )}
+        {(correo.adjuntos?.length ?? 0) > 0 && (
+          <>
+            <dt className="text-muted-foreground">Adjuntos</dt>
+            <dd>
+              <ul className="flex flex-wrap gap-1" aria-label="Adjuntos de Drive">
+                {correo.adjuntos!.map((a) => (
+                  <li key={a} className="inline-flex max-w-full items-center gap-1 rounded-md border bg-muted px-1.5 py-0.5 text-[12px]">
+                    <Paperclip className="size-3 shrink-0 text-muted-foreground" aria-hidden />
+                    <span className="truncate">{a}</span>
+                  </li>
+                ))}
+              </ul>
+            </dd>
           </>
         )}
       </dl>

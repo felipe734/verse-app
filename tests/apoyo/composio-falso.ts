@@ -16,15 +16,44 @@ export class ComposioFalso implements ClienteComposio {
   enviados = new Map<string, Record<string, unknown>[]>();
   llamadas: { herramienta: string; cuenta: string; argumentos: Record<string, unknown> }[] = [];
   fallaEn: string | null = null;
+  drive: CuentaConectada[] = [{ id: "ca_drive", alias: "verse-drive", wordId: "googledrive_x", estado: "ACTIVE" }];
+  /** Archivos de Drive por id. */
+  archivos = new Map<string, { name: string; mimeType: string; bytes: number }>();
+  subidos: { toolkit: string; herramienta: string; nombre: string; mimetype: string; largo: number }[] = [];
+  fallaSubida = false;
 
   async cuentasGmail() {
     return this.conectadas;
+  }
+
+  async cuentasDrive() {
+    return this.drive;
+  }
+
+  async bajar(url: string, maxBytes: number) {
+    const f = this.archivos.get(url.replace("https://almacen.composio.dev/", ""));
+    if (!f) throw new Error("no existe");
+    if (f.bytes > maxBytes) throw new Error("El archivo es muy grande para adjuntarlo");
+    return new Uint8Array(f.bytes);
+  }
+
+  async subirArchivo(a: { toolkit: string; herramienta: string; nombre: string; mimetype: string; bytes: Uint8Array }) {
+    if (this.fallaSubida) throw new Error("subida falló");
+    this.subidos.push({ toolkit: a.toolkit, herramienta: a.herramienta, nombre: a.nombre, mimetype: a.mimetype, largo: a.bytes.byteLength });
+    return `subidos/${a.nombre}`;
   }
 
   async ejecutar(herramienta: string, cuenta: string, argumentos: Record<string, unknown>) {
     this.llamadas.push({ herramienta, cuenta, argumentos });
     if (this.fallaEn === cuenta) throw new Error("Composio respondió 500");
     if (herramienta === "GMAIL_FETCH_EMAILS") return { messages: (/(^|\s)in:sent/.test(String(argumentos.query)) ? this.enviados : this.buzones).get(cuenta) ?? [] };
+    if (herramienta === "GOOGLEDRIVE_FIND_FILE")
+      return { files: [...this.archivos].map(([id, f]) => ({ id, name: f.name, mimeType: f.mimeType, modifiedTime: "2026-11-20T10:00:00Z", size: String(f.bytes) })) };
+    if (herramienta === "GOOGLEDRIVE_DOWNLOAD_FILE") {
+      const f = this.archivos.get(String(argumentos.fileId));
+      if (!f) throw new Error("GOOGLEDRIVE_DOWNLOAD_FILE falló: not found");
+      return { id: argumentos.fileId, name: f.name, mimeType: f.mimeType, downloaded_file_content: { name: f.name, mimetype: f.mimeType, s3url: `https://almacen.composio.dev/${String(argumentos.fileId)}` } };
+    }
     if (herramienta === "GMAIL_FETCH_MESSAGE_BY_THREAD_ID") return { messages: this.hilos.get(String(argumentos.thread_id)) ?? [] };
     return {};
   }

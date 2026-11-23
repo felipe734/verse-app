@@ -25,6 +25,7 @@ const NOMBRES: Record<string, string> = {
   ver_bandeja: "Revisando el correo",
   leer_hilo: "Leyendo el hilo",
   proponer_correo: "Redactando el correo",
+  buscar_drive: "Buscando en Drive",
 };
 
 interface ReconocimientoVoz {

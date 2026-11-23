@@ -11,6 +11,7 @@ import { bandejaDe, cuentasLegibles, hiloDe } from "@/lib/correo/bandeja";
 import type { ClienteComposio } from "@/lib/correo/composio";
 import { cuentaPorId } from "@/lib/correo/cuentas";
 import { firmaDe, nivelEnCuenta, ProponerCorreo, validarCorreo, vistaPrevia } from "@/lib/correo/redactar";
+import { buscarDrive, puedeDrive } from "@/lib/drive/drive";
 import { BuscarReservas, buscarReservas, VerCierre, verCierre } from "./vivo";
 
 /**
@@ -58,6 +59,7 @@ export interface TarjetaCorreo {
   respuesta: boolean;
   puedeEnviar: boolean;
   html: string;
+  adjuntos: string[];
 }
 
 export interface ResultadoHerramienta {
@@ -98,6 +100,7 @@ const VerBandeja = z.object({
   horas: z.number().int().min(1).max(168).optional().describe("Ventana en horas; por defecto 48"),
 });
 const LeerHilo = z.object({ cuenta: z.string().max(40), hilo: z.string().regex(/^[0-9a-f]{10,20}$/i) });
+const BuscarDrive = z.object({ texto: z.string().min(2).max(80).describe("Palabras del nombre o del contenido del archivo") });
 const BuscarUnidades = z.object({ texto: z.string().max(60), linea: z.enum(["Host", "Living"]).optional() });
 
 const json = (v: unknown) => JSON.stringify(v);
@@ -137,6 +140,7 @@ export function definiciones(): Anthropic.Beta.BetaTool[] {
       "Redacta un correo o una respuesta con la marca de la empresa. No lo envía: la persona ve la vista previa, la puede editar y elige guardar el borrador o enviar.",
       ProponerCorreo,
     ),
+    base("buscar_drive", "Busca archivos en Drive por nombre o contenido para adjuntarlos a un correo. Devuelve id, nombre, tipo, fecha y enlace. Solo para quien envía correo.", BuscarDrive),
   ];
 }
 
@@ -273,6 +277,13 @@ export async function ejecutar(nombre: string, entrada: unknown, c: Contexto): P
       const res = await verCierre(c.airtable, c.sesion, r.data);
       return { contenido: json(res), error: "error" in res && !("meses_disponibles" in res) };
     }
+    case "buscar_drive": {
+      if (!c.composio) return { contenido: json({ error: "Drive no está configurado (falta COMPOSIO_API_KEY)." }), error: true };
+      const r = BuscarDrive.safeParse(entrada);
+      if (!r.success) return invalida(r.error);
+      const res = await buscarDrive(c.composio, c.sesion, r.data.texto);
+      return { contenido: json(res), error: "error" in res };
+    }
     case "ver_bandeja":
     case "leer_hilo":
     case "proponer_correo": {
@@ -313,7 +324,7 @@ export async function ejecutar(nombre: string, entrada: unknown, c: Contexto): P
       const d = r.data;
       const empresa = cuentaPorId(d.cuenta)!.empresa;
       if (nivelAsistente(c.sesion, empresa) !== "acciones") return { contenido: json({ error: "El asistente de esta persona solo responde consultas." }), error: true };
-      const problema = validarCorreo(c.sesion, d);
+      const problema = validarCorreo(c.sesion, d) ?? (d.adjuntos?.length && !puedeDrive(c.sesion) ? "Adjuntar de Drive es para quien envía correo." : null);
       if (problema) return { contenido: json({ error: problema }), error: true };
       const datos = { ...d, firma: firmaDe(c.sesion) };
       const de = cuentaPorId(d.cuenta)!.correo;
@@ -335,6 +346,7 @@ export async function ejecutar(nombre: string, entrada: unknown, c: Contexto): P
             respuesta: Boolean(d.hilo),
             puedeEnviar: nivelEnCuenta(c.sesion, d.cuenta) === "enviar",
             html: vistaPrevia(datos),
+            adjuntos: (d.adjuntos ?? []).map((a) => a.nombre),
           },
         },
       };
