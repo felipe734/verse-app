@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { puede, type Sesion } from "@/lib/acceso/permisos";
+import { alcanceHoy, puede, type Sesion } from "@/lib/acceso/permisos";
 import { hoyBogota } from "@/lib/hoy/clasificar";
 import { crearContador } from "@/lib/medicion/contador";
 import { leerCierre, pestanaDe, type MesCierre } from "@/lib/modulos/finanzas";
@@ -173,6 +173,11 @@ export async function ModuloPanel({ sesion, u, pestana, p }: { sesion: Sesion; u
         agenda={activa.tabla.agenda}
         vistaInicial={activa.tabla.vistaInicial}
         hoy={hoy}
+        persona={
+          activa.tabla.persona && sesion.nombreAirtable
+            ? { campo: activa.tabla.persona, nombre: sesion.nombreAirtable, porDefecto: !sesion.maestro && alcanceHoy(sesion, u.empresa) === "suyo" }
+            : undefined
+        }
         vistas={await vistasDe(db(), sesion.usuarioId, ruta).catch(() => [])}
         edicion={puedeEditar ? { empresa: u.empresa, vertical: u.vertical.segmento, modulo: u.def.segmento, pestana: activa.id } : undefined}
       />

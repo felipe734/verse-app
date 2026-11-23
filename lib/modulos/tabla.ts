@@ -40,6 +40,8 @@ export interface DefTabla {
    * Reemplaza a `formula`.
    */
   periodo?: { unidad: UnidadPeriodo; campo: string; campoFin?: string; /** El campo es texto "AAAA-MM" (solo mes). */ mesTexto?: boolean };
+  /** Columna con la persona responsable: habilita el interruptor Mío / Todo. */
+  persona?: string;
   /** Columnas por las que se filtra con chips (valores que aparecen en el período). */
   filtros?: string[];
   /** Columna que arma el tablero (una columna por valor). */

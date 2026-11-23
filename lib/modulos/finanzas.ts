@@ -121,6 +121,7 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
         ...ids("3. ADMIN", "CAJA MENOR VERSE"),
         titulo: "Concepto",
         columnas: [t("Concepto"), fecha("Fecha"), t("Persona"), t("Apto"), plata("Valor"), estado("Estado")],
+        persona: "Persona",
         periodo: { unidad: "mes", campo: "Fecha" },
         filtros: ["Persona", "Estado"],
         indicadores: [{ etiqueta: "Gastos", tipo: "conteo" }, { etiqueta: "Total", tipo: "suma", campo: "Valor" }],
