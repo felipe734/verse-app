@@ -50,10 +50,10 @@ export class AirtableFalso implements ClienteAirtable {
     return ids.flatMap((id) => (t.has(id) ? [structuredClone(t.get(id)!)] : []));
   }
   /** Consultas por nombre: devuelve solo los campos pedidos; registra la fórmula para revisarla. */
-  consultas: { idTabla: string; formula?: string; campos: string[] }[] = [];
-  async consultar(idBase: string, idTabla: string, o: { formula?: string; campos: string[]; max: number }) {
+  consultas: { idTabla: string; formula?: string; campos: string[]; orden?: { campo: string; desc?: boolean } }[] = [];
+  async consultar(idBase: string, idTabla: string, o: { formula?: string; campos: string[]; max: number; orden?: { campo: string; desc?: boolean } }) {
     this.llamadas.push("consultar");
-    this.consultas.push({ idTabla, formula: o.formula, campos: o.campos });
+    this.consultas.push({ idTabla, formula: o.formula, campos: o.campos, orden: o.orden });
     return [...this.tabla(idBase, idTabla).values()].slice(0, o.max).map((r) => ({
       ...r,
       // Sin campos pedidos, Airtable devuelve todos.
