@@ -2,10 +2,11 @@ import { asc, eq, sql } from "drizzle-orm";
 import type Anthropic from "@anthropic-ai/sdk";
 import type { Db } from "@/db/cliente";
 import type { ClienteAirtable } from "@/lib/airtable/cliente";
+import type { ClienteComposio } from "@/lib/correo/composio";
 import { conversaciones, mensajesAsistente } from "@/db/esquema";
 import type { Sesion } from "@/lib/acceso/permisos";
 import { hoyBogota } from "@/lib/hoy/clasificar";
-import { definiciones, ejecutar, type Contexto } from "./herramientas";
+import { definiciones, ejecutar, type Contexto, type TarjetaCorreo } from "./herramientas";
 import { costoUsd, MODELO_POR_DEFECTO } from "./precios";
 import { SISTEMA } from "./prompt";
 
@@ -20,7 +21,7 @@ export type Evento =
   | { tipo: "conversacion"; id: string }
   | { tipo: "texto"; delta: string }
   | { tipo: "herramienta"; nombre: string }
-  | { tipo: "propuesta"; id: string; resumen: string }
+  | { tipo: "propuesta"; id: string; resumen: string; correo?: TarjetaCorreo }
   | { tipo: "aviso"; texto: string }
   | { tipo: "fin"; costoUsd: number };
 
@@ -88,6 +89,7 @@ export async function conversar(opciones: {
   modelo?: string;
   /** Cliente de Airtable para las herramientas que leen en el momento (reservas, cierre). */
   airtable?: ClienteAirtable;
+  composio?: ClienteComposio;
   alEvento: (e: Evento) => void;
   ahora?: Date;
 }): Promise<{ conversacionId: string; costoUsd: number }> {
@@ -113,7 +115,7 @@ export async function conversar(opciones: {
   await guardar(db, conversacionId, "user", mensajeUsuario.content);
 
   const mensajes = [...(await historia(db, conversacionId))];
-  const ctx: Contexto = { db, sesion, conversacionId, hoy, airtable: opciones.airtable };
+  const ctx: Contexto = { db, sesion, conversacionId, hoy, airtable: opciones.airtable, composio: opciones.composio };
   let total = 0;
 
   for (let vuelta = 0; vuelta < MAX_VUELTAS; vuelta++) {
