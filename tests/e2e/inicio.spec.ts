@@ -23,3 +23,15 @@ test("la política de privacidad es pública y no usa signos de admiración", as
   await expect(page.getByRole("heading", { name: "Política de privacidad" })).toBeVisible();
   expect(await page.locator("body").innerText()).not.toMatch(/[!¡]/);
 });
+
+test("la página de entrar ofrece Google y explica los errores", async ({ page }) => {
+  await page.goto("/entrar?error=sin-invitacion");
+  await expect(page.getByRole("button", { name: "Entrar con Google" })).toBeVisible();
+  await expect(page.getByRole("alert").filter({ hasText: "no tiene invitación" })).toBeVisible();
+});
+
+test("sin sesión, Hoy manda a entrar y no muestra módulos", async ({ page }) => {
+  await page.goto("/hoy");
+  await expect(page).toHaveURL(/\/entrar/);
+  await expect(page.getByText("Módulos")).toHaveCount(0);
+});

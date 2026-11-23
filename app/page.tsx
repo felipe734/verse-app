@@ -30,6 +30,12 @@ export default function Inicio() {
           .
         </p>
       </div>
+      <Link
+        href="/entrar"
+        className="inline-flex w-full items-center justify-center rounded-xl bg-primary px-4 py-3 font-display text-primary-foreground"
+      >
+        Entrar
+      </Link>
     </Marco>
   );
 }

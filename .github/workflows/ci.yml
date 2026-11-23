@@ -29,6 +29,9 @@ jobs:
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
+        env:
+          # Valor de prueba solo para CI; el real vive en Vercel.
+          AUTH_SECRET: solo-para-pruebas-de-ci-no-es-secreto
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
