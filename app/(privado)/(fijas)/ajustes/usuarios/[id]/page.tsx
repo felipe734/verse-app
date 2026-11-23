@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Campo, estiloEntrada, Forma } from "@/components/ajustes/forma";
-import { Encabezado, Seccion, Tarjeta } from "@/components/ajustes/encabezado";
+import { Seccion } from "@/components/ajustes/encabezado";
+import { EncabezadoModulo, EsqueletoModulo } from "@/components/modulos/encabezado";
+import { Badge } from "@/components/ui/badge";
 import { Invitar } from "@/components/ajustes/invitar";
 import { Button } from "@/components/ui/button";
 import { eq } from "drizzle-orm";
@@ -15,7 +17,7 @@ import type { EmpresaBase } from "@/lib/acceso/estructura";
 import { sesionPorId } from "@/lib/acceso/sesion";
 import { casillasAccion, editarUsuarioAccion, estadoAccion, invitarAccion, plantillaAccion, quitarAccesoAccion } from "../../acciones";
 
-export const metadata: Metadata = { title: "Usuario · Ajustes · Verse App" };
+export const metadata: Metadata = { title: "Usuario · Ajustes" };
 
 const NIVELES = [
   ["sin", "Sin acceso"],
@@ -52,7 +54,7 @@ function EditorCasillas({ empresa, casillas }: { empresa: EmpresaBase; casillas:
     <div className="space-y-4">
       {empresa.verticales.map((v) => (
         <fieldset key={v.id} className="space-y-2">
-          <legend className="text-[12px] text-foreground">{v.nombre}</legend>
+          <legend className="text-xs font-medium text-muted-foreground">{v.nombre}</legend>
           {v.modulos.map((m) => (
             <div key={m.id} className="flex items-center justify-between gap-3">
               <span>{m.nombre}</span>
@@ -73,7 +75,7 @@ function EditorCasillas({ empresa, casillas }: { empresa: EmpresaBase; casillas:
         </fieldset>
       ))}
       <fieldset className="space-y-2">
-        <legend className="text-[12px] text-foreground">Empresa</legend>
+        <legend className="text-xs font-medium text-muted-foreground">Empresa</legend>
         <div className="flex items-center justify-between gap-3">
           <span>Alcance en Hoy</span>
           <Opciones
@@ -118,7 +120,7 @@ function EditorCasillas({ empresa, casillas }: { empresa: EmpresaBase; casillas:
 
 async function Ficha({ params }: { params: Promise<{ id: string }> }) {
   const sesion = await sesionActual();
-  if (!sesion.maestro) return <p>Ajustes es solo para el Maestro.</p>;
+  if (!sesion.maestro) return <EncabezadoModulo titulo="Ajustes" descripcion="Ajustes es solo para el Maestro." />;
   const { id } = await params;
   const usuario = await sesionPorId(db(), id);
   if (!usuario) notFound();
@@ -129,14 +131,18 @@ async function Ficha({ params }: { params: Promise<{ id: string }> }) {
 
   return (
     <>
-      <p>
-        <Link href="/ajustes" className="underline underline-offset-2 hover:text-foreground">
-          Ajustes
-        </Link>{" "}
-        · {datos!.nombre} · {datos!.estado === "activo" ? "Activo" : datos!.estado === "invitado" ? "Invitado" : "Suspendido"}
-        {datos!.maestro ? " · Maestro" : ""}
-      </p>
-
+      <EncabezadoModulo titulo={datos!.nombre} descripcion={datos!.correo}>
+        <span className="flex items-center gap-2">
+          <Badge variant={datos!.estado === "activo" ? "secondary" : datos!.estado === "suspendido" ? "destructive" : "outline"}>
+            {datos!.estado === "activo" ? "Activo" : datos!.estado === "invitado" ? "Invitado" : "Suspendido"}
+          </Badge>
+          {datos!.maestro && <Badge variant="outline">Maestro</Badge>}
+        </span>
+      </EncabezadoModulo>
+      <div className="space-y-4 px-4 pb-10 md:px-6">
+      <Link href="/ajustes" className="text-sm text-muted-foreground hover:text-foreground">
+        ← Usuarios
+      </Link>
       <Seccion titulo="Datos">
         <Forma action={editarUsuarioAccion.bind(null, id)} boton="Guardar datos">
           <Campo etiqueta="Nombre">
@@ -177,7 +183,7 @@ async function Ficha({ params }: { params: Promise<{ id: string }> }) {
           const casillas = usuario.accesos[empresa.id];
           const deEmpresa = lista.filter((p) => p.empresaId === empresa.id);
           return (
-            <Seccion key={empresa.id} titulo={`${empresa.nombre}${casillas ? "" : " · sin acceso"}`}>
+            <Seccion key={empresa.id} titulo={empresa.nombre} descripcion={casillas ? "Con acceso" : "Sin acceso"}>
               {deEmpresa.length > 0 && (
                 <Forma action={plantillaAccion.bind(null, id, empresa.id)} boton="Aplicar plantilla" className="flex flex-wrap items-end gap-3">
                   <Campo etiqueta="Plantilla">
@@ -194,9 +200,14 @@ async function Ficha({ params }: { params: Promise<{ id: string }> }) {
                   </Campo>
                 </Forma>
               )}
-              <Forma action={casillasAccion.bind(null, id, empresa.id)} boton="Guardar casillas">
-                <EditorCasillas empresa={empresa} casillas={casillas} />
-              </Forma>
+              <details className="rounded-md border px-3 py-2">
+                <summary className="cursor-pointer text-sm text-muted-foreground">Ajuste fino por casilla</summary>
+                <div className="pt-3">
+                  <Forma action={casillasAccion.bind(null, id, empresa.id)} boton="Guardar casillas">
+                    <EditorCasillas empresa={empresa} casillas={casillas} />
+                  </Forma>
+                </div>
+              </details>
               {casillas && (
                 <form action={quitarAccesoAccion.bind(null, id, empresa.id)}>
                   <Button type="submit" variant="outline" size="sm">
@@ -208,19 +219,15 @@ async function Ficha({ params }: { params: Promise<{ id: string }> }) {
           );
         })
       )}
+      </div>
     </>
   );
 }
 
 export default function Usuario({ params }: PageProps<"/ajustes/usuarios/[id]">) {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-6">
-      <Encabezado submarca="AJUSTES" />
-      <Tarjeta>
-        <Suspense fallback={<p className="text-muted-foreground">Cargando</p>}>
-          <Ficha params={params} />
-        </Suspense>
-      </Tarjeta>
-    </main>
+    <Suspense fallback={<EsqueletoModulo />}>
+      <Ficha params={params} />
+    </Suspense>
   );
 }

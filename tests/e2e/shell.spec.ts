@@ -89,3 +89,19 @@ test("Sistema muestra indicadores y corridas", async ({ page }) => {
   await expect(page).toHaveURL(/\/verse\/general\/sistema$/);
   await expect(page.getByText("Fallas en 7 días")).toBeVisible();
 });
+
+test("Ajustes: usuarios, empresas con acento y módulos no disponibles", async ({ page, isMobile }) => {
+  await page.goto("/ajustes");
+  await expect(page.getByRole("heading", { name: "Ajustes", level: 1 })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ana Prueba" })).toBeVisible();
+  await page.getByRole("link", { name: "Empresas y módulos" }).click();
+  await expect(page.getByText("No disponible").first()).toBeVisible();
+  if (!isMobile) await expect(page.getByLabel("Elegir color").first()).toBeVisible();
+});
+
+test("Ajustes es solo para el Maestro", async ({ page, baseURL }) => {
+  await page.context().addCookies([{ name: "vitrina_usuario", value: "admin@vitrina.test", url: baseURL! }]);
+  await page.goto("/ajustes");
+  await expect(page.getByText("Ajustes es solo para el Maestro.")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Ana Prueba" })).toHaveCount(0);
+});

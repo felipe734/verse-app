@@ -194,3 +194,26 @@ export async function crearVertical(db: Db, s: Sesion, empresaId: string, nombre
   await auditar(db, { autor: s.correo, accion: "estructura.vertical_creada", despues: { id, empresaId, nombre: n } });
   return id;
 }
+
+const HEX = /^#[0-9a-f]{6}$/i;
+
+/** Lo único que cambia por empresa en la interfaz: nombre, color de acento y logo. */
+export async function actualizarEmpresa(db: Db, s: Sesion, id: string, datos: { nombre: string; acento: string; logo: string }): Promise<void> {
+  exigirMaestro(s);
+  const [antes] = await db.select().from(empresas).where(eq(empresas.id, id));
+  if (!antes) throw new Error("Empresa desconocida");
+  const nombre = datos.nombre.trim();
+  const acento = datos.acento.trim();
+  const logo = datos.logo.trim();
+  if (nombre.length < 2) throw new Error("Escribe el nombre de la empresa");
+  if (!HEX.test(acento)) throw new Error("El acento es un color como #2453d6");
+  if (logo && !/^https:\/\/\S+$/.test(logo)) throw new Error("El logo es un enlace https a una imagen");
+  await db.update(empresas).set({ nombre, acento: acento.toLowerCase(), logo: logo || null }).where(eq(empresas.id, id));
+  await auditar(db, {
+    autor: s.correo,
+    accion: "estructura.empresa_editada",
+    antes: { nombre: antes.nombre, acento: antes.acento, logo: antes.logo },
+    despues: { nombre, acento: acento.toLowerCase(), logo: logo || null },
+    detalle: id,
+  });
+}

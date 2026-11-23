@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db/cliente";
 import { sesionActual } from "@/lib/acceso/actual";
 import {
+  actualizarEmpresa,
   actualizarUsuario,
   cambiarEstado,
   crearEmpresa,
@@ -125,6 +126,16 @@ export async function crearVerticalAccion(_: Resultado | null, f: FormData): Pro
     await crearVertical(db(), s, texto(f, "empresa"), texto(f, "nombre"));
     revalidatePath("/ajustes");
     return { ok: true, mensaje: "Vertical creada" };
+  } catch (e) {
+    return falla(e);
+  }
+}
+
+export async function editarEmpresaAccion(id: string, _: Resultado | null, f: FormData): Promise<Resultado> {
+  try {
+    await actualizarEmpresa(db(), await maestro(), id, { nombre: texto(f, "nombre"), acento: texto(f, "acento"), logo: texto(f, "logo") });
+    revalidatePath("/", "layout");
+    return { ok: true, mensaje: "Empresa guardada" };
   } catch (e) {
     return falla(e);
   }

@@ -1,108 +1,229 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Dialogo } from "@/components/ajustes/dialogo";
 import { Campo, estiloEntrada, Forma } from "@/components/ajustes/forma";
-import { Encabezado, Seccion, Tarjeta } from "@/components/ajustes/encabezado";
+import { EncabezadoModulo, EsqueletoModulo } from "@/components/modulos/encabezado";
+import { LogoEmpresa } from "@/components/shell/logo-empresa";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { db } from "@/db/cliente";
 import { plantillas } from "@/db/esquema";
 import { sesionActual } from "@/lib/acceso/actual";
 import { listarUsuarios } from "@/lib/acceso/admin";
-import { crearEmpresaAccion, crearUsuarioAccion, crearVerticalAccion } from "./acciones";
+import { PLATFORM_NAME } from "@/lib/config";
+import { estadoModulos } from "@/lib/modulos/registro";
+import { cn } from "@/lib/utils";
+import { crearEmpresaAccion, crearUsuarioAccion, crearVerticalAccion, editarEmpresaAccion } from "./acciones";
 
-export const metadata: Metadata = { title: "Ajustes · Verse App" };
+export const metadata: Metadata = { title: `Ajustes · ${PLATFORM_NAME}` };
 
 const ESTADOS = { activo: "Activo", invitado: "Invitado", suspendido: "Suspendido" } as const;
+const VISTAS = [
+  ["usuarios", "Usuarios"],
+  ["empresas", "Empresas y módulos"],
+  ["plantillas", "Plantillas"],
+] as const;
+type Vista = (typeof VISTAS)[number][0];
+type Estructura = NonNullable<Awaited<ReturnType<typeof sesionActual>>["estructura"]>;
 
-async function Panel() {
+async function Panel({ searchParams }: { searchParams: Promise<{ vista?: string }> }) {
   const sesion = await sesionActual();
-  if (!sesion.maestro) return <p>Ajustes es solo para el Maestro.</p>;
-  const usuarios = await listarUsuarios(db(), sesion);
-  const lista = await db().select().from(plantillas);
+  if (!sesion.maestro) return <EncabezadoModulo titulo="Ajustes" descripcion="Ajustes es solo para el Maestro." />;
+  const { vista: pedida } = await searchParams;
+  const vista: Vista = VISTAS.some(([v]) => v === pedida) ? (pedida as Vista) : "usuarios";
   const estructura = sesion.estructura ?? [];
 
   return (
     <>
-      <Seccion titulo={`Usuarios · ${usuarios.length}`}>
-        <ul className="divide-y divide-border">
-          {usuarios.map((u) => (
-            <li key={u.id} className="py-2.5">
-              <Link href={`/ajustes/usuarios/${u.id}`} className="flex items-baseline justify-between gap-3">
-                <span>
-                  <b className="text-foreground">{u.nombre}</b>
-                  {u.maestro ? " · Maestro" : ""}
-                  <span className="block text-[12.5px] text-muted-foreground">{u.correo}</span>
-                </span>
-                <span className="shrink-0 text-[12.5px] text-muted-foreground">
-                  {ESTADOS[u.estado]}
-                  {u.accesos.length ? ` · ${u.accesos.map((a) => estructura.find((e) => e.id === a.empresaId)?.nombre ?? a.empresaId).join(", ")}` : ""}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Seccion>
-
-      <Seccion titulo="Nuevo usuario">
-        <Forma action={crearUsuarioAccion} boton="Crear usuario">
-          <Campo etiqueta="Nombre">
-            <input name="nombre" required className={estiloEntrada} />
-          </Campo>
-          <Campo etiqueta="Correo de Google">
-            <input name="correo" type="email" required className={estiloEntrada} />
-          </Campo>
-          <Campo etiqueta="Celular">
-            <input name="celular" inputMode="tel" className={estiloEntrada} />
-          </Campo>
-          <Campo etiqueta="Nombre en Airtable (Responsable o funcionaria)">
-            <input name="nombreAirtable" className={estiloEntrada} />
-          </Campo>
-        </Forma>
-      </Seccion>
-
-      <Seccion titulo="Empresas y verticales">
-        {estructura.map((e) => (
-          <div key={e.id}>
-            <b className="text-foreground">{e.nombre}</b>
-            <span className="text-muted-foreground"> · {e.verticales.map((v) => `${v.nombre} (${v.modulos.length})`).join(", ")}</span>
-          </div>
+      <EncabezadoModulo titulo="Ajustes" descripcion="Usuarios, accesos, empresas y módulos de la plataforma">
+        {vista === "usuarios" && (
+          <Dialogo boton="Nuevo usuario" titulo="Nuevo usuario" descripcion="Después le das acceso con una plantilla y generas su enlace de invitación.">
+            <Forma action={crearUsuarioAccion} boton="Crear usuario">
+              <Campo etiqueta="Nombre">
+                <input name="nombre" required className={estiloEntrada} />
+              </Campo>
+              <Campo etiqueta="Correo de Google">
+                <input name="correo" type="email" required className={estiloEntrada} />
+              </Campo>
+              <Campo etiqueta="Celular">
+                <input name="celular" inputMode="tel" className={estiloEntrada} />
+              </Campo>
+              <Campo etiqueta="Nombre en Airtable" ayuda="Responsable en TRAZABILIDAD o funcionaria en LIMPIEZA">
+                <input name="nombreAirtable" className={estiloEntrada} />
+              </Campo>
+            </Forma>
+          </Dialogo>
+        )}
+      </EncabezadoModulo>
+      <nav aria-label="Secciones de Ajustes" className="flex gap-1 border-b px-4 md:px-6">
+        {VISTAS.map(([v, t]) => (
+          <Link
+            key={v}
+            href={`/ajustes?vista=${v}`}
+            aria-current={v === vista ? "page" : undefined}
+            className={cn("-mb-px border-b-2 px-3 py-2 text-sm", v === vista ? "border-acento font-medium text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}
+          >
+            {t}
+          </Link>
         ))}
-        <Forma action={crearEmpresaAccion} boton="Crear empresa" className="flex flex-wrap items-end gap-3">
-          <Campo etiqueta="Nueva empresa">
-            <input name="nombre" required className={estiloEntrada} />
-          </Campo>
-        </Forma>
-        <Forma action={crearVerticalAccion} boton="Crear vertical" className="flex flex-wrap items-end gap-3">
-          <Campo etiqueta="Empresa">
-            <select name="empresa" className={estiloEntrada}>
-              {estructura.map((e) => (
-                <option key={e.id} value={e.id}>
-                  {e.nombre}
-                </option>
-              ))}
-            </select>
-          </Campo>
-          <Campo etiqueta="Nueva vertical">
-            <input name="nombre" required className={estiloEntrada} />
-          </Campo>
-        </Forma>
-      </Seccion>
-
-      <Seccion titulo="Plantillas">
-        <p className="text-muted-foreground">{lista.map((p) => p.nombre).join(" · ")}</p>
-      </Seccion>
+      </nav>
+      <div className="px-4 py-6 md:px-6">
+        {vista === "usuarios" && <Usuarios sesion={sesion} estructura={estructura} />}
+        {vista === "empresas" && <Empresas estructura={estructura} />}
+        {vista === "plantillas" && <Plantillas estructura={estructura} />}
+      </div>
     </>
   );
 }
 
-export default function Ajustes() {
+async function Usuarios({ sesion, estructura }: { sesion: Awaited<ReturnType<typeof sesionActual>>; estructura: Estructura }) {
+  const usuarios = await listarUsuarios(db(), sesion);
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 py-6">
-      <Encabezado submarca="AJUSTES" />
-      <Tarjeta>
-        <Suspense fallback={<p className="text-muted-foreground">Cargando</p>}>
-          <Panel />
-        </Suspense>
-      </Tarjeta>
-    </main>
+    <div className="overflow-hidden rounded-lg border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="pl-4">Nombre</TableHead>
+            <TableHead className="max-md:hidden">Correo</TableHead>
+            <TableHead>Estado</TableHead>
+            <TableHead className="pr-4 max-md:hidden">Empresas</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {usuarios.map((u) => (
+            <TableRow key={u.id} className="relative">
+              <TableCell className="pl-4">
+                <Link href={`/ajustes/usuarios/${u.id}`} className="font-medium after:absolute after:inset-0">
+                  {u.nombre}
+                </Link>
+                {u.maestro && <span className="ml-2 text-xs text-muted-foreground">Maestro</span>}
+              </TableCell>
+              <TableCell className="text-muted-foreground max-md:hidden">{u.correo}</TableCell>
+              <TableCell>
+                <Badge variant={u.estado === "activo" ? "secondary" : u.estado === "suspendido" ? "destructive" : "outline"}>{ESTADOS[u.estado]}</Badge>
+              </TableCell>
+              <TableCell className="pr-4 text-muted-foreground max-md:hidden">
+                {u.maestro ? "Todas" : u.accesos.map((a) => estructura.find((e) => e.id === a.empresaId)?.nombre ?? a.empresaId).join(", ") || "Sin acceso"}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+function Empresas({ estructura }: { estructura: Estructura }) {
+  const estados = estadoModulos(estructura);
+  return (
+    <div className="space-y-6">
+      {estructura.map((e) => {
+        const est = estados.find((x) => x.empresa === e.id)!;
+        return (
+          <section key={e.id} className="rounded-lg border">
+            <header className="flex items-center gap-3 border-b px-4 py-3">
+              <LogoEmpresa nombre={e.nombre} logo={e.logo ?? null} acento={e.acento ?? "#18181b"} className="size-8" />
+              <h2 className="font-medium">{e.nombre}</h2>
+              <span className="text-xs text-muted-foreground">{e.id}</span>
+            </header>
+            <div className="grid gap-6 p-4 lg:grid-cols-[320px_1fr]">
+              <Forma action={editarEmpresaAccion.bind(null, e.id)} boton="Guardar">
+                <Campo etiqueta="Nombre">
+                  <input name="nombre" defaultValue={e.nombre} required className={estiloEntrada} />
+                </Campo>
+                <Campo etiqueta="Color de acento" ayuda="Solo en el selector, el ítem activo y los botones primarios">
+                  <span className="flex gap-2">
+                    <input type="color" aria-label="Elegir color" defaultValue={e.acento ?? "#18181b"} className="h-9 w-12 rounded-md border bg-transparent p-1" name="acento" />
+                  </span>
+                </Campo>
+                <Campo etiqueta="Logo" ayuda="Enlace https a una imagen cuadrada; vacío usa la inicial">
+                  <input name="logo" type="url" defaultValue={e.logo ?? ""} placeholder="https://" className={estiloEntrada} />
+                </Campo>
+              </Forma>
+              <div className="space-y-4">
+                {est.verticales.map((v) => (
+                  <div key={v.id}>
+                    <h3 className="mb-1.5 text-xs font-medium text-muted-foreground">{v.nombre}</h3>
+                    <ul className="divide-y rounded-md border text-sm">
+                      {v.modulos.map((m) => (
+                        <li key={m.id} className="flex items-center justify-between gap-3 px-3 py-2">
+                          <span className="min-w-0">
+                            <span className="block truncate">{m.nombre}</span>
+                            {m.fuentes.length > 0 && <span className="block truncate text-xs text-muted-foreground">{m.fuentes.join(", ")}</span>}
+                          </span>
+                          <Badge variant={m.disponible ? "secondary" : "outline"}>{m.disponible ? "Disponible" : "No disponible"}</Badge>
+                        </li>
+                      ))}
+                      {v.modulos.length === 0 && <li className="px-3 py-2 text-muted-foreground">Sin módulos todavía.</li>}
+                    </ul>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+        );
+      })}
+      <div className="grid gap-4 md:grid-cols-2">
+        <section className="rounded-lg border p-4">
+          <h2 className="mb-3 font-medium">Nueva empresa</h2>
+          <Forma action={crearEmpresaAccion} boton="Crear empresa">
+            <Campo etiqueta="Nombre" ayuda="Nace con la vertical General; los módulos se agregan después">
+              <input name="nombre" required className={estiloEntrada} />
+            </Campo>
+          </Forma>
+        </section>
+        <section className="rounded-lg border p-4">
+          <h2 className="mb-3 font-medium">Nueva vertical</h2>
+          <Forma action={crearVerticalAccion} boton="Crear vertical">
+            <Campo etiqueta="Empresa">
+              <select name="empresa" className={estiloEntrada}>
+                {estructura.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.nombre}
+                  </option>
+                ))}
+              </select>
+            </Campo>
+            <Campo etiqueta="Nombre">
+              <input name="nombre" required className={estiloEntrada} />
+            </Campo>
+          </Forma>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+async function Plantillas({ estructura }: { estructura: Estructura }) {
+  const lista = await db().select().from(plantillas);
+  const nombreModulo = (id: string) => estructura.flatMap((e) => e.verticales.flatMap((v) => v.modulos)).find((m) => m.id === id)?.nombre ?? id;
+  return (
+    <div className="grid gap-4 md:grid-cols-2">
+      {lista.map((p) => {
+        const c = p.casillas;
+        const modulos = Object.entries(c.modulos).filter(([, n]) => n !== "sin");
+        return (
+          <section key={p.id} className="space-y-2 rounded-lg border p-4 text-sm">
+            <header className="flex items-center justify-between">
+              <h2 className="font-medium">{p.nombre}</h2>
+              <Badge variant="outline">{estructura.find((e) => e.id === p.empresaId)?.nombre ?? p.empresaId}</Badge>
+            </header>
+            <p className="text-muted-foreground">
+              Hoy: {c.alcanceHoy === "todo" ? "todo" : "lo suyo"} · Aprobar: {c.aprobar ? "sí" : "no"} · Asistente: {c.asistente === "no" ? "no" : c.asistente}
+            </p>
+            <p>{modulos.length ? modulos.map(([m, n]) => `${nombreModulo(m)} (${n})`).join(", ") : "Sin módulos"}</p>
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function Ajustes({ searchParams }: PageProps<"/ajustes">) {
+  return (
+    <Suspense fallback={<EsqueletoModulo />}>
+      <Panel searchParams={searchParams as Promise<{ vista?: string }>} />
+    </Suspense>
   );
 }
