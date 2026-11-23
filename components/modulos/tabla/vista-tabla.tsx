@@ -14,7 +14,8 @@ import type { Columna, DefAgenda, DefCalendario, FilaTabla, Indicador, TipoVista
 import type { Periodo } from "@/lib/vistas/periodo";
 import { cn } from "@/lib/utils";
 import type { RefModulo } from "@/app/modulos/editar";
-import { aplicarFiltros, Filtros, filtrosDeUrl, Indicadores, MenuVistas, SelectorPeriodo, SelectorVista, Tablero, type VistaGuardada } from "./controles";
+import { esMio } from "@/lib/vistas/mio";
+import { aplicarFiltros, Filtros, InterruptorMio, filtrosDeUrl, Indicadores, MenuVistas, SelectorPeriodo, SelectorVista, Tablero, type VistaGuardada } from "./controles";
 import { Agenda, Calendario } from "./calendario";
 import { Edicion } from "./edicion";
 
@@ -49,6 +50,7 @@ export function VistaTabla({
   agenda,
   vistaInicial = "lista",
   hoy,
+  persona,
 }: {
   titulo: string;
   modulo: string;
@@ -74,6 +76,8 @@ export function VistaTabla({
   vistaInicial?: TipoVista;
   /** AAAA-MM-DD de Bogotá, para marcar hoy en calendario y agenda. */
   hoy?: string;
+  /** Interruptor Mío / Todo: la columna de persona, el nombre de quien entra y si abre en Mío. */
+  persona?: { campo: string; nombre: string; porDefecto: boolean };
 }) {
   const { abrirAsistente, asistenteHabilitado } = useShell();
   const params = useSearchParams();
@@ -87,7 +91,11 @@ export function VistaTabla({
   ];
   const pedida = (params.get("v") as TipoVista | null) ?? vistaInicial;
   const vista: TipoVista = opciones.includes(pedida) ? pedida : "lista";
-  const filtradas = useMemo(() => aplicarFiltros(filas, activos), [filas, activos]);
+  const personaVisible = persona && columnas.some((c) => c.campo === persona.campo) ? persona : undefined;
+  const quien = params.get("quien");
+  const mio = personaVisible ? (quien ? quien === "mio" : personaVisible.porDefecto) : false;
+  const propias = useMemo(() => (mio && personaVisible ? filas.filter((f) => esMio(f.celdas[personaVisible.campo], personaVisible.nombre)) : filas), [filas, mio, personaVisible]);
+  const filtradas = useMemo(() => aplicarFiltros(propias, activos), [propias, activos]);
   const [texto, setTexto] = useState("");
   const [orden, setOrden] = useState<{ campo: string; desc: boolean } | null>(null);
   const [abierta, setAbierta] = useState<FilaTabla | null>(null);
@@ -115,10 +123,11 @@ export function VistaTabla({
         </div>
       </AccionesModulo>
       <div className="px-4 pb-10 md:px-6">
-        {(periodo || opciones.length > 1 || vistas) && (
+        {(periodo || opciones.length > 1 || vistas || personaVisible) && (
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             {periodo ? <SelectorPeriodo periodo={periodo} /> : <span />}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              {personaVisible && <InterruptorMio mio={mio} porDefecto={personaVisible.porDefecto} />}
               <SelectorVista vista={vista} opciones={opciones} inicial={opciones.includes(vistaInicial) ? vistaInicial : "lista"} />
               {vistas && <MenuVistas vistas={vistas} />}
             </div>
@@ -126,7 +135,7 @@ export function VistaTabla({
         )}
         {filtros.length > 0 && !error && (
           <div className="mb-3">
-            <Filtros campos={filtros} columnas={columnas} filas={filas} activos={activos} />
+            <Filtros campos={filtros} columnas={columnas} filas={propias} activos={activos} />
           </div>
         )}
         {indicadores.length > 0 && !error && (

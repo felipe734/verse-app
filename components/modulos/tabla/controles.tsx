@@ -77,6 +77,31 @@ export function SelectorPeriodo({ periodo }: { periodo: Periodo }) {
   );
 }
 
+/** Mío / Todo. El valor por defecto no se escribe en la URL. */
+export function InterruptorMio({ mio, porDefecto }: { mio: boolean; porDefecto: boolean }) {
+  const { cambiar } = useParametros();
+  const poner = (v: boolean) => cambiar({ quien: v === porDefecto ? null : v ? "mio" : "todo" });
+  return (
+    <div role="radiogroup" aria-label="De quién" className="flex rounded-md border p-0.5">
+      {[
+        [true, "Mío"],
+        [false, "Todo"],
+      ].map(([v, t]) => (
+        <button
+          key={t as string}
+          type="button"
+          role="radio"
+          aria-checked={mio === v}
+          onClick={() => poner(v as boolean)}
+          className={cn("rounded px-2.5 py-1 text-xs", mio === v ? "bg-muted font-medium" : "text-muted-foreground hover:text-foreground")}
+        >
+          {t as string}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** Filtros activos desde la URL: { campo: valor }. */
 export function filtrosDeUrl(params: URLSearchParams, campos: string[]): Record<string, string> {
   return Object.fromEntries(campos.map((c) => [c, params.get(`${PREFIJO_FILTRO}${c}`) ?? ""]).filter(([, v]) => v));

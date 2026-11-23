@@ -39,6 +39,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 400,
   },
   limpiezas: {
+    persona: "Funcionario",
     agenda: { fecha: "Fecha", fila: "Funcionario", etiquetaFila: "Funcionaria", titulo: "Unidad", estado: "Estado" },
     vistaInicial: "agenda",
     editar: { tabla: "limpieza", campos: [{ campo: "estado", etiqueta: "Estado" }, { campo: "comentario", etiqueta: "Comentario" }] },
@@ -90,6 +91,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     indicadores: [{ etiqueta: "Pedidos", tipo: "conteo" }, { etiqueta: "Total", tipo: "suma", campo: "Total" }, { etiqueta: "Pendiente", tipo: "suma", campo: "Pendiente" }],
   },
   "comercial-host": {
+    persona: "SDR",
     editar: { tabla: "leadsHost", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("10. LEAD GEN", "LEADS"),
     titulo: "Nombre",
@@ -170,6 +172,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     indicadores: [{ etiqueta: "Leads", tipo: "conteo" }],
   },
   equipo: {
+    persona: "Funcionaria",
     ...ids("6. OPERACION 360", "CONTROL HORAS"),
     titulo: "Funcionaria",
     columnas: [t("Funcionaria"), fecha("Ingreso"), fecha("Salida"), num("Horas"), t("Semana"), t("Validado")],

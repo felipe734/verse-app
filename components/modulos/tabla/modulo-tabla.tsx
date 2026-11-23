@@ -1,4 +1,4 @@
-import { puede, type Sesion } from "@/lib/acceso/permisos";
+import { alcanceHoy, puede, type Sesion } from "@/lib/acceso/permisos";
 import { hoyBogota } from "@/lib/hoy/clasificar";
 import { crearContador } from "@/lib/medicion/contador";
 import type { Ubicacion } from "@/lib/modulos/registro";
@@ -47,6 +47,11 @@ export async function ModuloTabla({ sesion, u, p }: { sesion: Sesion; u: Ubicaci
         agenda={def.agenda}
         vistaInicial={def.vistaInicial}
         hoy={hoy}
+        persona={
+          def.persona && sesion.nombreAirtable
+            ? { campo: def.persona, nombre: sesion.nombreAirtable, porDefecto: !sesion.maestro && alcanceHoy(sesion, u.empresa) === "suyo" }
+            : undefined
+        }
         vistas={await vistasDe(db(), sesion.usuarioId, ruta).catch(() => [])}
         edicion={puedeEditar ? { empresa: u.empresa, vertical: u.vertical.segmento, modulo: u.def.segmento } : undefined}
       />

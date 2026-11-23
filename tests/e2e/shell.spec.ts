@@ -255,3 +255,18 @@ test("aseo entra directo a su ruta desde Inicio", async ({ page, baseURL }) => {
   await page.goto("/inicio");
   await expect(page).toHaveURL(/\/verse\/host\/ruta$/);
 });
+
+test("con alcance 'lo suyo' los módulos abren en Mío y se puede ver Todo", async ({ page, baseURL }) => {
+  await page.context().addCookies([{ name: "vitrina_usuario", value: "aseo@vitrina.test", url: baseURL! }]);
+  await page.goto("/verse/host/limpiezas?v=lista");
+  await expect(page.getByRole("radio", { name: "Mío" })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByText("0 filas")).toBeVisible();
+  await page.getByRole("radio", { name: "Todo" }).click();
+  await expect(page).toHaveURL(/quien=todo/);
+  await expect(page.getByText("8 filas")).toBeVisible();
+});
+
+test("el Maestro abre en Todo", async ({ page }) => {
+  await page.goto("/verse/host/limpiezas?v=lista");
+  await expect(page.getByRole("radio", { name: "Todo" })).toHaveAttribute("aria-checked", "true");
+});
