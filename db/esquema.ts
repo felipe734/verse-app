@@ -48,6 +48,8 @@ export const tareas = pgTable(
     fechaLimite: date("fecha_limite"),
     detalle: text(),
     link: text(),
+    linea: text(),
+    creado: timestamp({ withTimezone: true }),
     corrida: text().array().notNull().default(sql`'{}'::text[]`),
     actualizado: ahora(),
   },
