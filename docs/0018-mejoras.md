@@ -94,3 +94,11 @@ Regla general: **todo abre en lo actual y en lo tuyo**.
   - Sin `ANTHROPIC_API_KEY` o sin datos, no aparece. Carga aparte y no frena Inicio.
   - Costo aproximado: menos de un centavo de dólar por persona y por hora con cambios.
 - **El asistente ve lo que la persona ve.** El encabezado del mensaje describe en palabras el módulo, el período, la pestaña, los filtros, la vista, si está en Mío y la fila abierta (`lib/asistente/pantalla.ts`). Así "¿cuáles de estas están atrasadas?" se entiende solo.
+
+## 10. Ruta sin conexión
+
+- Si no hay señal al iniciar o cerrar el turno o al enviar un reporte (con su video), la acción se guarda en el celular (IndexedDB, `components/modulos/ruta/cola-local.ts`) con la hora real del toque.
+- Un aviso dice cuántas cosas esperan. Al volver la conexión, o al abrir de nuevo la ruta, se envían solas y en orden.
+- El servidor acepta la hora del toque solo si no es futura ni de más de 12 horas atrás. Si no, usa la hora de llegada. Todo queda en AUDITORIA como cualquier otra escritura.
+- Lo que el servidor rechace al llegar (por ejemplo, un turno ya cerrado) se avisa en pantalla y sale de la cola.
+- Límite: la página tiene que haberse abierto con señal al menos una vez en la sesión. Abrir la app desde cero sin conexión requiere un service worker con caché de páginas, que queda para una siguiente versión.
