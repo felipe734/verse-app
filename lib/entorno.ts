@@ -8,6 +8,7 @@ const esquema = z.object({
   DATABASE_URL: z.string().url().optional(),
   AIRTABLE_TOKEN: z.string().min(1).optional(),
   CRON_SECRET: z.string().min(16).optional(),
+  WEBHOOKS_ACTIVOS: z.enum(["0", "1"]).optional(),
 });
 
 export type Entorno = z.infer<typeof esquema>;
