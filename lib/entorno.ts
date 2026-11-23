@@ -8,6 +8,8 @@ const esquema = z.object({
   DATABASE_URL: z.string().url().optional(),
   AIRTABLE_TOKEN: z.string().min(1).optional(),
   CRON_SECRET: z.string().min(16).optional(),
+  NEON_API_KEY: z.string().min(1).optional(),
+  NEON_PROJECT_ID: z.string().min(1).optional(),
   WEBHOOKS_ACTIVOS: z.enum(["0", "1"]).optional(),
 });
 

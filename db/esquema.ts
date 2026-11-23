@@ -3,6 +3,7 @@ import {
   bigserial,
   boolean,
   date,
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -130,3 +131,27 @@ export const auditoria = pgTable(
   },
   (t) => [index("auditoria_registro").on(t.idTabla, t.recId)],
 );
+
+/** Llamadas HTTP a Airtable por día, workspace y base. */
+export const llamadasAirtable = pgTable(
+  "llamadas_airtable",
+  {
+    dia: date().notNull(),
+    workspace: text().notNull(),
+    idBase: text("id_base").notNull(),
+    llamadas: integer().notNull().default(0),
+  },
+  (t) => [primaryKey({ columns: [t.dia, t.workspace, t.idBase] })],
+);
+
+/** Consumo de Neon del período de facturación, una foto por día. */
+export const costosNeon = pgTable("costos_neon", {
+  dia: date().primaryKey(),
+  periodoInicio: timestamp("periodo_inicio", { withTimezone: true }),
+  horasComputo: doublePrecision("horas_computo").notNull(),
+  gbAlmacenamiento: doublePrecision("gb_almacenamiento").notNull(),
+  usdComputo: doublePrecision("usd_computo").notNull(),
+  usdAlmacenamiento: doublePrecision("usd_almacenamiento").notNull(),
+  usdTotal: doublePrecision("usd_total").notNull(),
+  tomado: ahora(),
+});
