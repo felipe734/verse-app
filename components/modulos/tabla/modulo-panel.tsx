@@ -9,6 +9,7 @@ import { db } from "@/db/cliente";
 import { clienteServidor } from "@/lib/servidor/airtable";
 import { cn } from "@/lib/utils";
 import { EncabezadoModulo } from "../encabezado";
+import { CrearFila } from "./crear-fila";
 import { VistaTabla } from "./vista-tabla";
 
 const pesos = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
@@ -70,7 +71,15 @@ export async function ModuloPanel({ sesion, u, pestana }: { sesion: Sesion; u: U
   }
   return (
     <>
-      <EncabezadoModulo titulo={u.modulo.nombre} descripcion={u.def.descripcion} />
+      <EncabezadoModulo titulo={u.modulo.nombre} descripcion={u.def.descripcion}>
+        {activa.crear && puede(sesion, u.empresa, u.modulo.id, "editar") && (
+          <CrearFila
+            refModulo={{ empresa: u.empresa, vertical: u.vertical.segmento, modulo: u.def.segmento, pestana: activa.id }}
+            titulo={activa.crear.titulo}
+            subidas={Boolean(process.env.BLOB_READ_WRITE_TOKEN)}
+          />
+        )}
+      </EncabezadoModulo>
       {cierre && <Cierre meses={cierre} />}
       <nav aria-label={`Secciones de ${u.modulo.nombre}`} className="flex gap-1 overflow-x-auto border-b px-4 md:px-6">
         {lista.map((p) => (
