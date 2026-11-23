@@ -15,7 +15,7 @@ import type { Periodo } from "@/lib/vistas/periodo";
 import { cn } from "@/lib/utils";
 import type { RefModulo } from "@/app/modulos/editar";
 import { esMio } from "@/lib/vistas/mio";
-import { aplicarFiltros, Filtros, InterruptorMio, filtrosDeUrl, Indicadores, MenuVistas, SelectorPeriodo, SelectorVista, Tablero, type VistaGuardada } from "./controles";
+import { Actualizar, aplicarFiltros, Filtros, InterruptorMio, filtrosDeUrl, Indicadores, MenuVistas, SelectorPeriodo, SelectorVista, Tablero, type VistaGuardada } from "./controles";
 import { Agenda, Calendario } from "./calendario";
 import { Edicion } from "./edicion";
 
@@ -51,6 +51,7 @@ export function VistaTabla({
   vistaInicial = "lista",
   hoy,
   persona,
+  tablas,
 }: {
   titulo: string;
   modulo: string;
@@ -78,6 +79,8 @@ export function VistaTabla({
   hoy?: string;
   /** Interruptor Mío / Todo: la columna de persona, el nombre de quien entra y si abre en Mío. */
   persona?: { campo: string; nombre: string; porDefecto: boolean };
+  /** IDs de las tablas de Airtable que lee el módulo, para el botón Actualizar. */
+  tablas?: string[];
 }) {
   const { abrirAsistente, asistenteHabilitado } = useShell();
   const params = useSearchParams();
@@ -123,10 +126,11 @@ export function VistaTabla({
         </div>
       </AccionesModulo>
       <div className="px-4 pb-10 md:px-6">
-        {(periodo || opciones.length > 1 || vistas || personaVisible) && (
+        {(periodo || opciones.length > 1 || vistas || personaVisible || tablas) && (
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
             {periodo ? <SelectorPeriodo periodo={periodo} /> : <span />}
             <div className="flex flex-wrap items-center gap-2">
+              {tablas && <Actualizar tablas={tablas} />}
               {personaVisible && <InterruptorMio mio={mio} porDefecto={personaVisible.porDefecto} />}
               <SelectorVista vista={vista} opciones={opciones} inicial={opciones.includes(vistaInicial) ? vistaInicial : "lista"} />
               {vistas && <MenuVistas vistas={vistas} />}

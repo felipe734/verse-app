@@ -45,6 +45,12 @@ export interface ResultadoCola {
 }
 
 /** Toma escrituras pendientes sin chocar con otro trabajador y las envía a Airtable. */
+/** Lo que pasa después de cada escritura (vencer la caché de esa tabla). Lo fija el servidor. */
+let alEscribir: ((idTabla: string) => void) | null = null;
+export function alEscribirEnAirtable(f: (idTabla: string) => void) {
+  alEscribir = f;
+}
+
 export async function procesarCola(db: Db, cliente: ClienteAirtable, limite = 25): Promise<ResultadoCola> {
   const libres = db
     .select({ id: colaEscrituras.id })
@@ -87,6 +93,7 @@ export async function procesarCola(db: Db, cliente: ClienteAirtable, limite = 25
 
       const clave = claveDe(t.idBase, t.idTabla);
       if (clave) await guardar(db, clave, [resultado]);
+      alEscribir?.(t.idTabla);
       await db
         .update(colaEscrituras)
         .set({ estado: "hecha", recId: resultado.id, error: null, procesado: sql`now()` })

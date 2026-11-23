@@ -47,6 +47,7 @@ export async function ModuloTabla({ sesion, u, p }: { sesion: Sesion; u: Ubicaci
         agenda={def.agenda}
         vistaInicial={def.vistaInicial}
         hoy={hoy}
+        tablas={[def.idTabla]}
         persona={
           def.persona && sesion.nombreAirtable
             ? { campo: def.persona, nombre: sesion.nombreAirtable, porDefecto: !sesion.maestro && alcanceHoy(sesion, u.empresa) === "suyo" }

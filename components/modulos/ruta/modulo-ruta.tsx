@@ -18,7 +18,7 @@ import { RutaFuncionaria } from "./ruta-funcionaria";
 export async function ModuloRuta({ sesion }: { sesion: Sesion }) {
   const hoy = hoyBogota();
   const contador = crearContador();
-  const airtable = clienteServidor(contador);
+  const airtable = clienteServidor(contador, { fresco: true });
   let error: string | undefined;
   let propia: { nombre: string; paradas: Parada[]; turno: Turno | null } | null = null;
   let equipo: { nombre: string; paradas: Parada[] }[] = [];
