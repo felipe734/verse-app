@@ -14,6 +14,7 @@ import { CrearFila } from "./crear-fila";
 import { campoPorNombre } from "@/lib/modulos/editar";
 import { leerPeriodo } from "@/lib/vistas/periodo";
 import { vistasDe } from "@/lib/vistas/guardadas";
+import { leerAlertas, ListaAlertas } from "@/components/inicio/alertas";
 import { VistaTabla } from "./vista-tabla";
 
 const pesos = new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 });
@@ -139,6 +140,9 @@ export async function ModuloPanel({ sesion, u, pestana, p }: { sesion: Sesion; u
           />
         )}
       </EncabezadoModulo>
+      <div className="px-4 md:px-6">
+        <ListaAlertas alertas={await leerAlertas(sesion, u.def.tipo)} compacta />
+      </div>
       {cierre && <Cierre meses={cierre} mes={periodo?.unidad === "mes" ? periodo.clave : undefined} />}
       <nav aria-label={`Secciones de ${u.modulo.nombre}`} className="flex gap-1 overflow-x-auto border-b px-4 md:px-6">
         {lista.map((p) => (

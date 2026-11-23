@@ -69,3 +69,19 @@ Regla general: **todo abre en lo actual y en lo tuyo**.
   - `1` a `4` cambian la vista.
   - `?` muestra la ayuda.
   - Se suman a ⌘K (buscar) y ⌘J (asistente).
+
+## 8. Alertas de la operación
+
+`lib/alertas/operacion.ts` calcula, con lecturas de Airtable que pasan por la caché, lo que hoy solo aparece en los briefs:
+
+| Alerta | Nivel | Módulo |
+|---|---|---|
+| Salidas de los próximos 3 días sin limpieza esa fecha | Alta | Limpiezas |
+| Limpiezas de los próximos 7 días sin funcionaria | Alta | Limpiezas |
+| Cobros POR PAGAR con fecha pasada | Alta | Cobros |
+| Contratos que terminan en 30 días | Media | Contratos |
+| Movimientos de 45 días por identificar o sin soporte | Media | Finanzas |
+
+- Cada alerta solo sale para quien ve el módulo. No trae montos.
+- Aparecen arriba en Inicio y en la cabecera de su módulo, con enlace al lugar donde se resuelven, ya filtrado cuando se puede.
+- Cada módulo consulta solo sus propias alertas.

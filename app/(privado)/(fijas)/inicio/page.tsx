@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
+import { AlertasInicio } from "@/components/inicio/alertas";
 import { EsqueletoTarjeta, TarjetaModulo } from "@/components/inicio/tarjeta-modulo";
 import { EncabezadoModulo, EsqueletoModulo } from "@/components/modulos/encabezado";
 import { db } from "@/db/cliente";
@@ -56,6 +57,9 @@ async function Contenido() {
             ))}
           </section>
         )}
+        <Suspense fallback={<div className="h-16 animate-pulse rounded-lg bg-muted/50" aria-hidden />}>
+          <AlertasInicio sesion={sesion} />
+        </Suspense>
         {porEmpresa.map((e) => {
           const grupos = e.grupos
             .map((g) => ({
