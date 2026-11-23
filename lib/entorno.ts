@@ -10,6 +10,11 @@ const esquema = z.object({
   CRON_SECRET: z.string().min(16).optional(),
   NEON_API_KEY: z.string().min(1).optional(),
   NEON_PROJECT_ID: z.string().min(1).optional(),
+  GCP_PROJECT_NUMBER: z.string().min(1).optional(),
+  GCP_SERVICE_ACCOUNT_EMAIL: z.string().email().optional(),
+  GCP_WORKLOAD_IDENTITY_POOL_ID: z.string().min(1).optional(),
+  GCP_WORKLOAD_IDENTITY_POOL_PROVIDER_ID: z.string().min(1).optional(),
+  RESPALDO_DRIVE_ID: z.string().min(1).optional(),
   WEBHOOKS_ACTIVOS: z.enum(["0", "1"]).optional(),
 });
 
