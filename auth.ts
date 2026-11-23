@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import { cookies } from "next/headers";
 import Google from "next-auth/providers/google";
 import { db } from "@/db/cliente";
 import { decidirEntrada } from "@/lib/acceso/entrada";
@@ -9,6 +10,9 @@ import { auditar } from "@/lib/auditoria";
  * se leen de Postgres en cada petición (lib/acceso/actual.ts), no del token.
  * Variables en Vercel: AUTH_GOOGLE_ID, AUTH_GOOGLE_SECRET y AUTH_SECRET.
  */
+/** Cookie con el enlace de invitación mientras la persona pasa por Google. */
+export const COOKIE_INVITACION = "verse_invitacion";
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [Google],
   trustHost: true,
@@ -17,7 +21,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ profile }) {
       const correo = typeof profile?.email === "string" ? profile.email : null;
-      const r = await decidirEntrada(db(), correo, profile?.email_verified === true);
+      const token = (await cookies()).get(COOKIE_INVITACION)?.value ?? null;
+      const r = await decidirEntrada(db(), correo, profile?.email_verified === true, token);
       if (!r.ok) return `/entrar?error=${r.motivo}`;
       await auditar(db(), { autor: correo!.toLowerCase(), accion: "acceso.entrada" });
       return true;
