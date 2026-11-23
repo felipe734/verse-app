@@ -160,7 +160,7 @@ export function VistaTabla({
           </div>
         )}
         {filtros.length > 0 && !error && (
-          <div className="mb-3">
+          <div className="mb-3 max-md:-mx-4 max-md:overflow-x-auto max-md:px-4 max-md:[&>div]:flex-nowrap">
             <Filtros campos={filtros} columnas={columnas} filas={propias} activos={activos} />
           </div>
         )}
@@ -230,7 +230,37 @@ export function VistaTabla({
             alMover={edicion && campoTablero ? (f, valor) => void rapido(f, campoTablero, valor, tableroVisible, valor) : undefined}
           />
         ) : (
-          <div className="overflow-x-auto rounded-lg border">
+          <>
+          {/* Celular: tarjetas con lo importante en vez de una tabla recortada. */}
+          <ul className="space-y-2 md:hidden" aria-label={`${modulo}, lista`}>
+            {visibles.map((f) => {
+              const [primera, ...resto] = columnas;
+              const estado = resto.find((c) => c.tipo === "estado" && f.celdas[c.campo]);
+              const otras = resto.filter((c) => c !== estado && f.celdas[c.campo]).slice(0, 3);
+              return (
+                <li key={f.id}>
+                  <button type="button" onClick={() => setAbierta(f)} className="w-full rounded-lg border bg-card p-3 text-left">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="min-w-0 flex-1 truncate font-medium">{(primera && f.celdas[primera.campo]) || "—"}</p>
+                      {estado && <Badge variant="secondary">{f.celdas[estado.campo]}</Badge>}
+                    </div>
+                    <dl className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs">
+                      {otras.map((c) => (
+                        <div key={c.campo} className="min-w-0">
+                          <dt className="sr-only">{etiqueta(c)}</dt>
+                          <dd className={cn("truncate text-muted-foreground", derecha(c) && "tabular-nums")}>
+                            <span className="text-muted-foreground/70">{etiqueta(c)}: </span>
+                            {f.celdas[c.campo]}
+                          </dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="overflow-x-auto rounded-lg border max-md:hidden">
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
@@ -271,6 +301,7 @@ export function VistaTabla({
               </TableBody>
             </Table>
           </div>
+          </>
         )}
       </div>
 

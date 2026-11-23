@@ -31,3 +31,8 @@ Regla general: **todo abre en lo actual y en lo tuyo**.
 - En el tablero, si su columna es un campo editable (Estado), arrastrar una tarjeta a otra columna cambia el valor.
 - Todo pasa por `cambiarRapido`, que valida la opción contra Airtable y escribe por la cola con el valor que se veía: si Airtable cambió, gana Airtable.
 - En celular, arrastrar no está disponible. Se usa el botón del detalle.
+
+## 4. Celular y avisos
+
+- En celular, las listas se ven como tarjetas: el título, el estado y hasta tres datos con su nombre, en vez de una tabla con columnas escondidas. Los filtros se deslizan de lado en una sola línea.
+- Avisos: las claves VAPID ya están en Vercel, así que los avisos de críticos, aprobaciones y fallas salen con el cron de la noche y con los cambios de TRAZABILIDAD. Un aviso de "tu ruta de hoy" a las 6 a. m. necesita un tercer cron, y el plan Hobby de Vercel permite dos. Queda pendiente hasta pasar a Pro o mover un cron.
