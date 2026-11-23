@@ -9,6 +9,7 @@ import { EncabezadoModulo } from "../encabezado";
 import { campoPorNombre } from "@/lib/modulos/editar";
 import { leerPeriodo } from "@/lib/vistas/periodo";
 import { vistasDe } from "@/lib/vistas/guardadas";
+import { leerAlertas, ListaAlertas } from "@/components/inicio/alertas";
 import { VistaTabla } from "./vista-tabla";
 
 /** Un módulo de tabla del registro: lee Airtable en el momento, solo lo permitido. */
@@ -31,6 +32,9 @@ export async function ModuloTabla({ sesion, u, p }: { sesion: Sesion; u: Ubicaci
   return (
     <>
       <EncabezadoModulo titulo={u.modulo.nombre} descripcion={u.def.descripcion} />
+      <div className="px-4 md:px-6">
+        <ListaAlertas alertas={await leerAlertas(sesion, u.def.tipo)} compacta />
+      </div>
       <VistaTabla
         titulo={u.modulo.nombre}
         modulo={u.modulo.nombre}

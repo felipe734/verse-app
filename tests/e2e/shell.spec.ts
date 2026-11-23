@@ -125,10 +125,10 @@ test("Finanzas de Verse muestra el cierre y cambia de pestaña", async ({ page }
   await page.goto("/verse/general/finanzas");
   await expect(page.getByRole("heading", { name: "Finanzas", level: 1 })).toBeVisible();
   await expect(page.getByRole("region", { name: "Cierre del mes" }).getByText("Margen neto").first()).toBeVisible();
-  await expect(page.getByRole("link", { name: "Movimientos" })).toHaveAttribute("aria-current", "page");
-  await page.getByRole("link", { name: "Cruces" }).click();
+  await expect(page.getByRole("link", { name: "Movimientos", exact: true })).toHaveAttribute("aria-current", "page");
+  await page.getByRole("link", { name: "Cruces", exact: true }).click();
   await expect(page).toHaveURL(/pestana=cruces/);
-  await expect(page.getByRole("link", { name: "Cruces" })).toHaveAttribute("aria-current", "page");
+  await expect(page.getByRole("link", { name: "Cruces", exact: true })).toHaveAttribute("aria-current", "page");
 });
 
 test("Finanzas C&C no muestra números de cuenta", async ({ page, isMobile }) => {
@@ -200,7 +200,7 @@ test("las vistas abren en el período actual, filtran, cambian a tablero y se gu
   await expect(page.getByRole("definition").first()).toBeVisible();
   await periodo.getByRole("link", { name: "Período anterior" }).click();
   await expect(page).toHaveURL(/p=\d{4}-W\d{2}/);
-  await expect(page.getByRole("link", { name: "Esta semana" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Esta semana", exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: /Estado:/ }).first().click();
   await page.getByRole("menuitemcheckbox", { name: "Pendiente" }).click();
@@ -322,4 +322,11 @@ test("exportar a CSV descarga lo que se ve y ? muestra los atajos", async ({ pag
     await page.keyboard.press("[");
     await expect(page).toHaveURL(/p=\d{4}-W\d{2}/);
   }
+});
+
+test("Inicio muestra las alertas de la operación y cada una lleva a su módulo", async ({ page }) => {
+  await page.goto("/inicio");
+  const alertas = page.getByRole("region", { name: "Alertas" });
+  await expect(alertas).toBeVisible();
+  await expect(alertas.getByRole("link").first()).toHaveAttribute("href", /\/verse\//);
 });
