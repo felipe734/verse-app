@@ -30,16 +30,23 @@ function texto(v: unknown): string {
 async function leerEnVivo(token: string): Promise<Instantanea> {
   const cliente = crearCliente({ token });
   const { idBase, idTabla, campos } = ARRANQUE_CATALOGO;
-  const filas = await cliente.todos(idBase, idTabla, { returnFieldsByFieldId: "false" });
+  const tablaCatalogo = (await cliente.esquema(idBase)).find((t) => t.id === idTabla);
+  if (!tablaCatalogo) throw new Error("El CATÁLOGO DE DATOS ya no está en 9. VERSE OS.");
+  const id = (nombre: string) => {
+    const campo = tablaCatalogo.fields.find((c) => c.name === nombre);
+    if (!campo) throw new Error(`El catálogo ya no tiene el campo "${nombre}".`);
+    return campo.id;
+  };
+  const filas = await cliente.todos(idBase, idTabla);
   const catalogo: FilaCatalogo[] = filas
     .map((r) => ({
-      tabla: texto(r.fields[campos.tabla]),
-      workspace: texto(r.fields[campos.workspace]) as Workspace,
-      base: texto(r.fields[campos.base]),
-      idBase: texto(r.fields[campos.idBase]),
-      idTabla: texto(r.fields[campos.idTabla]),
-      origen: texto(r.fields[campos.origen]),
-      uso: texto(r.fields[campos.uso]),
+      tabla: texto(r.fields[id(campos.tabla)]),
+      workspace: texto(r.fields[id(campos.workspace)]) as Workspace,
+      base: texto(r.fields[id(campos.base)]),
+      idBase: texto(r.fields[id(campos.idBase)]),
+      idTabla: texto(r.fields[id(campos.idTabla)]),
+      origen: texto(r.fields[id(campos.origen)]),
+      uso: texto(r.fields[id(campos.uso)]),
     }))
     .filter((f) => f.tabla && f.idBase && f.idTabla);
 
