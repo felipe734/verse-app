@@ -223,6 +223,27 @@ export const TABLAS_ESCRITURA = {
     tabla: "MOVIMIENTOS",
     campos: { estado: "Estado", categoria: "Categoría", comentario: "Comentario" },
   },
+  cajaVerse: {
+    base: "3. ADMIN",
+    tabla: "CAJA MENOR VERSE",
+    campos: { persona: "Persona", fecha: "Fecha", apto: "Apto", concepto: "Concepto", valor: "Valor", foto: "Foto" },
+  },
+  cajaCyC: {
+    base: "4. CAJA MENOR",
+    tabla: "MOVIMIENTOS C&C",
+    campos: {
+      concepto: "Concepto",
+      fecha: "Fecha",
+      tipo: "Tipo",
+      tercero: "Tercero",
+      nit: "NIT / CC",
+      egreso: "Egreso",
+      soporte: "Soporte",
+      tipoSoporte: "Tipo Soporte",
+      comentario: "Comentario",
+      responsable: "Responsable",
+    },
+  },
 } as const satisfies Record<string, TablaDefinida>;
 
 export type ClaveEscritura = keyof typeof TABLAS_ESCRITURA;

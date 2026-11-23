@@ -1839,6 +1839,104 @@ export const MAPEO = {
           "tipo": "multilineText"
         }
       }
+    },
+    "cajaVerse": {
+      "base": "3. ADMIN",
+      "tabla": "CAJA MENOR VERSE",
+      "workspace": "Verse",
+      "idBase": "appGdjxWt88l2Pb0l",
+      "idTabla": "tblWJ7tF8lpVhIWUe",
+      "campos": {
+        "persona": {
+          "id": "fldku5HD2Rzo4SVxX",
+          "nombre": "Persona",
+          "tipo": "singleSelect"
+        },
+        "fecha": {
+          "id": "fld1XkJ0MFUQ2lydl",
+          "nombre": "Fecha",
+          "tipo": "date"
+        },
+        "apto": {
+          "id": "fldTnp8Ko2sQVZjZu",
+          "nombre": "Apto",
+          "tipo": "singleLineText"
+        },
+        "concepto": {
+          "id": "fldKz0a0ZCSPmOuy5",
+          "nombre": "Concepto",
+          "tipo": "singleLineText"
+        },
+        "valor": {
+          "id": "fldWRZQ0FzzTGUX6s",
+          "nombre": "Valor",
+          "tipo": "currency"
+        },
+        "foto": {
+          "id": "fldLCQN0bwZamjkUT",
+          "nombre": "Foto",
+          "tipo": "multipleAttachments"
+        }
+      }
+    },
+    "cajaCyC": {
+      "base": "4. CAJA MENOR",
+      "tabla": "MOVIMIENTOS C&C",
+      "workspace": "Verse",
+      "idBase": "appqwnv47xATZ0gai",
+      "idTabla": "tbl3JLpfpG3RyOPaC",
+      "campos": {
+        "concepto": {
+          "id": "fldBUOqavTscwKBtS",
+          "nombre": "Concepto",
+          "tipo": "singleLineText"
+        },
+        "fecha": {
+          "id": "fldEj6SmMwgozeDBE",
+          "nombre": "Fecha",
+          "tipo": "date"
+        },
+        "tipo": {
+          "id": "fld0mZAnGE3Tfj3mq",
+          "nombre": "Tipo",
+          "tipo": "singleSelect"
+        },
+        "tercero": {
+          "id": "fldjmAuYR8nahTQJA",
+          "nombre": "Tercero",
+          "tipo": "singleLineText"
+        },
+        "nit": {
+          "id": "fld6xn1Rf9GYklQoT",
+          "nombre": "NIT / CC",
+          "tipo": "singleLineText"
+        },
+        "egreso": {
+          "id": "fld9N9jD6jDTOvtxP",
+          "nombre": "Egreso",
+          "tipo": "currency"
+        },
+        "soporte": {
+          "id": "fldTxVhiJDShz8ILu",
+          "nombre": "Soporte",
+          "tipo": "multipleAttachments"
+        },
+        "tipoSoporte": {
+          "id": "fldItxWdJCb6YjS9I",
+          "nombre": "Tipo Soporte",
+          "tipo": "singleSelect"
+        },
+        "comentario": {
+          "id": "fldIBd13Uj2qvKPd1",
+          "nombre": "Comentario",
+          "tipo": "multilineText"
+        },
+        "responsable": {
+          "id": "fldvyQDPbVAu1A8mP",
+          "nombre": "Responsable",
+          "tipo": "singleSelect"
+        }
+      }
     }
   }
 } as const satisfies Mapeo;

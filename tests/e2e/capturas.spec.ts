@@ -6,7 +6,7 @@ import { test } from "@playwright/test";
  * Solo con CAPTURAS=nombre-del-pr; quedan en docs/capturas/<nombre>/.
  */
 const carpeta = process.env.CAPTURAS;
-const PANTALLAS: { nombre: string; ruta: string; accion?: "comandos" | "detalle" | "editar" | "asistente"; usuario?: string }[] = (process.env.CAPTURAS_RUTAS ?? "hoy:/verse/general/hoy")
+const PANTALLAS: { nombre: string; ruta: string; accion?: "comandos" | "detalle" | "editar" | "crear" | "asistente"; usuario?: string }[] = (process.env.CAPTURAS_RUTAS ?? "hoy:/verse/general/hoy")
   .split(",")
   .map((x) => {
     // nombre:ruta[:accion][:usuario de la vitrina]
@@ -43,6 +43,9 @@ test.describe("capturas", () => {
             await page.locator("tbody tr").first().click();
             await page.getByRole("dialog").getByRole("button", { name: "Editar" }).click();
             await page.getByRole("form", { name: "Editar fila" }).waitFor();
+          } else if (p.accion === "crear") {
+            await page.getByRole("button", { name: /^Nuevo/ }).click();
+            await page.getByRole("form").first().waitFor();
           } else if (p.accion === "asistente") {
             await page.keyboard.press("ControlOrMeta+j");
           }

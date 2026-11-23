@@ -176,3 +176,18 @@ test("con el módulo solo en ver no aparece Editar", async ({ page, baseURL }) =
   await page.locator("tbody tr").first().click();
   await expect(page.getByRole("dialog").getByRole("button", { name: "Editar" })).toHaveCount(0);
 });
+
+test("el Maestro registra un gasto de caja menor desde Finanzas", async ({ page }) => {
+  await page.goto("/verse/general/finanzas?pestana=caja");
+  await page.getByRole("button", { name: "Nuevo gasto" }).click();
+  const form = page.getByRole("form", { name: "Nuevo gasto" });
+  await expect(form.getByText("Concepto")).toBeVisible();
+  await expect(form.getByRole("combobox")).toBeVisible();
+});
+
+test("con Finanzas solo en ver no aparece Nuevo gasto", async ({ page, baseURL }) => {
+  await page.context().addCookies([{ name: "vitrina_usuario", value: "admin@vitrina.test", url: baseURL! }]);
+  await page.goto("/verse/general/finanzas?pestana=caja");
+  await expect(page.getByRole("heading", { name: "Finanzas", level: 1 })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Nuevo gasto" })).toHaveCount(0);
+});

@@ -1,5 +1,6 @@
 import type { ClienteAirtable } from "@/lib/airtable/cliente";
 import { sensibles, type Sesion } from "@/lib/acceso/permisos";
+import type { DefCreacion } from "./crear";
 import type { Columna, DefTabla } from "./tabla";
 import { ids } from "./tablas-equipo";
 
@@ -13,6 +14,8 @@ export interface Pestana {
   id: string;
   nombre: string;
   tabla: DefTabla;
+  /** Crear filas desde la pestaña (gastos de caja menor). */
+  crear?: DefCreacion;
 }
 
 const t = (campo: string, etiqueta?: string): Columna => ({ campo, etiqueta });
@@ -106,6 +109,18 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
         max: 300,
         vacio: "No hay gastos de caja menor en los últimos dos meses",
       },
+      crear: {
+        tabla: "cajaVerse",
+        titulo: "Nuevo gasto",
+        campos: [
+          { campo: "concepto", etiqueta: "Concepto", requerido: true },
+          { campo: "valor", etiqueta: "Valor", requerido: true },
+          { campo: "fecha", etiqueta: "Fecha", requerido: true, defecto: "hoy" },
+          { campo: "persona", etiqueta: "Persona", requerido: true },
+          { campo: "apto", etiqueta: "Apto" },
+          { campo: "foto", etiqueta: "Foto del soporte" },
+        ],
+      },
     },
     { id: "caja-global", nombre: "Caja global", tabla: cajaGlobal("4. CAJA MENOR", "MOVIMIENTOS VERSE", "Proveedor") },
     { id: "fondeos", nombre: "Fondeos", tabla: fondeos("4. CAJA MENOR", "GLOBAL VERSE") },
@@ -146,7 +161,27 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
         max: 36,
       },
     },
-    { id: "caja", nombre: "Caja", tabla: cajaGlobal("4. CAJA MENOR", "MOVIMIENTOS C&C", "Tercero") },
+    {
+      id: "caja",
+      nombre: "Caja",
+      tabla: cajaGlobal("4. CAJA MENOR", "MOVIMIENTOS C&C", "Tercero"),
+      crear: {
+        tabla: "cajaCyC",
+        titulo: "Nuevo gasto",
+        campos: [
+          { campo: "concepto", etiqueta: "Concepto", requerido: true },
+          { campo: "egreso", etiqueta: "Valor", requerido: true },
+          { campo: "fecha", etiqueta: "Fecha", requerido: true, defecto: "hoy" },
+          { campo: "tipo", etiqueta: "Tipo" },
+          { campo: "tercero", etiqueta: "Tercero" },
+          { campo: "nit", etiqueta: "NIT o cédula" },
+          { campo: "responsable", etiqueta: "Responsable" },
+          { campo: "tipoSoporte", etiqueta: "Tipo de soporte" },
+          { campo: "soporte", etiqueta: "Foto del soporte" },
+          { campo: "comentario", etiqueta: "Comentario" },
+        ],
+      },
+    },
     { id: "fondeos", nombre: "Fondeos", tabla: fondeos("4. CAJA MENOR", "GLOBAL C&C") },
     {
       id: "referencias",
