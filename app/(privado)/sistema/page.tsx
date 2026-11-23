@@ -122,6 +122,10 @@ async function Panel({ searchParams }: { searchParams: Promise<{ empresa?: strin
               </ul>
             )}
             <p>{s.app.neon ? `Neon en el período: US$${s.app.neon.usdTotal} (${s.app.neon.horasComputo} h de cómputo).` : "Neon: sin medir (falta NEON_API_KEY)."}</p>
+            <p>
+              {`Asistente en 7 días: ${s.app.asistente.preguntas} preguntas, US$${s.app.asistente.costoUsd}`}
+              {s.app.asistente.preguntas ? ` (US$${s.app.asistente.porPregunta} por pregunta)` : ""}.
+            </p>
           </Seccion>
         </>
       )}

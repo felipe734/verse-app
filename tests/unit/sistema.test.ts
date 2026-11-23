@@ -60,6 +60,7 @@ describe("Sistema", () => {
     expect(s.fallas.map((f) => f.tipo)).toEqual(["Corrida falló", "Sincronización", "Respaldo"]);
     expect(s.app?.nochesSeguidas).toBe(3);
     expect(s.app?.tablas.find((t) => t.clave === "trazabilidadVerse")).toMatchObject({ filas: 352, noches: [true, true, true] });
+    expect(s.app?.asistente).toEqual({ respuestas: 0, preguntas: 0, costoUsd: 0, porPregunta: 0 });
   });
 
   it("Sistema de C&C solo trae lo de C&C y nada de la app", async () => {

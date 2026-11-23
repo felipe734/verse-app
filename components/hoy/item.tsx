@@ -15,7 +15,7 @@ export function Item({ t, conEmpresa, acciones }: { t: ItemHoy; conEmpresa: bool
   const etiqueta = etiquetaAtraso(t.atraso);
   const resto = (t.detalle ?? "").split("\n").slice(1).join("\n").trim();
   return (
-    <details className="group py-2.5">
+    <details className="group py-2.5" data-numero={t.numero ?? undefined} data-empresa={t.empresa}>
       <summary className="cursor-pointer list-none">
         <div className="flex items-start justify-between gap-3">
           <b className="text-foreground">{t.asunto ?? "Sin asunto"}</b>

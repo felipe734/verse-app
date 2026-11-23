@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import type { Resultado } from "@/app/ajustes/acciones";
+import type { Resultado } from "@/app/(privado)/ajustes/acciones";
 import { Button } from "@/components/ui/button";
 
 /** Formulario de Ajustes con el resultado de la acción debajo del botón. */

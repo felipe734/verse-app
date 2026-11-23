@@ -319,3 +319,44 @@ export const avisos = pgTable("avisos", {
   sembrado: boolean().notNull().default(false),
   creado: ahora(),
 });
+
+/** Conversaciones con el asistente, una por persona y hilo. */
+export const conversaciones = pgTable("conversaciones", {
+  id: uuid().primaryKey().defaultRandom(),
+  usuarioId: uuid("usuario_id").notNull().references(() => usuarios.id),
+  creado: ahora(),
+  actualizado: ahora(),
+});
+
+/** Cada mensaje del asistente con sus tokens y su costo (se ve en Sistema). */
+export const mensajesAsistente = pgTable(
+  "mensajes_asistente",
+  {
+    id: bigserial({ mode: "number" }).primaryKey(),
+    conversacionId: uuid("conversacion_id").notNull().references(() => conversaciones.id),
+    rol: text().$type<"user" | "assistant">().notNull(),
+    /** Contenido tal como lo devuelve la API (bloques), para reenviarlo sin cambios. */
+    contenido: jsonb().$type<unknown>().notNull(),
+    modelo: text(),
+    tokensEntrada: integer("tokens_entrada").notNull().default(0),
+    tokensSalida: integer("tokens_salida").notNull().default(0),
+    tokensCacheLeidos: integer("tokens_cache_leidos").notNull().default(0),
+    tokensCacheEscritos: integer("tokens_cache_escritos").notNull().default(0),
+    costoUsd: doublePrecision("costo_usd").notNull().default(0),
+    creado: ahora(),
+  },
+  (t) => [index("mensajes_conversacion").on(t.conversacionId, t.id)],
+);
+
+/** Lo irreversible que propone el asistente: solo se ejecuta cuando la persona confirma. */
+export const propuestas = pgTable("propuestas", {
+  id: uuid().primaryKey().defaultRandom(),
+  usuarioId: uuid("usuario_id").notNull().references(() => usuarios.id),
+  conversacionId: uuid("conversacion_id").references(() => conversaciones.id),
+  tipo: text().notNull(),
+  datos: jsonb().$type<Record<string, unknown>>().notNull(),
+  resumen: text().notNull(),
+  estado: text().$type<"pendiente" | "hecha" | "rechazada" | "fallida">().notNull().default("pendiente"),
+  resultado: text(),
+  creado: ahora(),
+});

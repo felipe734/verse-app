@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import type { Db } from "@/db/cliente";
-import { colaEscrituras, costosNeon, llamadasAirtable, reconciliaciones, respaldos, syncEstado, tareas } from "@/db/esquema";
+import { colaEscrituras, costosNeon, llamadasAirtable, mensajesAsistente, reconciliaciones, respaldos, syncEstado, tareas } from "@/db/esquema";
 import { puede, type Sesion } from "@/lib/acceso/permisos";
 import { hoyBogota } from "@/lib/hoy/clasificar";
 import { HOY_POR_EMPRESA } from "@/lib/hoy/datos";
@@ -35,6 +35,8 @@ export interface Sistema {
     llamadas: { dia: string; workspace: string; llamadas: number }[];
     neon: typeof costosNeon.$inferSelect | null;
     colaFallidas: number;
+    /** Asistente en 7 días: respuestas del modelo, preguntas de personas y costo. */
+    asistente: { respuestas: number; preguntas: number; costoUsd: number; porPregunta: number };
   };
 }
 
@@ -117,6 +119,14 @@ export async function sistemaDe(db: Db, s: Sesion, empresa: string, ahora = new 
     .groupBy(llamadasAirtable.dia, llamadasAirtable.workspace)
     .orderBy(desc(llamadasAirtable.dia));
   const [neon] = await db.select().from(costosNeon).orderBy(desc(costosNeon.dia)).limit(1);
+  const [uso = { respuestas: 0, preguntas: 0, costo: 0 }] = await db
+    .select({
+      respuestas: sql<number>`count(*) filter (where ${mensajesAsistente.rol} = 'assistant')::int`,
+      preguntas: sql<number>`count(*) filter (where ${mensajesAsistente.rol} = 'user' and ${mensajesAsistente.contenido}::text not like '%tool_result%')::int`,
+      costo: sql<number>`coalesce(sum(${mensajesAsistente.costoUsd}), 0)::float`,
+    })
+    .from(mensajesAsistente)
+    .where(gte(mensajesAsistente.creado, desde));
 
   return {
     empresa,
@@ -140,6 +150,12 @@ export async function sistemaDe(db: Db, s: Sesion, empresa: string, ahora = new 
       llamadas,
       neon: neon ?? null,
       colaFallidas,
+      asistente: {
+        respuestas: uso.respuestas,
+        preguntas: uso.preguntas,
+        costoUsd: Math.round(uso.costo * 10000) / 10000,
+        porPregunta: uso.preguntas ? Math.round((uso.costo / uso.preguntas) * 10000) / 10000 : 0,
+      },
     },
   };
 }
