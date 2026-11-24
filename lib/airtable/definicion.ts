@@ -187,6 +187,7 @@ export const TABLAS_ESCRITURA = {
       ingreso: "Ingreso",
       salida: "Salida",
       notas: "Notas",
+      validado: "Validado",
     },
   },
   unidadesOperacion: {
