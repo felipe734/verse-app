@@ -124,6 +124,23 @@ export async function rutaDe(airtable: ClienteAirtable, f: Pick<Funcionaria, "no
     .sort((a, b) => minutos(a.hora) - minutos(b.hora));
 }
 
+/** Limpiezas de un día sin funcionaria enlazada (para quien coordina). */
+export async function sinFuncionaria(airtable: ClienteAirtable, fecha: string): Promise<Parada[]> {
+  const f = L.campos.fecha.nombre;
+  const filas = await airtable.consultar(L.idBase, L.idTabla, {
+    campos: [L.campos.unidad.nombre, f, L.campos.estado.nombre, L.campos.comentario.nombre],
+    formula: `AND({${L.campos.funcionaria.nombre}} = BLANK(), {${L.campos.funcionario.nombre}} = BLANK(), DATETIME_FORMAT(SET_TIMEZONE({${f}}, 'America/Bogota'), 'YYYY-MM-DD') = '${fecha}')`,
+    orden: { campo: f, desc: false },
+    max: 50,
+  });
+  return filas
+    .map((r) => {
+      const estado = texto(r.fields[L.campos.estado.nombre]);
+      return { recId: r.id, unidad: texto(r.fields[L.campos.unidad.nombre]), hora: horaDe(texto(r.fields[f])), estado, comentario: texto(r.fields[L.campos.comentario.nombre]), terminada: estado === "Terminado" };
+    })
+    .sort((a, b) => minutos(a.hora) - minutos(b.hora));
+}
+
 /** El turno abierto de hoy (CONTROL HORAS sin Salida), si lo hay. */
 export async function turnoAbierto(airtable: ClienteAirtable, f: Pick<Funcionaria, "nombre">, hoy: string): Promise<Turno | null> {
   const ingreso = H.campos.ingreso.nombre;
