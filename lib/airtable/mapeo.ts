@@ -5,6 +5,15 @@ import type { Mapeo } from "./construir-mapeo";
 export const MAPEO = {
   "catalogo": [
     {
+      "tabla": "TICKETS",
+      "workspace": "Verse",
+      "base": "6. OPERACION 360",
+      "idBase": "appOJopQhmyaON16G",
+      "idTabla": "tbln65eSWc0cDhvre",
+      "origen": "Propia",
+      "uso": "Manual"
+    },
+    {
       "tabla": "EB APTOS",
       "workspace": "C&C",
       "base": "1. C&C GROUP",
@@ -1550,6 +1559,75 @@ export const MAPEO = {
     }
   },
   "escritura": {
+    "tickets": {
+      "base": "6. OPERACION 360",
+      "tabla": "TICKETS",
+      "workspace": "Verse",
+      "idBase": "appOJopQhmyaON16G",
+      "idTabla": "tbln65eSWc0cDhvre",
+      "campos": {
+        "titulo": {
+          "id": "fldgX1PoDLz61jVBD",
+          "nombre": "Título",
+          "tipo": "singleLineText"
+        },
+        "unidad": {
+          "id": "fldzCawn5jq90k4Se",
+          "nombre": "Unidad",
+          "tipo": "multipleRecordLinks"
+        },
+        "tipo": {
+          "id": "fldXJuRNLBar4hkfD",
+          "nombre": "Tipo",
+          "tipo": "singleSelect"
+        },
+        "prioridad": {
+          "id": "fldYTRq6ELm9KSsT0",
+          "nombre": "Prioridad",
+          "tipo": "singleSelect"
+        },
+        "estado": {
+          "id": "fldismYOEORmRxRVC",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        },
+        "responsable": {
+          "id": "fldVPUN3yYGCQl2DQ",
+          "nombre": "Responsable",
+          "tipo": "singleLineText"
+        },
+        "fechaLimite": {
+          "id": "fldYeeOfc8WqHk2nb",
+          "nombre": "Fecha límite",
+          "tipo": "date"
+        },
+        "origen": {
+          "id": "fldS3x782VLWXBPRU",
+          "nombre": "Origen",
+          "tipo": "multipleRecordLinks"
+        },
+        "evidencia": {
+          "id": "fldMWTfR3R0HKCDar",
+          "nombre": "Evidencia",
+          "tipo": "multipleAttachments"
+        },
+        "comentario": {
+          "id": "fldNZF2a5cAJqBroc",
+          "nombre": "Comentario",
+          "tipo": "multilineText"
+        },
+        "cerradoEl": {
+          "id": "fldo9qSJgMSSgmsrF",
+          "nombre": "Cerrado el",
+          "tipo": "dateTime"
+        },
+        "creadoPor": {
+          "id": "fldc87xi1sgBfKCeJ",
+          "nombre": "Creado por",
+          "tipo": "singleLineText"
+        }
+      }
+    },
     "funcionarias": {
       "base": "6. OPERACION 360",
       "tabla": "FUNCIONARIAS",

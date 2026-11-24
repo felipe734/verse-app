@@ -133,6 +133,24 @@ export type ClaveTabla = keyof typeof TABLAS_SINCRONIZADAS;
  * mapeo para tener los IDs de campo, pero no al sincronizador.
  */
 export const TABLAS_ESCRITURA = {
+  tickets: {
+    base: "6. OPERACION 360",
+    tabla: "TICKETS",
+    campos: {
+      titulo: "Título",
+      unidad: "Unidad",
+      tipo: "Tipo",
+      prioridad: "Prioridad",
+      estado: "Estado",
+      responsable: "Responsable",
+      fechaLimite: "Fecha límite",
+      origen: "Origen",
+      evidencia: "Evidencia",
+      comentario: "Comentario",
+      cerradoEl: "Cerrado el",
+      creadoPor: "Creado por",
+    },
+  },
   funcionarias: {
     base: "6. OPERACION 360",
     tabla: "FUNCIONARIAS",

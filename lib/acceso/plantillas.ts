@@ -52,6 +52,7 @@ export const PLANTILLAS: Plantilla[] = [
         "verse-hoy": "editar",
         "host-limpiezas": "editar",
         "host-ruta": "editar",
+        "host-tickets": "editar",
         "host-operacion": "ver",
         "host-unidades": "ver",
       },

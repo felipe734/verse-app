@@ -6,6 +6,7 @@ import { encolar, procesarCola } from "@/lib/airtable/cola";
 import { ESCRITURA } from "@/lib/airtable/mapeo";
 import { puede, sensibles, type Sesion } from "@/lib/acceso/permisos";
 import { auditar } from "@/lib/auditoria";
+import { abrirTicketsDeReporte } from "@/lib/tickets/tickets";
 
 /**
  * Ruta de aseo (entrega 6). La funcionaria se reconoce por FUNCIONARIAS: su Nombre o su
@@ -279,10 +280,19 @@ export async function reportar(db: Db, airtable: ClienteAirtable, s: Sesion, hoy
   });
   if (!servicio.ok) return { ok: false, mensaje: "Airtable no aceptó el reporte. Intenta de nuevo" };
   await auditar(db, { autor: s.correo, accion: "ruta.reporte", idBase: S.idBase, idTabla: S.idTabla, recId: servicio.recId, detalle: `${parada.unidad} · ${r.estado}` });
+  // Daños, implementos o pendientes abren tickets para que alguien los cierre.
+  const tickets = await abrirTicketsDeReporte(
+    db,
+    airtable,
+    s.correo,
+    { unidad: parada.unidad, unidadRecId: unidades[0], servicioRecId: servicio.recId, estado: r.estado, danos: r.danos, necesitaImplementos: r.necesitaImplementos, implementos: r.implementos, comentario: r.comentario },
+    hoy,
+  );
+  const conTickets = tickets ? ` · ${tickets === 1 ? "1 ticket abierto" : `${tickets} tickets abiertos`}` : "";
 
   if (r.estado === "Listo para entregar") {
     const fin = await escribir(db, airtable, s, { idBase: L.idBase, idTabla: L.idTabla, recId: r.limpieza, campos: { [L.campos.estado.id]: "Terminado" } });
-    if (!fin.ok) return { ok: true, mensaje: "Reporte enviado. La limpieza no se pudo marcar Terminado: avísale a Diana" };
+    if (!fin.ok) return { ok: true, mensaje: `Reporte enviado${conTickets}. La limpieza no se pudo marcar Terminado: avísale a Diana` };
   }
-  return { ok: true, mensaje: r.estado === "Listo para entregar" ? `${parada.unidad} reportada y terminada` : `${parada.unidad} reportada con actividades pendientes` };
+  return { ok: true, mensaje: (r.estado === "Listo para entregar" ? `${parada.unidad} reportada y terminada` : `${parada.unidad} reportada con actividades pendientes`) + conTickets };
 }

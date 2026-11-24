@@ -117,6 +117,36 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     vistaInicial: "tablero",
     indicadores: [{ etiqueta: "Leads", tipo: "conteo" }],
   },
+  tickets: {
+    relacionados: [{ titulo: "Reservas de la unidad", tipo: "operacion", campo: "Unidad", columna: "Unidad" }],
+    rapidas: [{ etiqueta: "Cerrar", campo: "estado", valor: "Cerrado", columna: "Estado" }],
+    editar: {
+      tabla: "tickets",
+      campos: [
+        { campo: "estado", etiqueta: "Estado" },
+        { campo: "prioridad", etiqueta: "Prioridad" },
+        { campo: "responsable", etiqueta: "Responsable" },
+        { campo: "comentario", etiqueta: "Comentario" },
+      ],
+      sello: { campo: "estado", valor: "Cerrado", fecha: "cerradoEl" },
+    },
+    ...ids("6. OPERACION 360", "TICKETS"),
+    titulo: "Título",
+    columnas: [t("Título"), t("Unidad"), t("Tipo"), estado("Prioridad"), estado("Estado"), t("Responsable"), fecha("Fecha límite", "Límite")],
+    detalle: [t("Comentario"), t("Creado por"), fecha("Cerrado el")],
+    orden: { campo: "Fecha límite", desc: false },
+    max: 200,
+    formula: () => "OR({Estado} != 'Cerrado', IS_AFTER({Cerrado el}, DATEADD(NOW(), -30, 'days')))",
+    vacio: "No hay tickets abiertos",
+    filtros: ["Estado", "Tipo", "Prioridad", "Responsable"],
+    tablero: "Estado",
+    vistaInicial: "tablero",
+    indicadores: [
+      { etiqueta: "Abiertos", tipo: "conteo", donde: { campo: "Estado", valores: ["Abierto"] } },
+      { etiqueta: "En curso", tipo: "conteo", donde: { campo: "Estado", valores: ["En curso"] } },
+      { etiqueta: "Alta", tipo: "conteo", donde: { campo: "Prioridad", valores: ["Alta"] } },
+    ],
+  },
   "unidades-living": {
     relacionados: [
       { titulo: "Contratos", tipo: "contratos", campo: "Unidad", columna: "Unidad", max: 4 },

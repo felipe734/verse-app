@@ -28,7 +28,7 @@ describe("registro de módulos", () => {
     expect(g.map((x) => x.nombre)).toEqual(["General", "Host", "Living"]);
     expect(hrefs(maestro, "verse")).toEqual([
       "/verse/general/hoy", "/verse/general/aprobar", "/verse/general/correo", "/verse/general/finanzas", "/verse/general/equipo", "/verse/general/sistema",
-      "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/ruta", "/verse/host/unidades", "/verse/host/liquidaciones", "/verse/host/alistamiento", "/verse/host/comercial",
+      "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/ruta", "/verse/host/unidades", "/verse/host/liquidaciones", "/verse/host/alistamiento", "/verse/host/comercial", "/verse/host/tickets",
       "/verse/living/unidades", "/verse/living/contratos", "/verse/living/cobros", "/verse/living/comercial",
     ]);
     expect(hrefs(maestro, "cyc")).toEqual(["/cyc/general/hoy", "/cyc/general/aprobar", "/cyc/general/correo", "/cyc/general/finanzas", "/cyc/general/sistema", "/cyc/obra/actas", "/cyc/obra/pagos", "/cyc/obra/contratistas", "/cyc/obra/calidad"]);
@@ -51,10 +51,10 @@ describe("registro de módulos", () => {
     const esperado: Record<string, string[]> = {
       "administrador-verse": [
         "/verse/general/hoy", "/verse/general/correo", "/verse/general/finanzas", "/verse/general/sistema",
-        "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/ruta", "/verse/host/unidades", "/verse/host/liquidaciones", "/verse/host/alistamiento", "/verse/host/comercial",
+        "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/ruta", "/verse/host/unidades", "/verse/host/liquidaciones", "/verse/host/alistamiento", "/verse/host/comercial", "/verse/host/tickets",
         "/verse/living/unidades", "/verse/living/contratos", "/verse/living/cobros", "/verse/living/comercial",
       ],
-      "coordinacion-aseo": ["/verse/general/hoy", "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/ruta", "/verse/host/unidades"],
+      "coordinacion-aseo": ["/verse/general/hoy", "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/ruta", "/verse/host/unidades", "/verse/host/tickets"],
       living: ["/verse/general/hoy", "/verse/general/correo", "/verse/living/unidades", "/verse/living/contratos", "/verse/living/cobros", "/verse/living/comercial"],
       comercial: ["/verse/general/hoy", "/verse/general/correo", "/verse/host/comercial", "/verse/living/comercial"],
       // Aseo solo ve su ruta.

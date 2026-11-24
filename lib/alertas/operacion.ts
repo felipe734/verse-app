@@ -208,6 +208,28 @@ async function cobrosVencidos(c: Contexto): Promise<Alerta[]> {
   return r;
 }
 
+/** Tickets abiertos o en curso con la fecha límite ya pasada. */
+async function ticketsVencidos(c: Contexto): Promise<Alerta | null> {
+  const href = lugar(c, "verse", "tickets", "?v=lista");
+  if (!href) return null;
+  const T = ids("6. OPERACION 360", "TICKETS");
+  const filas = await c.airtable.consultar(T.idBase, T.idTabla, {
+    campos: ["Título", "Unidad"],
+    formula: `AND({Estado} != 'Cerrado', {Fecha límite}, ${dia("Fecha límite", "fecha")} < ${num(c.hoy)})`,
+    max: 50,
+  });
+  if (!filas.length) return null;
+  return {
+    id: "tickets-vencidos",
+    modulo: "tickets",
+    nivel: "alta",
+    titulo: filas.length === 1 ? "1 ticket vencido" : `${filas.length} tickets vencidos`,
+    detalle: lista(filas.map((f) => texto(f.fields["Título"]))),
+    cuenta: filas.length,
+    href,
+  };
+}
+
 /** Contratos que terminan en los próximos 30 días. */
 async function contratosPorTerminar(c: Contexto): Promise<Alerta | null> {
   const href = lugar(c, "verse", "contratos");
@@ -257,6 +279,7 @@ const REGLAS: { modulo: string; f: Regla }[] = [
   { modulo: "limpiezas", f: reservasSinLimpieza },
   { modulo: "limpiezas", f: limpiezasSinFuncionaria },
   { modulo: "comercial-host", f: leadsSinContacto },
+  { modulo: "tickets", f: ticketsVencidos },
   { modulo: "cobros", f: cobrosVencidos },
   { modulo: "contratos", f: contratosPorTerminar },
   { modulo: "finanzas", f: movimientosSinSoporte },
