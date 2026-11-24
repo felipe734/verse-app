@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { db } from "@/db/cliente";
 import { sesionActual } from "@/lib/acceso/actual";
@@ -19,6 +20,8 @@ import {
 import { casillasDesdeFormulario } from "@/lib/acceso/formulario";
 import { estructuraDe } from "@/lib/acceso/sesion";
 import { urlProduccion } from "@/lib/servidor/airtable";
+import { conectarCuenta } from "@/lib/correo/conexiones";
+import { composioServidor } from "@/lib/servidor/composio";
 
 export interface Resultado {
   ok: boolean;
@@ -139,4 +142,21 @@ export async function editarEmpresaAccion(id: string, _: Resultado | null, f: Fo
   } catch (e) {
     return falla(e);
   }
+}
+
+/** Conectar una cuenta de Gmail o el Drive: lleva al Maestro a Google y lo devuelve a Conexiones. */
+export async function conectarCuentaAccion(f: FormData): Promise<void> {
+  await maestro();
+  const h = await headers();
+  const origen = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("x-forwarded-host") ?? h.get("host")}`;
+  const volver = `${origen}/ajustes?vista=conexiones`;
+  const cliente = composioServidor();
+  if (!cliente) redirect(`${volver}&error=${encodeURIComponent("Falta COMPOSIO_API_KEY en Vercel")}`);
+  let destino: string;
+  try {
+    destino = (await conectarCuenta(cliente, texto(f, "alias"), volver)) ?? volver;
+  } catch (e) {
+    destino = `${volver}&error=${encodeURIComponent(e instanceof Error ? e.message.slice(0, 160) : "No se pudo conectar")}`;
+  }
+  redirect(destino);
 }
