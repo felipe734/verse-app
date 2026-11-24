@@ -1,4 +1,5 @@
 import type { ClienteAirtable, RegistroAirtable } from "@/lib/airtable/cliente";
+import { diaAirtable, numeroDia } from "@/lib/airtable/formulas";
 import type { EmpresaBase } from "@/lib/acceso/estructura";
 import type { Sesion } from "@/lib/acceso/permisos";
 import { rutaModulo } from "@/lib/alertas/operacion";
@@ -34,8 +35,7 @@ export interface PulsoHost {
 }
 
 const texto = (v: unknown) => (Array.isArray(v) ? v.join(", ") : v === null || v === undefined ? "" : String(v));
-const dia = (campo: string) => `VALUE(DATETIME_FORMAT(SET_TIMEZONE({${campo}}, 'America/Bogota'), 'YYYYMMDD'))`;
-const num = (t: string) => t.replaceAll("-", "");
+const num = numeroDia;
 /** "2:00 p. m." → minutos, para ordenar; sin hora va al final. */
 const minutos = (h: string) => {
   const m = h.match(/^(\d{1,2}):(\d{2}) ([ap])/);
@@ -94,13 +94,13 @@ export async function pulsoHost(c: { airtable: ClienteAirtable; s: Sesion; estru
   const [reservas, aseos, unidades] = await Promise.all([
     c.airtable.consultar(R.idBase, R.idTabla, {
       campos: ["Unidad", "Ingreso", "Salida", "Hora Ingreso"],
-      formula: `AND({Ingreso}, {Salida}, ${dia("Ingreso")} <= ${hasta}, ${dia("Salida")} >= ${desde})`,
+      formula: `AND({Ingreso}, {Salida}, ${diaAirtable("Ingreso", "fecha")} <= ${hasta}, ${diaAirtable("Salida", "fecha")} >= ${desde})`,
       max: 300,
     }),
     limpiezas
       ? c.airtable.consultar(L.idBase, L.idTabla, {
           campos: ["Unidad", "Fecha", "Funcionario", "Estado"],
-          formula: `AND({Fecha}, ${dia("Fecha")} >= ${desde}, ${dia("Fecha")} <= ${hasta})`,
+          formula: `AND({Fecha}, ${diaAirtable("Fecha", "fechaHora")} >= ${desde}, ${diaAirtable("Fecha", "fechaHora")} <= ${hasta})`,
           max: 200,
         })
       : Promise.resolve(null),

@@ -1,3 +1,4 @@
+import { diaAirtable, numeroDia, type TipoFecha } from "@/lib/airtable/formulas";
 import type { ClienteAirtable } from "@/lib/airtable/cliente";
 import type { EmpresaBase } from "@/lib/acceso/estructura";
 import { puede, type Sesion } from "@/lib/acceso/permisos";
@@ -24,8 +25,8 @@ export interface Alerta {
   href: string;
 }
 
-const dia = (campo: string) => `VALUE(DATETIME_FORMAT(SET_TIMEZONE({${campo}}, 'America/Bogota'), 'YYYYMMDD'))`;
-const num = (t: string) => t.replaceAll("-", "");
+const dia = (campo: string, tipo?: TipoFecha) => diaAirtable(campo, tipo);
+const num = numeroDia;
 const texto = (v: unknown) => (Array.isArray(v) ? v.join(", ") : v === null || v === undefined ? "" : String(v));
 const lista = (xs: string[], n = 4) => (xs.length > n ? `${xs.slice(0, n).join(", ")} y ${xs.length - n} más` : xs.join(", "));
 
@@ -70,8 +71,8 @@ async function reservasSinLimpieza(c: Contexto): Promise<Alerta | null> {
   const desde = num(c.hoy);
   const hasta = num(sumarDias(c.hoy, 3));
   const [salidas, limpiezas] = await Promise.all([
-    c.airtable.consultar(R.idBase, R.idTabla, { campos: ["Unidad", "Salida"], formula: `AND({Salida}, ${dia("Salida")} >= ${desde}, ${dia("Salida")} <= ${hasta})`, max: 100 }),
-    c.airtable.consultar(L.idBase, L.idTabla, { campos: ["Unidad", "Fecha"], formula: `AND({Fecha}, ${dia("Fecha")} >= ${desde}, ${dia("Fecha")} <= ${num(sumarDias(c.hoy, 4))})`, max: 200 }),
+    c.airtable.consultar(R.idBase, R.idTabla, { campos: ["Unidad", "Salida"], formula: `AND({Salida}, ${dia("Salida", "fecha")} >= ${desde}, ${dia("Salida", "fecha")} <= ${hasta})`, max: 100 }),
+    c.airtable.consultar(L.idBase, L.idTabla, { campos: ["Unidad", "Fecha"], formula: `AND({Fecha}, ${dia("Fecha", "fechaHora")} >= ${desde}, ${dia("Fecha", "fechaHora")} <= ${num(sumarDias(c.hoy, 4))})`, max: 200 }),
   ]);
   const hechas = new Set(limpiezas.map((l) => `${texto(l.fields["Unidad"])}|${leerFecha(texto(l.fields["Fecha"]))?.fecha}`));
   const faltan = salidas
@@ -107,7 +108,7 @@ async function limpiezasSinFuncionaria(c: Contexto): Promise<Alerta | null> {
     const L = ids("6. OPERACION 360", "LIMPIEZA");
     const filas = await c.airtable.consultar(L.idBase, L.idTabla, {
       campos: ["Unidad", "Fecha"],
-      formula: `AND({Fecha}, {Funcionario} = BLANK(), ${dia("Fecha")} >= ${num(c.hoy)}, ${dia("Fecha")} <= ${num(sumarDias(c.hoy, 7))})`,
+      formula: `AND({Fecha}, {Funcionario} = BLANK(), ${dia("Fecha", "fechaHora")} >= ${num(c.hoy)}, ${dia("Fecha", "fechaHora")} <= ${num(sumarDias(c.hoy, 7))})`,
       max: 50,
     });
     unidadesSin = filas.map((f) => texto(f.fields["Unidad"]));
