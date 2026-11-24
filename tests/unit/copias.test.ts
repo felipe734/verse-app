@@ -60,8 +60,8 @@ describe("copias en Postgres", () => {
     const a = await alertasDe({ airtable: sinAirtable, s: maestro, estructura: ESTRUCTURA, hoy: "2026-11-23", db, copia: true });
     const porId = Object.fromEntries(a.map((x) => [x.id, x]));
     expect(porId["reservas-sin-limpieza"]?.detalle).toBe("En los próximos 3 días: Torre 501 (24)");
-    expect(porId["limpiezas-sin-funcionaria"]?.detalle).toBe("Esta semana: Torre 501");
-    expect(porId["cobros-vencidos"]?.detalle).toBe("VL 302");
+    expect(porId["limpiezas-sin-funcionaria"]?.detalle).toBe("Torre 501");
+    expect(porId["cobros-vencidos-5d"]?.detalle).toBe("VL 302");
   });
 
   it("busca reservas por nombre de unidad", async () => {
