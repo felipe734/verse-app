@@ -40,3 +40,9 @@ Para escribir con IDs sin escribirlos a mano, el mapeo generado tiene ahora `ESC
 - Crear un almacenamiento Blob en Vercel y conectarlo al proyecto. Eso crea `BLOB_READ_WRITE_TOKEN`.
 - Invitar a Edy, Sara, María y Yoleida con la plantilla Aseo. El "Nombre en Airtable" de cada una debe ser su Nombre en FUNCIONARIAS, o se pone su correo en FUNCIONARIAS. Marcar Activa a quien trabaja hoy.
 - Cuando la usen, apagar los formularios de hoy.
+
+## Fase 1.3 (2026-11-24)
+
+- **La aseadora** ve su avance de hoy ("2 de 5 terminadas") y, debajo de la ruta, sus limpiezas de **mañana** (solo lectura).
+- **Quien coordina** cambia entre **Hoy** y **Mañana** (`?dia=manana`), ve el avance de cada funcionaria y, arriba y en rojo, los aseos **sin aseadora** de ese día (sin enlace y sin select). Con Limpiezas en editar, "Asignar" abre la Programación de aseos.
+- Solo lectura: no escribe nada nuevo en Airtable.

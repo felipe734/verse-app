@@ -5,7 +5,7 @@ import { ESCRITURA } from "@/lib/airtable/mapeo";
 import { ESTRUCTURA } from "@/lib/acceso/estructura";
 import type { Sesion } from "@/lib/acceso/permisos";
 import { plantilla } from "@/lib/acceso/plantillas";
-import { cerrarTurno, datosIngreso, funcionariaDe, horaDe, iniciarTurno, reportar } from "@/lib/ruta/ruta";
+import { cerrarTurno, datosIngreso, funcionariaDe, horaDe, iniciarTurno, reportar, sinFuncionaria } from "@/lib/ruta/ruta";
 import { AirtableFalso } from "../apoyo/airtable-falso";
 import { dbDePrueba } from "../apoyo/db";
 
@@ -100,5 +100,17 @@ describe("Ruta de aseo", () => {
     expect((await iniciarTurno(db, at, sinRuta, HOY)).mensaje).toBe("No tienes la Ruta de aseo");
     const otra: Sesion = { ...edy, correo: "nueva@prueba.co", nombreAirtable: "Nueva" };
     expect((await iniciarTurno(db, at, otra, HOY)).mensaje).toContain("no está en FUNCIONARIAS");
+  });
+  it("aseos sin aseadora del día: piden enlace y select vacíos, en orden de hora", async () => {
+    at.poner(L.idBase, L.idTabla, { Unidad: "Parque 1104", Fecha: "25/11/2026 2:00pm", Estado: "Programado", Comentario: "" });
+    const r = await sinFuncionaria(at, HOY);
+    expect(r.map((p) => [p.unidad, p.hora])).toEqual([
+      ["Torre Norte 603", "8:30 a. m."],
+      ["Parque 1104", "2:00 p. m."],
+    ]);
+    const f = at.consultas.at(-1)?.formula ?? "";
+    expect(f).toContain("{Funcionaria enlace} = BLANK()");
+    expect(f).toContain("{Funcionario} = BLANK()");
+    expect(f).toContain("= '2026-11-25'");
   });
 });

@@ -20,7 +20,7 @@ import { REGISTRO, ubicar } from "@/lib/modulos/registro";
 const defPorSegmento = (segmento: string) => REGISTRO.find((d) => d.segmento === segmento);
 
 type Params = { empresa: string; vertical: string; modulo: string };
-type Busqueda = { verComo?: string; cuenta?: string; pestana?: string; p?: string; programar?: string };
+type Busqueda = { verComo?: string; cuenta?: string; pestana?: string; p?: string; programar?: string; dia?: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { modulo } = await params;
@@ -45,7 +45,7 @@ async function Contenido({ params, searchParams }: { params: Promise<Params>; se
     case "correo":
       return <ModuloCorreo sesion={sesion} empresa={empresa} cuenta={busqueda.cuenta} />;
     case "ruta":
-      return <ModuloRuta sesion={sesion} />;
+      return <ModuloRuta sesion={sesion} manana={busqueda.dia === "manana"} />;
     case "sistema":
       return <ModuloSistema sesion={sesion} empresa={empresa} />;
     default:
