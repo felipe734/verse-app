@@ -41,13 +41,15 @@ interface Contexto {
 }
 
 /** Ruta del módulo de un tipo, si la persona lo ve. */
-function lugar(c: Contexto, empresa: string, tipo: string, consulta = ""): string | null {
-  const e = c.estructura.find((x) => x.id === empresa);
+export function rutaModulo(s: Sesion, estructura: EmpresaBase[], empresa: string, tipo: string, consulta = ""): string | null {
+  const e = estructura.find((x) => x.id === empresa);
   const def = REGISTRO.find((d) => d.tipo === tipo);
   const l = e?.verticales.flatMap((v) => v.modulos.map((m) => ({ v, m }))).find((x) => x.m.tipo === tipo);
-  if (!e || !def || !l || !puede(c.s, empresa, l.m.id, "ver")) return null;
+  if (!e || !def || !l || !puede(s, empresa, l.m.id, "ver")) return null;
   return `/${empresa}/${segmentoVertical(empresa, l.v.id)}/${def.segmento}${consulta}`;
 }
+
+const lugar = (c: Contexto, empresa: string, tipo: string, consulta = "") => rutaModulo(c.s, c.estructura, empresa, tipo, consulta);
 
 /** Salidas de los próximos 3 días sin limpieza programada para esa unidad en esa fecha. */
 async function reservasSinLimpieza(c: Contexto): Promise<Alerta | null> {

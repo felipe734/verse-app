@@ -37,6 +37,20 @@ function rutaVitrina(o: { campos: string[]; formula?: string }): RegistroAirtabl
     ];
   }
   if (o.formula?.includes("ARRAYJOIN({Funcionaria enlace})")) return [];
+  // Pulso de Host: reservas alrededor de hoy.
+  if (o.campos.includes("Hora Ingreso") && o.campos.length === 4) {
+    const d = (n: number) => {
+      const x = new Date(Date.now() - 5 * 3_600_000 + n * 86_400_000);
+      return `${x.getUTCDate()}/${x.getUTCMonth() + 1}/${x.getUTCFullYear()}`;
+    };
+    return [
+      reg("recVITRINARES0001", { Unidad: "Torre Norte 603", Ingreso: d(-2), Salida: d(0), "Hora Ingreso": "" }),
+      reg("recVITRINARES0002", { Unidad: "Balcony 302", Ingreso: d(0), Salida: d(3), "Hora Ingreso": "3:00 PM" }),
+      reg("recVITRINARES0003", { Unidad: "Parque 1104", Ingreso: d(-1), Salida: d(1), "Hora Ingreso": "" }),
+      reg("recVITRINARES0004", { Unidad: "Torre Norte 805", Ingreso: d(1), Salida: d(4), "Hora Ingreso": "1:00 PM" }),
+    ];
+  }
+  if (o.formula?.includes("{Tipo Servicio}")) return Array.from({ length: 12 }, (_, i) => reg(`recVITRINAUNI${String(i).padStart(4, "0")}`, { Unidad: `Unidad ${i + 1}` }));
   return null;
 }
 
