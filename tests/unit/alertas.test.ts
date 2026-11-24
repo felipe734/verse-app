@@ -31,4 +31,32 @@ describe("alertas de la operación", () => {
     expect(await alertasDe({ airtable: at, s: aseo, estructura: ESTRUCTURA, hoy: HOY })).toEqual([]);
     expect((await alertasDe({ airtable: at, s: maestro, estructura: ESTRUCTURA, hoy: HOY }, "cobros"))[0]).toMatchObject({ id: "cobros-vencidos", cuenta: 1 });
   });
+  it("aseos sin aseadora: hoy y mañana en rojo; el resto de la semana como aviso", async () => {
+    const at = new AirtableFalso();
+    const L = ids("6. OPERACION 360", "LIMPIEZA");
+    at.poner(L.idBase, L.idTabla, { Unidad: "Torre 603", Fecha: "26/11/2026 11:00am" });
+    at.poner(L.idBase, L.idTabla, { Unidad: "Torre 805", Fecha: "29/11/2026 11:00am" });
+    const r = await alertasDe({ airtable: at, s: maestro, estructura: ESTRUCTURA, hoy: HOY }, "limpiezas");
+    expect(r.find((a) => a.id === "limpiezas-sin-funcionaria-24h")).toMatchObject({ nivel: "alta", cuenta: 1, detalle: "Hoy y mañana: Torre 603", href: "/verse/host/limpiezas?programar=1" });
+    expect(r.find((a) => a.id === "limpiezas-sin-funcionaria")).toMatchObject({ nivel: "media", cuenta: 1 });
+  });
+
+  it("arriendo vencido hace más de 5 días en rojo; el reciente como aviso", async () => {
+    const at = new AirtableFalso();
+    const I = ids("7. LIVING", "INGRESOS");
+    at.poner(I.idBase, I.idTabla, { Unidad: "VL 203", Fecha: "5/11/2026" });
+    at.poner(I.idBase, I.idTabla, { Unidad: "EB 401", Fecha: "23/11/2026" });
+    const r = await alertasDe({ airtable: at, s: maestro, estructura: ESTRUCTURA, hoy: HOY }, "cobros");
+    expect(r[0]).toMatchObject({ id: "cobros-vencidos-5d", nivel: "alta", detalle: "VL 203" });
+    expect(r[1]).toMatchObject({ id: "cobros-vencidos", nivel: "media", detalle: "EB 401" });
+  });
+
+  it("leads de Host sin contactar más de 48 h, con la fórmula de plazo", async () => {
+    const at = new AirtableFalso();
+    const T = ids("10. LEAD GEN", "LEADS");
+    at.poner(T.idBase, T.idTabla, { Nombre: "Lead Prueba" });
+    const [a] = await alertasDe({ airtable: at, s: maestro, estructura: ESTRUCTURA, hoy: HOY }, "comercial-host");
+    expect(a).toMatchObject({ id: "leads-sin-contacto", nivel: "alta", cuenta: 1, href: "/verse/host/comercial?v=lista&f.Estado=Lead" });
+    expect(at.consultas.at(-1)?.formula).toContain("DATEADD(NOW(), -48, 'hours')");
+  });
 });
