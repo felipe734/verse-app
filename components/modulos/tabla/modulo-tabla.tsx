@@ -1,6 +1,7 @@
 import { alcanceHoy, puede, type Sesion } from "@/lib/acceso/permisos";
 import { hoyBogota } from "@/lib/hoy/clasificar";
 import { crearContador } from "@/lib/medicion/contador";
+import { cronometro, registrarTiempo } from "@/lib/medicion/uso";
 import type { Ubicacion } from "@/lib/modulos/registro";
 import { leerTabla, type ResultadoTabla } from "@/lib/modulos/tabla";
 import { db } from "@/db/cliente";
@@ -14,6 +15,7 @@ import { VistaTabla } from "./vista-tabla";
 
 /** Un módulo de tabla del registro: lee Airtable en el momento, solo lo permitido. */
 export async function ModuloTabla({ sesion, u, p }: { sesion: Sesion; u: Ubicacion; p?: string }) {
+  const transcurrido = cronometro();
   const def = u.def.tabla!;
   const puedeEditar = Boolean(def.editar?.campos.length) && puede(sesion, u.empresa, u.modulo.id, "editar");
   const contador = crearContador();
@@ -22,18 +24,28 @@ export async function ModuloTabla({ sesion, u, p }: { sesion: Sesion; u: Ubicaci
   const ruta = `/${u.empresa}/${u.vertical.segmento}/${u.def.segmento}`;
   let r: ResultadoTabla | null = null;
   let error: string | undefined;
-  try {
-    r = await leerTabla(clienteServidor(contador), sesion, u.empresa, u.vertical.id, def, hoy, periodo);
-    await contador.volcar(db());
-  } catch (e) {
-    console.error(`[modulo/${u.def.tipo}]`, e instanceof Error ? e.message : e);
-    error = "Airtable no respondió. Intenta de nuevo en un momento.";
-  }
+  // La tabla, las alertas y las vistas guardadas se leen en paralelo.
+  const [tabla, alertas, vistas] = await Promise.all([
+    leerTabla(clienteServidor(contador), sesion, u.empresa, u.vertical.id, def, hoy, periodo).then(
+      (x) => x,
+      (e: unknown) => {
+        console.error(`[modulo/${u.def.tipo}]`, e instanceof Error ? e.message : e);
+        return null;
+      },
+    ),
+    leerAlertas(sesion, u.def.tipo),
+    vistasDe(db(), sesion.usuarioId, ruta).catch(() => []),
+  ]);
+  if (tabla) {
+    r = tabla;
+    await contador.volcar(db()).catch(() => undefined);
+  } else error = "Airtable no respondió. Intenta de nuevo en un momento.";
+  await registrarTiempo(db(), sesion.usuarioId, ruta, hoy, transcurrido());
   return (
     <>
       <EncabezadoModulo titulo={u.modulo.nombre} descripcion={u.def.descripcion} />
       <div className="px-4 md:px-6">
-        <ListaAlertas alertas={await leerAlertas(sesion, u.def.tipo)} compacta />
+        <ListaAlertas alertas={alertas} compacta />
       </div>
       <VistaTabla
         titulo={u.modulo.nombre}
@@ -61,7 +73,7 @@ export async function ModuloTabla({ sesion, u, p }: { sesion: Sesion; u: Ubicaci
             ? { campo: def.persona, nombre: sesion.nombreAirtable, porDefecto: !sesion.maestro && alcanceHoy(sesion, u.empresa) === "suyo" }
             : undefined
         }
-        vistas={await vistasDe(db(), sesion.usuarioId, ruta).catch(() => [])}
+        vistas={vistas}
         edicion={puedeEditar ? { empresa: u.empresa, vertical: u.vertical.segmento, modulo: u.def.segmento } : undefined}
       />
     </>

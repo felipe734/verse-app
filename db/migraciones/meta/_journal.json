@@ -78,6 +78,13 @@
       "when": 1795462206304,
       "tag": "0010_living_zzzax",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1795527536214,
+      "tag": "0011_smart_sue_storm",
+      "breakpoints": true
     }
   ]
 }

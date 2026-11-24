@@ -396,6 +396,10 @@ export const usoPantallas = pgTable(
     ruta: text().notNull(),
     dia: date().notNull(),
     vistas: integer().notNull().default(1),
+    /** Tiempo de carga en el servidor: suma y máximo del día, para el promedio en Sistema. */
+    msTotal: integer("ms_total").notNull().default(0),
+    msMax: integer("ms_max").notNull().default(0),
+    medidas: integer().notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.usuarioId, t.ruta, t.dia] })],
 );

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { alcanceHoy, puede, type Sesion } from "@/lib/acceso/permisos";
 import { hoyBogota } from "@/lib/hoy/clasificar";
 import { crearContador } from "@/lib/medicion/contador";
+import { cronometro, registrarTiempo } from "@/lib/medicion/uso";
 import { leerCierre, pestanaDe, type MesCierre } from "@/lib/modulos/finanzas";
 import type { Ubicacion } from "@/lib/modulos/registro";
 import { leerTabla, type ResultadoTabla } from "@/lib/modulos/tabla";
@@ -108,6 +109,7 @@ function Tendencia({ meses }: { meses: MesCierre[] }) {
 
 /** Módulo con pestañas (Finanzas): cada pestaña es una tabla de Airtable; se lee solo la abierta. */
 export async function ModuloPanel({ sesion, u, pestana, p }: { sesion: Sesion; u: Ubicacion; pestana?: string; p?: string }) {
+  const transcurrido = cronometro();
   const lista = u.def.pestanas!;
   const activa = pestanaDe(u.def.tipo, pestana)!;
   const puedeEditar = Boolean(activa.tabla.editar?.campos.length) && puede(sesion, u.empresa, u.modulo.id, "editar");
@@ -119,6 +121,8 @@ export async function ModuloPanel({ sesion, u, pestana, p }: { sesion: Sesion; u
   let r: ResultadoTabla | null = null;
   let cierre: MesCierre[] | null = null;
   let error: string | undefined;
+  // Alertas y vistas guardadas en paralelo con Airtable.
+  const extras = Promise.all([leerAlertas(sesion, u.def.tipo), vistasDe(db(), sesion.usuarioId, ruta).catch(() => [])]);
   try {
     [r, cierre] = await Promise.all([
       leerTabla(airtable, sesion, u.empresa, u.vertical.id, activa.tabla, hoy, periodo),
@@ -129,6 +133,8 @@ export async function ModuloPanel({ sesion, u, pestana, p }: { sesion: Sesion; u
     console.error(`[modulo/${u.def.tipo}/${activa.id}]`, e instanceof Error ? e.message : e);
     error = "Airtable no respondió. Intenta de nuevo en un momento.";
   }
+  const [alertas, vistas] = await extras;
+  await registrarTiempo(db(), sesion.usuarioId, ruta, hoy, transcurrido());
   return (
     <>
       <EncabezadoModulo titulo={u.modulo.nombre} descripcion={u.def.descripcion}>
@@ -141,7 +147,7 @@ export async function ModuloPanel({ sesion, u, pestana, p }: { sesion: Sesion; u
         )}
       </EncabezadoModulo>
       <div className="px-4 md:px-6">
-        <ListaAlertas alertas={await leerAlertas(sesion, u.def.tipo)} compacta />
+        <ListaAlertas alertas={alertas} compacta />
       </div>
       {cierre && <Cierre meses={cierre} mes={periodo?.unidad === "mes" ? periodo.clave : undefined} />}
       <nav aria-label={`Secciones de ${u.modulo.nombre}`} className="flex gap-1 overflow-x-auto border-b px-4 md:px-6">
@@ -186,7 +192,7 @@ export async function ModuloPanel({ sesion, u, pestana, p }: { sesion: Sesion; u
             ? { campo: activa.tabla.persona, nombre: sesion.nombreAirtable, porDefecto: !sesion.maestro && alcanceHoy(sesion, u.empresa) === "suyo" }
             : undefined
         }
-        vistas={await vistasDe(db(), sesion.usuarioId, ruta).catch(() => [])}
+        vistas={vistas}
         edicion={puedeEditar ? { empresa: u.empresa, vertical: u.vertical.segmento, modulo: u.def.segmento, pestana: activa.id } : undefined}
       />
     </>

@@ -195,6 +195,8 @@ export async function ModuloSistema({ sesion, empresa }: { sesion: Sesion; empre
 }
 
 /** Qué se usa y quién, últimos 7 días (solo el Maestro). */
+const segundos = (ms: number) => (ms < 1000 ? `${ms} ms` : `${(ms / 1000).toLocaleString("es-CO", { maximumFractionDigits: 1 })} s`);
+
 async function UsoApp() {
   const desde = sumarDias(hoyBogota(), -6);
   const u = await usoDesde(db(), desde).catch(() => null);
@@ -203,7 +205,7 @@ async function UsoApp() {
     <Bloque titulo="Uso de la app en 7 días">
       <div className="grid gap-4 p-4 text-sm md:grid-cols-2">
         <div>
-          <p className="mb-2 text-xs text-muted-foreground">Pantallas</p>
+          <p className="mb-2 text-xs text-muted-foreground">Pantallas: visitas, personas y carga promedio (rojo si pasa de 1 s)</p>
           {u.porPantalla.length === 0 ? (
             <p className="text-muted-foreground">Sin visitas todavía.</p>
           ) : (
@@ -211,8 +213,14 @@ async function UsoApp() {
               {u.porPantalla.map((p) => (
                 <li key={p.ruta} className="flex justify-between gap-2">
                   <span className="truncate text-muted-foreground">{p.ruta}</span>
-                  <span>
+                  <span className="shrink-0">
                     {p.vistas} · {p.personas} {p.personas === 1 ? "persona" : "personas"}
+                    {p.msPromedio !== null && (
+                      <span className={p.msPromedio > 1000 ? " text-red-600 dark:text-red-400" : " text-muted-foreground"} title={`Máximo ${segundos(p.msMax)}`}>
+                        {" "}
+                        · {segundos(p.msPromedio)}
+                      </span>
+                    )}
                   </span>
                 </li>
               ))}
