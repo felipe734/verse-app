@@ -11,10 +11,31 @@ export async function registrarUso(db: Db, usuarioId: string, ruta: string, dia:
     .catch(() => undefined);
 }
 
+/** Mide desde ahora: devuelve una función con los ms transcurridos. */
+export function cronometro(): () => number {
+  const t = performance.now();
+  return () => performance.now() - t;
+}
+
+/** Suma cuánto tardó en cargar la pantalla (ms en el servidor). Va después de registrarUso. */
+export async function registrarTiempo(db: Db, usuarioId: string, ruta: string, dia: string, ms: number): Promise<void> {
+  const t = Math.max(0, Math.round(ms));
+  await db
+    .update(usoPantallas)
+    .set({ msTotal: sql`${usoPantallas.msTotal} + ${t}`, msMax: sql`greatest(${usoPantallas.msMax}, ${t})`, medidas: sql`${usoPantallas.medidas} + 1` })
+    .where(and(eq(usoPantallas.usuarioId, usuarioId), eq(usoPantallas.ruta, ruta.slice(0, 120)), eq(usoPantallas.dia, dia)))
+    .catch(() => undefined);
+}
+
 /** Uso desde una fecha: por pantalla, con visitas y personas distintas, y por persona. */
 export async function usoDesde(db: Db, desde: string) {
   const porPantalla = await db
-    .select({ ruta: usoPantallas.ruta, vistas: sql<number>`sum(${usoPantallas.vistas})::int`, personas: sql<number>`count(distinct ${usoPantallas.usuarioId})::int` })
+    .select({
+      ruta: usoPantallas.ruta,
+      vistas: sql<number>`sum(${usoPantallas.vistas})::int`, personas: sql<number>`count(distinct ${usoPantallas.usuarioId})::int`,
+      msPromedio: sql<number | null>`(sum(${usoPantallas.msTotal}) / nullif(sum(${usoPantallas.medidas}), 0))::int`,
+      msMax: sql<number>`max(${usoPantallas.msMax})::int`,
+    })
     .from(usoPantallas)
     .where(gte(usoPantallas.dia, desde))
     .groupBy(usoPantallas.ruta)
