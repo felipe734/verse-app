@@ -1743,6 +1743,11 @@ export const MAPEO = {
           "id": "fldY4J64YTpAfVikz",
           "nombre": "Notas",
           "tipo": "multilineText"
+        },
+        "validado": {
+          "id": "fldcMQZ7tFYdCD2zn",
+          "nombre": "Validado",
+          "tipo": "checkbox"
         }
       }
     },

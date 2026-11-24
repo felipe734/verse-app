@@ -14,6 +14,8 @@ import { leerAlertas, ListaAlertas } from "@/components/inicio/alertas";
 import { VistaTabla } from "./vista-tabla";
 import { ProgramacionAseos } from "@/components/modulos/aseos/programacion";
 import { puedeProgramar } from "@/lib/aseos/programacion";
+import { ControlSemana } from "@/components/modulos/horas/control-semana";
+import { Suspense } from "react";
 
 /** Un módulo de tabla del registro: lee Airtable en el momento, solo lo permitido. */
 export async function ModuloTabla({ sesion, u, p, programar }: { sesion: Sesion; u: Ubicacion; p?: string; programar?: boolean }) {
@@ -51,6 +53,11 @@ export async function ModuloTabla({ sesion, u, p, programar }: { sesion: Sesion;
       <div className="px-4 md:px-6">
         <ListaAlertas alertas={alertas} compacta />
       </div>
+      {u.def.tipo === "equipo" && u.empresa === "verse" && periodo && (
+        <Suspense fallback={<div className="mx-4 mb-4 h-40 animate-pulse rounded-lg bg-muted/50 md:mx-6" aria-hidden />}>
+          <ControlSemana sesion={sesion} lunes={periodo.inicio} />
+        </Suspense>
+      )}
       <VistaTabla
         titulo={u.modulo.nombre}
         modulo={u.modulo.nombre}
