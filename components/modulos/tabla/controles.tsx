@@ -183,11 +183,11 @@ export function Indicadores({ indicadores, columnas, filas }: { indicadores: Ind
   const items = calcularIndicadores(indicadores, columnas, filas);
   if (!items.length) return null;
   return (
-    <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Indicadores">
+    <dl className="flex gap-2 [scrollbar-width:none] max-md:-mx-4 max-md:overflow-x-auto max-md:px-4 sm:grid sm:grid-cols-4" aria-label="Indicadores">
       {items.map((i) => (
-        <div key={i.etiqueta} className="rounded-lg border bg-card px-3 py-2.5">
+        <div key={i.etiqueta} className="shrink-0 rounded-lg border bg-card px-3 py-2 max-sm:min-w-28 sm:py-2.5">
           <dt className="text-xs text-muted-foreground">{i.etiqueta}</dt>
-          <dd className="mt-0.5 text-lg font-semibold tabular-nums">{i.valor}</dd>
+          <dd className="mt-0.5 text-base font-semibold whitespace-nowrap tabular-nums sm:text-lg">{i.valor}</dd>
         </div>
       ))}
     </dl>
@@ -213,7 +213,7 @@ export function SelectorVista({ vista, opciones, inicial }: { vista: TipoVista; 
             onClick={() => cambiar({ v: id === inicial ? null : id })}
             className={cn("inline-flex items-center gap-1 rounded px-2 py-1 text-xs", vista === id ? "bg-muted font-medium" : "text-muted-foreground hover:text-foreground")}
           >
-            <o.icono className="size-3.5" aria-hidden /> {o.nombre}
+            <o.icono className="size-3.5" aria-hidden /> <span className="max-md:sr-only">{o.nombre}</span>
           </button>
         );
       })}
@@ -360,7 +360,7 @@ export function MenuVistas({ vistas }: { vistas: VistaGuardada[] }) {
     <DropdownMenu open={abierto} onOpenChange={setAbierto}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="h-7 gap-1 px-2.5 text-xs">
-          <Bookmark className="size-3.5" aria-hidden /> Vistas
+          <Bookmark className="size-3.5" aria-hidden /> <span className="max-md:sr-only">Vistas</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
@@ -419,7 +419,7 @@ export function Exportar({ nombre, columnas, filas }: { nombre: string; columnas
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="h-7 gap-1 px-2.5 text-xs">
-          <Download className="size-3.5" aria-hidden /> Exportar
+          <Download className="size-3.5" aria-hidden /> <span className="max-md:sr-only">Exportar</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

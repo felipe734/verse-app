@@ -167,35 +167,38 @@ export function VistaTabla({
         {(periodo || opciones.length > 1 || vistas || personaVisible || tablas) && (
           <div className="mb-3 flex flex-wrap items-center justify-between gap-2 print:[&>div]:hidden">
             {periodo ? <SelectorPeriodo periodo={periodo} /> : <span />}
-            <div className="flex flex-wrap items-center gap-2">
-              {tablas && <Actualizar tablas={tablas} />}
+            {/* En el celular: período arriba y una sola fila de controles; los de texto quedan como íconos. */}
+            <div className="flex items-center gap-2 max-md:w-full">
               {personaVisible && <InterruptorMio mio={mio} porDefecto={personaVisible.porDefecto} />}
               <SelectorVista vista={vista} opciones={opciones} inicial={opciones.includes(vistaInicial) ? vistaInicial : "lista"} />
-              {!error && <Exportar nombre={modulo} columnas={columnas} filas={visibles} />}
-              {vistas && <MenuVistas vistas={vistas} />}
+              <div className="flex items-center gap-1.5 max-md:ml-auto">
+                {tablas && <Actualizar tablas={tablas} />}
+                {!error && <Exportar nombre={modulo} columnas={columnas} filas={visibles} />}
+                {vistas && <MenuVistas vistas={vistas} />}
+              </div>
             </div>
           </div>
         )}
         {filtros.length > 0 && !error && (
-          <div className="mb-3 max-md:-mx-4 max-md:overflow-x-auto max-md:px-4 max-md:[&>div]:flex-nowrap">
+          <div className="mb-3 [scrollbar-width:none] max-md:-mx-4 max-md:overflow-x-auto max-md:px-4 max-md:[&>div]:flex-nowrap">
             <Filtros campos={filtros} columnas={columnas} filas={propias} activos={activos} />
           </div>
         )}
         {indicadores.length > 0 && !error && (
-          <div className="mb-4">
+          <div className="mb-3 md:mb-4">
             <Indicadores indicadores={indicadores} columnas={columnas} filas={visibles} />
           </div>
         )}
-        <div className="mb-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span className="tabular-nums">
+        <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground flex-wrap max-md:flex-row-reverse">
+          <span className="shrink-0 tabular-nums">
             {visibles.length} {visibles.length === 1 ? "fila" : "filas"}
           </span>
           {ocultos.length > 0 && (
-            <span className="inline-flex items-center gap-1">
+            <span className="inline-flex items-center gap-1 max-md:order-last max-md:basis-full">
               <EyeOff className="size-3.5" aria-hidden /> Tu acceso no incluye {ocultos.join(", ")}.
             </span>
           )}
-          <Input ref={refFiltroMovil} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Filtrar" aria-label={`Filtrar ${modulo}`} className="h-8 md:hidden" />
+          <Input ref={refFiltroMovil} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Filtrar" aria-label={`Filtrar ${modulo}`} className="h-8 min-w-0 flex-1 basis-40 md:hidden" />
         </div>
         {error ? (
           <p role="alert" className="rounded-md border px-3 py-6 text-center text-sm">
