@@ -1,3 +1,4 @@
+import { diaAirtable, numeroDia } from "@/lib/airtable/formulas";
 /**
  * Período de una vista. Toda pantalla abre en lo actual (hoy, esta semana o este mes) y se
  * mueve con ‹ ›. El período vive en la URL (?p=…) para poder compartir el enlace:
@@ -103,9 +104,9 @@ export function leerPeriodo(unidad: UnidadPeriodo, p: string | undefined, hoy: s
   return periodoDe(unidad, hoy, hoy);
 }
 
-const num = (t: string) => t.replaceAll("-", "");
-/** El día del campo en Bogotá como número AAAAMMDD: las comparaciones de texto en Airtable no son confiables. */
-const diaDe = (campo: string) => `VALUE(DATETIME_FORMAT(SET_TIMEZONE({${campo}}, 'America/Bogota'), 'YYYYMMDD'))`;
+const num = numeroDia;
+/** El día del campo como número AAAAMMDD (ver diaAirtable: los campos de solo fecha no se corren). */
+const diaDe = (campo: string) => diaAirtable(campo);
 
 /** Fórmula de Airtable: la fecha del campo cae dentro del período (en hora de Bogotá). */
 export function formulaDentro(campo: string, p: Pick<Periodo, "inicio" | "fin">): string {

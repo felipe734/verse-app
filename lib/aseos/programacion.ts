@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/db/cliente";
 import { colaEscrituras } from "@/db/esquema";
 import type { ClienteAirtable } from "@/lib/airtable/cliente";
+import { diaAirtable, numeroDia } from "@/lib/airtable/formulas";
 import { encolar, procesarCola } from "@/lib/airtable/cola";
 import { ESCRITURA } from "@/lib/airtable/mapeo";
 import { puede, type Sesion } from "@/lib/acceso/permisos";
@@ -60,7 +61,8 @@ export interface Resultado {
 
 const texto = (v: unknown): string => (v === null || v === undefined ? "" : Array.isArray(v) ? v.map(texto).filter(Boolean).join(", ") : String(v));
 const literal = (t: string) => t.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-const dia = (campo: string) => `DATETIME_FORMAT(SET_TIMEZONE({${campo}}, 'America/Bogota'), 'YYYY-MM-DD')`;
+const salida = diaAirtable("Salida", "fecha");
+const fechaAseo = diaAirtable(L.campos.fecha.nombre, "fechaHora");
 const REC = /^rec[A-Za-z0-9]{14}$/;
 const FECHA = /^\d{4}-\d{2}-\d{2}$/;
 const HORA = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -92,10 +94,10 @@ export async function programacion(airtable: ClienteAirtable, hoy: string): Prom
   const [fs, us, salidas, filas] = await Promise.all([
     funcionarias(airtable),
     airtable.consultar(U.idBase, U.idTabla, { campos: [U.campos.und.nombre], formula: `{${U.campos.estado.nombre}} = 'Actual'`, max: 300 }),
-    airtable.consultar(R.idBase, R.idTabla, { campos: ["Unidad", "Salida"], formula: `AND({Salida}, ${dia("Salida")} >= '${hoy}', ${dia("Salida")} <= '${hasta}')`, max: 200 }),
+    airtable.consultar(R.idBase, R.idTabla, { campos: ["Unidad", "Salida"], formula: `AND({Salida}, ${salida} >= ${numeroDia(hoy)}, ${salida} <= ${numeroDia(hasta)})`, max: 200 }),
     airtable.consultar(L.idBase, L.idTabla, {
       campos: [L.campos.unidad.nombre, L.campos.fecha.nombre, L.campos.funcionario.nombre, L.campos.funcionaria.nombre, L.campos.estado.nombre],
-      formula: `AND({${L.campos.fecha.nombre}}, ${dia(L.campos.fecha.nombre)} >= '${hoy}', ${dia(L.campos.fecha.nombre)} <= '${hasta}')`,
+      formula: `AND({${L.campos.fecha.nombre}}, ${fechaAseo} >= ${numeroDia(hoy)}, ${fechaAseo} <= ${numeroDia(hasta)})`,
       orden: { campo: L.campos.fecha.nombre, desc: false },
       max: 300,
     }),
@@ -174,7 +176,7 @@ export async function programarAseo(db: Db, airtable: ClienteAirtable, s: Sesion
   const nombre = texto(u.fields[U.campos.und.id]).trim();
   const repetido = await airtable.consultar(L.idBase, L.idTabla, {
     campos: [L.campos.unidad.nombre],
-    formula: `AND(FIND('${literal(nombre)}', ARRAYJOIN({${L.campos.unidad.nombre}})), ${dia(L.campos.fecha.nombre)} = '${n.fecha}')`,
+    formula: `AND(FIND('${literal(nombre)}', ARRAYJOIN({${L.campos.unidad.nombre}})), ${fechaAseo} = ${numeroDia(n.fecha)})`,
     max: 1,
   });
   if (repetido.length) return { ok: false, mensaje: `${nombre} ya tiene un aseo ese día` };
