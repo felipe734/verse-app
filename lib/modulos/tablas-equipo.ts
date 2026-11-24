@@ -37,7 +37,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     detalle: [t("ID Reserva", "Reserva"), t("Hora Ingreso"), t("NOVEDADES", "Novedades"), t("Comentario"), tercero("Nombre", "Huésped"), tercero("Celular H1", "Celular"), codigo("Código"), codigo("Red WIFI"), codigo("Pass WIFI")],
     orden: { campo: "Ingreso", desc: false },
     vacio: "No hay reservas de ayer a dos semanas",
-    periodo: { unidad: "mes", campo: "Ingreso", campoFin: "Salida" },
+    periodo: { unidad: "mes", campo: "Ingreso", campoFin: "Salida", finEsSalida: true },
     filtros: ["Edificio", "Plataforma"],
     indicadores: [{ etiqueta: "Reservas", tipo: "conteo" }, { etiqueta: "Unidades", tipo: "distintos", campo: "Unidad" }, { etiqueta: "Noches", tipo: "suma", campo: "Noches" }, { etiqueta: "Ingresos", tipo: "suma", campo: "Total_H" }],
     max: 400,
