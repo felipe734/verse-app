@@ -156,6 +156,8 @@ export const TABLAS_ESCRITURA = {
       estado: "Estado",
       fecha: "Fecha",
       comentario: "Comentario",
+      total: "Total",
+      estadoPago: "Estado Pago",
     },
   },
   servicios: {
@@ -191,8 +193,12 @@ export const TABLAS_ESCRITURA = {
     base: "6. OPERACION 360",
     tabla: "UNIDADES",
     campos: {
+      und: "UND",
       unidad: "Unidad",
       edificio: "Edificio",
+      estado: "Estado",
+      producto: "Producto",
+      valorLimpieza: "Valor Limpieza",
       metodo: "Metodo Ingreso",
       codigo: "Codigo",
       candado: "Candado",

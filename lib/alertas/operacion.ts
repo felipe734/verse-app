@@ -53,7 +53,7 @@ const lugar = (c: Contexto, empresa: string, tipo: string, consulta = "") => rut
 
 /** Salidas de los próximos 3 días sin limpieza programada para esa unidad en esa fecha. */
 async function reservasSinLimpieza(c: Contexto): Promise<Alerta | null> {
-  const href = lugar(c, "verse", "limpiezas");
+  const href = lugar(c, "verse", "limpiezas", "?programar=1");
   if (!href || !lugar(c, "verse", "operacion")) return null;
   if (c.copia && c.db) {
     const [salidas, limpiezas] = await Promise.all([

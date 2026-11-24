@@ -1630,6 +1630,16 @@ export const MAPEO = {
           "id": "fldhCxAIV0TyZ9wYX",
           "nombre": "Comentario",
           "tipo": "multilineText"
+        },
+        "total": {
+          "id": "fldeJtRpENW1dtCeF",
+          "nombre": "Total",
+          "tipo": "currency"
+        },
+        "estadoPago": {
+          "id": "fldk2VXwEN4l2Pfda",
+          "nombre": "Estado Pago",
+          "tipo": "singleSelect"
         }
       }
     },
@@ -1743,6 +1753,11 @@ export const MAPEO = {
       "idBase": "appOJopQhmyaON16G",
       "idTabla": "tbl6276d73BpmrCWS",
       "campos": {
+        "und": {
+          "id": "fldRC4GMsbcz9b5ao",
+          "nombre": "UND",
+          "tipo": "multilineText"
+        },
         "unidad": {
           "id": "fldld4r7ZV92sFll0",
           "nombre": "Unidad",
@@ -1752,6 +1767,21 @@ export const MAPEO = {
           "id": "fldsrL3hmkzraoINO",
           "nombre": "Edificio",
           "tipo": "singleLineText"
+        },
+        "estado": {
+          "id": "fldeBVsQEyida1DIT",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        },
+        "producto": {
+          "id": "fld9SX5LwGlvlCIEi",
+          "nombre": "Producto",
+          "tipo": "singleSelect"
+        },
+        "valorLimpieza": {
+          "id": "fldCCoAEnZNXqDkbV",
+          "nombre": "Valor Limpieza",
+          "tipo": "currency"
         },
         "metodo": {
           "id": "fldkGICc7amtu7kTR",
