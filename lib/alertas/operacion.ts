@@ -94,16 +94,19 @@ function armarSinLimpieza(faltan: { unidad: string; fecha: string }[], href: str
   };
 }
 
-/** Limpiezas de los próximos 7 días sin funcionaria. */
-async function limpiezasSinFuncionaria(c: Contexto): Promise<Alerta | null> {
-  const href = lugar(c, "verse", "limpiezas", "?v=lista&quien=todo&f.Funcionario=(vac%C3%ADo)");
-  if (!href) return null;
-  let unidadesSin: string[];
+/**
+ * Limpiezas de los próximos 7 días sin funcionaria. Las de hoy y mañana (menos de 24 h para
+ * conseguir aseadora) van en rojo y aparte; las del resto de la semana, como aviso.
+ */
+async function limpiezasSinFuncionaria(c: Contexto): Promise<Alerta[]> {
+  const href = lugar(c, "verse", "limpiezas", "?programar=1");
+  if (!href) return [];
+  let sin: { unidad: string; fecha: string }[];
   if (c.copia && c.db) {
     const filas = await filasPorFecha(c.db, "limpiezasHost", "fecha", { desde: c.hoy, hasta: sumarDias(c.hoy, 8) }, [vacio("limpiezasHost", "funcionario")]);
     const ids_ = filas.map((f) => vinculo(valor(f, "limpiezasHost", "unidad"))[0] ?? "");
     const nombres = await nombresOperacion(c.db, ids_.filter(Boolean));
-    unidadesSin = ids_.map((u) => nombres.get(u) || "Unidad");
+    sin = filas.map((f, i) => ({ unidad: nombres.get(ids_[i]!) || "Unidad", fecha: f.dia }));
   } else {
     const L = ids("6. OPERACION 360", "LIMPIEZA");
     const filas = await c.airtable.consultar(L.idBase, L.idTabla, {
@@ -111,46 +114,98 @@ async function limpiezasSinFuncionaria(c: Contexto): Promise<Alerta | null> {
       formula: `AND({Fecha}, {Funcionario} = BLANK(), ${dia("Fecha", "fechaHora")} >= ${num(c.hoy)}, ${dia("Fecha", "fechaHora")} <= ${num(sumarDias(c.hoy, 7))})`,
       max: 50,
     });
-    unidadesSin = filas.map((f) => texto(f.fields["Unidad"]));
+    sin = filas.map((f) => ({ unidad: texto(f.fields["Unidad"]), fecha: leerFecha(texto(f.fields["Fecha"]))?.fecha ?? "" }));
   }
-  if (!unidadesSin.length) return null;
+  const manana = sumarDias(c.hoy, 1);
+  const urgentes = sin.filter((x) => x.fecha && x.fecha <= manana);
+  const semana = sin.filter((x) => !(x.fecha && x.fecha <= manana));
+  const r: Alerta[] = [];
+  if (urgentes.length)
+    r.push({
+      id: "limpiezas-sin-funcionaria-24h",
+      modulo: "limpiezas",
+      nivel: "alta",
+      titulo: urgentes.length === 1 ? "1 aseo sin aseadora en menos de 24 h" : `${urgentes.length} aseos sin aseadora en menos de 24 h`,
+      detalle: `Hoy y mañana: ${lista(urgentes.map((x) => x.unidad))}`,
+      cuenta: urgentes.length,
+      href,
+    });
+  if (semana.length)
+    r.push({
+      id: "limpiezas-sin-funcionaria",
+      modulo: "limpiezas",
+      nivel: "media",
+      titulo: semana.length === 1 ? "1 aseo de la semana sin aseadora" : `${semana.length} aseos de la semana sin aseadora`,
+      detalle: lista(semana.map((x) => x.unidad)),
+      cuenta: semana.length,
+      href,
+    });
+  return r;
+}
+
+/** Leads de Host que siguen en "Lead" (sin contactar) más de 48 horas después de llegar. Últimos 30 días. */
+async function leadsSinContacto(c: Contexto): Promise<Alerta | null> {
+  const href = lugar(c, "verse", "comercial-host", "?v=lista&f.Estado=Lead");
+  if (!href) return null;
+  const T = ids("10. LEAD GEN", "LEADS");
+  const filas = await c.airtable.consultar(T.idBase, T.idTabla, {
+    campos: ["Nombre"],
+    formula: `AND(OR({Estado} = 'Lead', {Estado} = BLANK()), IS_BEFORE({Fecha de Envio}, DATEADD(NOW(), -48, 'hours')), IS_AFTER({Fecha de Envio}, DATEADD(NOW(), -30, 'days')))`,
+    max: 50,
+  });
+  if (!filas.length) return null;
   return {
-    id: "limpiezas-sin-funcionaria",
-    modulo: "limpiezas",
+    id: "leads-sin-contacto",
+    modulo: "comercial-host",
     nivel: "alta",
-    titulo: unidadesSin.length === 1 ? "1 limpieza sin funcionaria" : `${unidadesSin.length} limpiezas sin funcionaria`,
-    detalle: `Esta semana: ${lista(unidadesSin)}`,
-    cuenta: unidadesSin.length,
+    titulo: filas.length === 1 ? "1 lead sin contactar hace más de 48 h" : `${filas.length} leads sin contactar hace más de 48 h`,
+    detalle: lista(filas.map((f) => texto(f.fields["Nombre"]) || "Sin nombre")),
+    cuenta: filas.length,
     href,
   };
 }
 
-/** Cánones POR PAGAR con fecha ya pasada. */
-async function cobrosVencidos(c: Contexto): Promise<Alerta | null> {
+/** Cánones POR PAGAR con fecha ya pasada: más de 5 días de atraso en rojo, el resto como aviso. */
+async function cobrosVencidos(c: Contexto): Promise<Alerta[]> {
   const href = lugar(c, "verse", "cobros", "?v=lista&f.Estado=POR%20PAGAR");
-  if (!href) return null;
-  let vencidos: string[];
+  if (!href) return [];
+  let vencidos: { unidad: string; fecha: string }[];
   if (c.copia && c.db) {
     const filas = await filasPorFecha(c.db, "ingresosLivingCopia", "fecha", { hasta: c.hoy }, [igual("ingresosLivingCopia", "estado", "POR PAGAR")]);
     // En INGRESOS "Unidad" es texto; si algún día pasa a vínculo, se resuelve con las unidades de Living.
     const crudos = filas.map((f) => valor(f, "ingresosLivingCopia", "unidad"));
     const nombres = await nombresLiving(c.db, crudos.flatMap(vinculo));
-    vencidos = crudos.map((v) => (typeof v === "string" ? v : nombres.get(vinculo(v)[0] ?? "")) || "Unidad");
+    vencidos = crudos.map((v, i) => ({ unidad: (typeof v === "string" ? v : nombres.get(vinculo(v)[0] ?? "")) || "Unidad", fecha: filas[i]!.dia }));
   } else {
     const I = ids("7. LIVING", "INGRESOS");
-    const filas = await c.airtable.consultar(I.idBase, I.idTabla, { campos: ["Unidad"], formula: `AND({Estado} = 'POR PAGAR', {Fecha}, ${dia("Fecha")} < ${num(c.hoy)})`, max: 50 });
-    vencidos = filas.map((f) => texto(f.fields["Unidad"]));
+    const filas = await c.airtable.consultar(I.idBase, I.idTabla, { campos: ["Unidad", "Fecha"], formula: `AND({Estado} = 'POR PAGAR', {Fecha}, ${dia("Fecha")} < ${num(c.hoy)})`, max: 50 });
+    vencidos = filas.map((f) => ({ unidad: texto(f.fields["Unidad"]), fecha: leerFecha(texto(f.fields["Fecha"]))?.fecha ?? "" }));
   }
-  if (!vencidos.length) return null;
-  return {
-    id: "cobros-vencidos",
-    modulo: "cobros",
-    nivel: "alta",
-    titulo: vencidos.length === 1 ? "1 cobro vencido" : `${vencidos.length} cobros vencidos`,
-    detalle: lista(vencidos),
-    cuenta: vencidos.length,
-    href,
-  };
+  const limite = sumarDias(c.hoy, -5);
+  const graves = vencidos.filter((v) => v.fecha && v.fecha < limite);
+  const recientes = vencidos.filter((v) => !(v.fecha && v.fecha < limite));
+  const r: Alerta[] = [];
+  if (graves.length)
+    r.push({
+      id: "cobros-vencidos-5d",
+      modulo: "cobros",
+      nivel: "alta",
+      titulo: graves.length === 1 ? "1 arriendo vencido hace más de 5 días" : `${graves.length} arriendos vencidos hace más de 5 días`,
+      detalle: lista(graves.map((v) => v.unidad)),
+      cuenta: graves.length,
+      href,
+    });
+  if (recientes.length)
+    r.push({
+      id: "cobros-vencidos",
+      modulo: "cobros",
+      nivel: "media",
+      titulo: recientes.length === 1 ? "1 cobro vencido esta semana" : `${recientes.length} cobros vencidos esta semana`,
+      detalle: lista(recientes.map((v) => v.unidad)),
+      cuenta: recientes.length,
+      href,
+    });
+  return r;
 }
 
 /** Contratos que terminan en los próximos 30 días. */
@@ -197,9 +252,11 @@ async function movimientosSinSoporte(c: Contexto): Promise<Alerta | null> {
   };
 }
 
-const REGLAS: { modulo: string; f: (c: Contexto) => Promise<Alerta | null> }[] = [
+type Regla = (c: Contexto) => Promise<Alerta | Alerta[] | null>;
+const REGLAS: { modulo: string; f: Regla }[] = [
   { modulo: "limpiezas", f: reservasSinLimpieza },
   { modulo: "limpiezas", f: limpiezasSinFuncionaria },
+  { modulo: "comercial-host", f: leadsSinContacto },
   { modulo: "cobros", f: cobrosVencidos },
   { modulo: "contratos", f: contratosPorTerminar },
   { modulo: "finanzas", f: movimientosSinSoporte },
@@ -216,5 +273,5 @@ export async function alertasDe(c: Contexto, modulo?: string): Promise<Alerta[]>
       }),
     ),
   );
-  return todas.filter((a): a is Alerta => Boolean(a)).sort((a, b) => (a.nivel === b.nivel ? b.cuenta - a.cuenta : a.nivel === "alta" ? -1 : 1));
+  return todas.flat().filter((a): a is Alerta => Boolean(a)).sort((a, b) => (a.nivel === b.nivel ? b.cuenta - a.cuenta : a.nivel === "alta" ? -1 : 1));
 }
