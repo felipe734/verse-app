@@ -40,7 +40,7 @@ export interface DefTabla {
    * cae en el período; con `campoFin`, el rango [campo, campoFin] se cruza con él.
    * Reemplaza a `formula`.
    */
-  periodo?: { unidad: UnidadPeriodo; campo: string; campoFin?: string; /** El campo es texto "AAAA-MM" (solo mes). */ mesTexto?: boolean };
+  periodo?: { unidad: UnidadPeriodo; campo: string; campoFin?: string; /** campoFin es el día de salida (reservas): no cuenta como día del período. */ finEsSalida?: boolean; /** El campo es texto "AAAA-MM" (solo mes). */ mesTexto?: boolean };
   /** Columna con la persona responsable: habilita el interruptor Mío / Todo. */
   persona?: string;
   /** Columnas por las que se filtra con chips (valores que aparecen en el período). */
@@ -134,7 +134,7 @@ const texto = (v: unknown): string => {
 /** Fórmula de la consulta: la del período si el módulo tiene, si no la fija. */
 export function formulaDe(def: DefTabla, hoy: string, periodo?: Periodo): string | undefined {
   if (def.periodo?.mesTexto && periodo) return `{${def.periodo.campo}} = '${periodo.clave}'`;
-  if (def.periodo && periodo) return def.periodo.campoFin ? formulaCruza(def.periodo.campo, def.periodo.campoFin, periodo) : formulaDentro(def.periodo.campo, periodo);
+  if (def.periodo && periodo) return def.periodo.campoFin ? formulaCruza(def.periodo.campo, def.periodo.campoFin, periodo, def.periodo.finEsSalida) : formulaDentro(def.periodo.campo, periodo);
   return def.formula?.(hoy);
 }
 

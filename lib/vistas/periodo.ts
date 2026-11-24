@@ -114,6 +114,7 @@ export function formulaDentro(campo: string, p: Pick<Periodo, "inicio" | "fin">)
 }
 
 /** Fórmula de Airtable: un rango [inicio, fin] del registro se cruza con el período (reservas, contratos). */
-export function formulaCruza(campoInicio: string, campoFin: string, p: Pick<Periodo, "inicio" | "fin">): string {
-  return `AND({${campoInicio}}, ${diaDe(campoInicio)} < ${num(p.fin)}, OR({${campoFin}} = BLANK(), ${diaDe(campoFin)} >= ${num(p.inicio)}))`;
+export function formulaCruza(campoInicio: string, campoFin: string, p: Pick<Periodo, "inicio" | "fin">, finEsSalida = false): string {
+  // Con finEsSalida (reservas), el último día es el de salida: no es una noche, así que una reserva que sale el 1 no cuenta en ese mes.
+  return `AND({${campoInicio}}, ${diaDe(campoInicio)} < ${num(p.fin)}, OR({${campoFin}} = BLANK(), ${diaDe(campoFin)} ${finEsSalida ? ">" : ">="} ${num(p.inicio)}))`;
 }
