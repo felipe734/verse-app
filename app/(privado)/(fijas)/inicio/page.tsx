@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { AlertasInicio } from "@/components/inicio/alertas";
+import { PulsoInicio } from "@/components/inicio/pulso";
 import { ResumenDia } from "@/components/inicio/resumen";
 import { EsqueletoTarjeta, TarjetaModulo } from "@/components/inicio/tarjeta-modulo";
 import { EncabezadoModulo, EsqueletoModulo } from "@/components/modulos/encabezado";
@@ -65,6 +66,9 @@ async function Contenido() {
             ))}
           </section>
         )}
+        <Suspense fallback={<div className="h-28 animate-pulse rounded-lg bg-muted/50" aria-hidden />}>
+          <PulsoInicio sesion={sesion} />
+        </Suspense>
         <Suspense fallback={null}>
           <ResumenDia sesion={sesion} nombre={nombre ?? ""} base={baseResumen} />
         </Suspense>
