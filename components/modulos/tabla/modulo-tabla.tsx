@@ -12,9 +12,11 @@ import { leerPeriodo } from "@/lib/vistas/periodo";
 import { vistasDe } from "@/lib/vistas/guardadas";
 import { leerAlertas, ListaAlertas } from "@/components/inicio/alertas";
 import { VistaTabla } from "./vista-tabla";
+import { ProgramacionAseos } from "@/components/modulos/aseos/programacion";
+import { puedeProgramar } from "@/lib/aseos/programacion";
 
 /** Un módulo de tabla del registro: lee Airtable en el momento, solo lo permitido. */
-export async function ModuloTabla({ sesion, u, p }: { sesion: Sesion; u: Ubicacion; p?: string }) {
+export async function ModuloTabla({ sesion, u, p, programar }: { sesion: Sesion; u: Ubicacion; p?: string; programar?: boolean }) {
   const transcurrido = cronometro();
   const def = u.def.tabla!;
   const puedeEditar = Boolean(def.editar?.campos.length) && puede(sesion, u.empresa, u.modulo.id, "editar");
@@ -43,7 +45,9 @@ export async function ModuloTabla({ sesion, u, p }: { sesion: Sesion; u: Ubicaci
   await registrarTiempo(db(), sesion.usuarioId, ruta, hoy, transcurrido());
   return (
     <>
-      <EncabezadoModulo titulo={u.modulo.nombre} descripcion={u.def.descripcion} />
+      <EncabezadoModulo titulo={u.modulo.nombre} descripcion={u.def.descripcion}>
+        {u.def.tipo === "limpiezas" && u.empresa === "verse" && puedeProgramar(sesion) && <ProgramacionAseos abrirAlInicio={programar} />}
+      </EncabezadoModulo>
       <div className="px-4 md:px-6">
         <ListaAlertas alertas={alertas} compacta />
       </div>

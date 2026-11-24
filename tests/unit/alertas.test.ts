@@ -19,7 +19,7 @@ describe("alertas de la operación", () => {
     at.poner(L.idBase, L.idTabla, { Unidad: "Torre 805", Fecha: "27/11/2026 11:00am", Funcionario: "Edy" });
     const r = await alertasDe({ airtable: at, s: maestro, estructura: ESTRUCTURA, hoy: HOY }, "limpiezas");
     const a = r.find((x) => x.id === "reservas-sin-limpieza");
-    expect(a).toMatchObject({ cuenta: 1, href: "/verse/host/limpiezas" });
+    expect(a).toMatchObject({ cuenta: 1, href: "/verse/host/limpiezas?programar=1" });
     expect(a?.detalle).toContain("Torre 603 (26)");
   });
 
