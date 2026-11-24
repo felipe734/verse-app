@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 import { useMontado } from "@/hooks/use-montado";
 import { useSidebar } from "@/components/ui/sidebar";
+import { accesosMovil, rolMovil } from "@/lib/modulos/barra-movil";
 import type { ItemNav } from "@/lib/modulos/registro";
 import { useShell } from "./contexto";
 import { Icono } from "./iconos";
@@ -21,7 +22,7 @@ function leerUsos(): Record<string, number> {
   }
 }
 
-/** Celular: Hoy, Correo, Asistente, el módulo más usado y Más (abre el menú). */
+/** Celular: tres accesos según el rol (lib/modulos/barra-movil), el Asistente y Más (abre el menú). */
 export function BarraMovil({ d }: { d: DatosShell }) {
   const ruta = usePathname();
   const { setOpenMobile } = useSidebar();
@@ -43,11 +44,7 @@ export function BarraMovil({ d }: { d: DatosShell }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ruta]);
 
-  const hoy = items.find((i) => i.tipo === "hoy");
-  // Con Hoy, el primer acceso es Inicio; el correo compite con los demás por el más usado.
-  const inicio: ItemNav | undefined = hoy ? { ...hoy, id: "inicio", tipo: "inicio", nombre: "Inicio", icono: "house", href: "/inicio" } : undefined;
-  const fijos = new Set([hoy?.href]);
-  const usado: ItemNav | undefined = items.filter((i) => !fijos.has(i.href)).sort((a, b) => (usos[b.href] ?? 0) - (usos[a.href] ?? 0))[0];
+  const [primero, segundo, tercero] = accesosMovil(rolMovil(d.usuario.maestro, items), items, usos);
 
   const enlace = (i: ItemNav | undefined) =>
     i ? (
@@ -63,8 +60,8 @@ export function BarraMovil({ d }: { d: DatosShell }) {
 
   return (
     <nav aria-label="Accesos" className="fixed inset-x-0 bottom-0 z-30 flex border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
-      {enlace(inicio)}
-      {enlace(hoy)}
+      {enlace(primero)}
+      {enlace(segundo)}
       {asistenteHabilitado && (
         <button type="button" onClick={() => abrirAsistente()} className="flex flex-1 flex-col items-center gap-1 py-2 text-[11px] text-muted-foreground">
           <span className="flex size-9 -mt-3 items-center justify-center rounded-full bg-acento text-acento-foreground shadow-sm">
@@ -73,7 +70,7 @@ export function BarraMovil({ d }: { d: DatosShell }) {
           <span>Asistente</span>
         </button>
       )}
-      {enlace(usado)}
+      {enlace(tercero)}
       <button type="button" onClick={() => setOpenMobile(true)} className="flex flex-1 flex-col items-center gap-1 py-2 text-[11px] text-muted-foreground">
         <Menu className="size-5" aria-hidden />
         <span>Más</span>
