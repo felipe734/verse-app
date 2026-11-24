@@ -22,6 +22,21 @@ export class ComposioFalso implements ClienteComposio {
   subidos: { toolkit: string; herramienta: string; nombre: string; mimetype: string; largo: number }[] = [];
   fallaSubida = false;
 
+  /** Conexiones pedidas y cuentas borradas. */
+  conexiones: { toolkit: string; alias: string; volver: string }[] = [];
+  quitadas: string[] = [];
+
+  async conectar(toolkit: string, alias: string, volver: string) {
+    this.conexiones.push({ toolkit, alias, volver });
+    return `https://accounts.google.com/o/oauth2/auth?alias=${alias}`;
+  }
+
+  async quitar(id: string) {
+    this.quitadas.push(id);
+    this.conectadas = this.conectadas.filter((c) => c.id !== id);
+    this.drive = this.drive.filter((c) => c.id !== id);
+  }
+
   async cuentasGmail() {
     return this.conectadas;
   }

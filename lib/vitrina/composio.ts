@@ -45,6 +45,10 @@ export function composioVitrina(): ClienteComposio {
     async bajar() {
       return new Uint8Array(8);
     },
+    async conectar(_toolkit, alias, volver) {
+      return `${volver}${volver.includes("?") ? "&" : "?"}conectada=${alias}`;
+    },
+    async quitar() {},
     async subirArchivo(a) {
       return `vitrina/${a.nombre}`;
     },

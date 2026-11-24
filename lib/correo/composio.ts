@@ -23,7 +23,16 @@ export interface ClienteComposio {
   bajar(url: string, maxBytes: number): Promise<Uint8Array>;
   /** Sube un archivo para pasarlo a una herramienta (adjunto de Gmail). Devuelve el s3key. */
   subirArchivo(archivo: { toolkit: string; herramienta: string; nombre: string; mimetype: string; bytes: Uint8Array }): Promise<string>;
+  /** Empieza la conexión de una cuenta con su alias. Devuelve la URL de Google para entrar. */
+  conectar(toolkit: ToolkitConexion, alias: string, volver: string): Promise<string>;
+  /** Borra una cuenta conectada (solo las que no están activas). */
+  quitar(id: string): Promise<void>;
 }
+
+export type ToolkitConexion = "gmail" | "googledrive";
+
+/** Todas las conexiones de la app quedan bajo este usuario de Composio. */
+export const USUARIO_COMPOSIO = "verse-app";
 
 /** El almacenamiento de archivos de Composio. Solo de ahí se bajan archivos. */
 const ALMACEN = /^https:\/\/([a-z0-9-]+\.)*(composio\.dev|amazonaws\.com|r2\.cloudflarestorage\.com)\//;
@@ -68,7 +77,46 @@ export function clienteComposio(apiKey: string, fetcher: typeof fetch = fetch): 
     return lista;
   }
 
+  /** Configuración de autenticación de Composio para el toolkit; si no hay, se crea con la de Composio. */
+  async function configuracion(toolkit: ToolkitConexion): Promise<string> {
+    const q = new URLSearchParams({ toolkit_slug: toolkit, is_composio_managed: "true", limit: "50" });
+    const r = await fetcher(`${BASE}/auth_configs?${q}`, { headers: cabeceras, signal: AbortSignal.timeout(15_000) });
+    if (!r.ok) throw new ErrorComposio(`Composio respondió ${r.status} al leer la configuración de ${toolkit}${await detalle(r)}`, r.status);
+    const j = (await r.json()) as { items?: { id: string; status?: string }[] };
+    const hallada = (j.items ?? []).find((c) => (c.status ?? "ENABLED").toUpperCase() === "ENABLED");
+    if (hallada) return hallada.id;
+    const c = await fetcher(`${BASE}/auth_configs`, {
+      method: "POST",
+      headers: cabeceras,
+      body: JSON.stringify({ toolkit: { slug: toolkit }, auth_config: { type: "use_composio_managed_auth" } }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    if (!c.ok) throw new ErrorComposio(`Composio respondió ${c.status} al crear la configuración de ${toolkit}${await detalle(c)}`, c.status);
+    const nueva = (await c.json()) as { auth_config?: { id?: string } };
+    if (!nueva.auth_config?.id) throw new ErrorComposio("Composio no devolvió la configuración creada");
+    return nueva.auth_config.id;
+  }
+
   return {
+    async conectar(toolkit, alias, volver) {
+      const auth_config_id = await configuracion(toolkit);
+      const r = await fetcher(`${BASE}/connected_accounts/link`, {
+        method: "POST",
+        headers: cabeceras,
+        body: JSON.stringify({ auth_config_id, user_id: USUARIO_COMPOSIO, alias, callback_url: volver }),
+        signal: AbortSignal.timeout(15_000),
+      });
+      if (!r.ok) throw new ErrorComposio(`Composio respondió ${r.status} al conectar ${alias}${await detalle(r)}`, r.status);
+      const j = (await r.json()) as { redirect_url?: string };
+      if (!j.redirect_url?.startsWith("https://")) throw new ErrorComposio("Composio no devolvió el enlace para entrar");
+      return j.redirect_url;
+    },
+
+    async quitar(id) {
+      const r = await fetcher(`${BASE}/connected_accounts/${encodeURIComponent(id)}`, { method: "DELETE", headers: cabeceras, signal: AbortSignal.timeout(15_000) });
+      if (!r.ok && r.status !== 404) throw new ErrorComposio(`Composio respondió ${r.status} al quitar la cuenta${await detalle(r)}`, r.status);
+    },
+
     async ejecutar(herramienta, cuentaConectada, argumentos) {
       if (!cuentaConectada) throw new ErrorComposio("Falta la cuenta conectada");
       const r = await fetcher(`${BASE}/tools/execute/${encodeURIComponent(herramienta)}`, {

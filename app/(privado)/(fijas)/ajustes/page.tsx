@@ -14,7 +14,9 @@ import { listarUsuarios } from "@/lib/acceso/admin";
 import { PLATFORM_NAME } from "@/lib/config";
 import { estadoModulos } from "@/lib/modulos/registro";
 import { cn } from "@/lib/utils";
-import { crearEmpresaAccion, crearUsuarioAccion, crearVerticalAccion, editarEmpresaAccion } from "./acciones";
+import { estadoConexiones, type Conexion } from "@/lib/correo/conexiones";
+import { composioServidor } from "@/lib/servidor/composio";
+import { conectarCuentaAccion, crearEmpresaAccion, crearUsuarioAccion, crearVerticalAccion, editarEmpresaAccion } from "./acciones";
 
 export const metadata: Metadata = { title: `Ajustes · ${PLATFORM_NAME}` };
 
@@ -23,14 +25,15 @@ const VISTAS = [
   ["usuarios", "Usuarios"],
   ["empresas", "Empresas y módulos"],
   ["plantillas", "Plantillas"],
+  ["conexiones", "Conexiones"],
 ] as const;
 type Vista = (typeof VISTAS)[number][0];
 type Estructura = NonNullable<Awaited<ReturnType<typeof sesionActual>>["estructura"]>;
 
-async function Panel({ searchParams }: { searchParams: Promise<{ vista?: string }> }) {
+async function Panel({ searchParams }: { searchParams: Promise<{ vista?: string; error?: string }> }) {
   const sesion = await sesionActual();
   if (!sesion.maestro) return <EncabezadoModulo titulo="Ajustes" descripcion="Ajustes es solo para el Maestro." />;
-  const { vista: pedida } = await searchParams;
+  const { vista: pedida, error } = await searchParams;
   const vista: Vista = VISTAS.some(([v]) => v === pedida) ? (pedida as Vista) : "usuarios";
   const estructura = sesion.estructura ?? [];
 
@@ -72,6 +75,7 @@ async function Panel({ searchParams }: { searchParams: Promise<{ vista?: string 
         {vista === "usuarios" && <Usuarios sesion={sesion} estructura={estructura} />}
         {vista === "empresas" && <Empresas estructura={estructura} />}
         {vista === "plantillas" && <Plantillas estructura={estructura} />}
+        {vista === "conexiones" && <Conexiones error={error} />}
       </div>
     </>
   );
@@ -225,5 +229,58 @@ export default function Ajustes({ searchParams }: PageProps<"/ajustes">) {
     <Suspense fallback={<EsqueletoModulo />}>
       <Panel searchParams={searchParams as Promise<{ vista?: string }>} />
     </Suspense>
+  );
+}
+
+const ESTADO_CONEXION = { activa: "Conectada", inactiva: "Vencida", falta: "Sin conectar" } as const;
+
+/** Cuentas de Gmail y Drive de la app en su proyecto de Composio, con su botón para conectar. */
+async function Conexiones({ error }: { error?: string }) {
+  const cliente = composioServidor();
+  let lista: Conexion[] | null = null;
+  let falla: string | undefined;
+  if (cliente) {
+    try {
+      lista = await estadoConexiones(cliente);
+    } catch (e) {
+      falla = e instanceof Error ? e.message.slice(0, 160) : "Composio no respondió";
+    }
+  } else falla = "Falta COMPOSIO_API_KEY en Vercel.";
+  return (
+    <div className="max-w-2xl space-y-4">
+      <p className="text-sm text-muted-foreground">
+        La app usa su propio proyecto de Composio, separado del de Claude. Conecta cada cuenta una vez: el botón abre Google y vuelves aquí. La cuenta personal no entra.
+      </p>
+      {(error || falla) && (
+        <p role="alert" className="rounded-md border border-destructive/40 px-3 py-2 text-sm text-destructive">
+          {error ?? falla}
+        </p>
+      )}
+      {lista && (
+        <ul className="divide-y rounded-lg border">
+          {lista.map((c) => (
+            <li key={c.alias} className="flex items-center justify-between gap-3 px-4 py-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-medium">{c.nombre}</p>
+                <p className="text-xs text-muted-foreground">
+                  {c.toolkit === "gmail" ? "Gmail" : "Drive"} · {c.alias}
+                </p>
+              </div>
+              {c.estado === "activa" ? (
+                <Badge variant="secondary">{ESTADO_CONEXION.activa}</Badge>
+              ) : (
+                <form action={conectarCuentaAccion} className="flex shrink-0 items-center gap-2">
+                  <span className="text-xs text-muted-foreground">{ESTADO_CONEXION[c.estado]}</span>
+                  <input type="hidden" name="alias" value={c.alias} />
+                  <button type="submit" className="h-8 rounded-md bg-acento px-3 text-sm text-acento-foreground hover:bg-acento/90">
+                    Conectar
+                  </button>
+                </form>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
