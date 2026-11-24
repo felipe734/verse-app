@@ -122,7 +122,7 @@ export function clienteComposio(apiKey: string, fetcher: typeof fetch = fetch): 
       const r = await fetcher(`${BASE}/tools/execute/${encodeURIComponent(herramienta)}`, {
         method: "POST",
         headers: cabeceras,
-        body: JSON.stringify({ connected_account_id: cuentaConectada, arguments: argumentos }),
+        body: JSON.stringify({ connected_account_id: cuentaConectada, user_id: USUARIO_COMPOSIO, arguments: argumentos }),
         signal: AbortSignal.timeout(30_000),
       });
       if (!r.ok) throw new ErrorComposio(`Composio respondió ${r.status} en ${herramienta}${await detalle(r)}`, r.status);

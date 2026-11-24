@@ -64,4 +64,13 @@ describe("conexiones de Composio", () => {
     expect(pedidas[1]).toMatchObject({ metodo: "POST", cuerpo: { toolkit: { slug: "googledrive" }, auth_config: { type: "use_composio_managed_auth" } } });
     expect(pedidas[2]!.cuerpo).toMatchObject({ auth_config_id: "ac_nueva" });
   });
+  it("ejecuta herramientas con la cuenta conectada y el usuario de la app", async () => {
+    let cuerpo: unknown;
+    const fetcher = (async (_url: string, init?: RequestInit) => {
+      cuerpo = JSON.parse(String(init?.body));
+      return Response.json({ successful: true, data: { ok: 1 } });
+    }) as typeof fetch;
+    await clienteComposio("ak_prueba", fetcher).ejecutar("GMAIL_FETCH_EMAILS", "ca_1", { max_results: 1 });
+    expect(cuerpo).toEqual({ connected_account_id: "ca_1", user_id: "verse-app", arguments: { max_results: 1 } });
+  });
 });
