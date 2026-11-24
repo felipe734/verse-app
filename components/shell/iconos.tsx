@@ -23,8 +23,7 @@ import {
   Square,
   Users,
   Wallet,
-  type LucideIcon,
-} from "lucide-react";
+  type LucideIcon, Wrench } from "lucide-react";
 
 /** Iconos del registro de módulos por nombre (el registro es dato; aquí se vuelve componente). */
 const ICONOS: Record<string, LucideIcon> = {
@@ -44,6 +43,7 @@ const ICONOS: Record<string, LucideIcon> = {
   landmark: Landmark,
   mail: Mail,
   megaphone: Megaphone,
+  wrench: Wrench,
   package: Package,
   receipt: Receipt,
   route: Route,

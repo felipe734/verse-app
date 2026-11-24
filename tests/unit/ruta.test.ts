@@ -83,7 +83,7 @@ describe("Ruta de aseo", () => {
     expect((await reportar(db, at, edy, HOY, base)).mensaje).toBe("Inicia el turno antes de reportar");
     await iniciarTurno(db, at, edy, HOY);
     const r = await reportar(db, at, edy, HOY, { ...base, video: { url: "https://x.public.blob.vercel-storage.com/v.mp4", nombre: "v.mp4" } });
-    expect(r).toEqual({ ok: true, mensaje: "Torre Norte 603 reportada y terminada" });
+    expect(r).toEqual({ ok: true, mensaje: "Torre Norte 603 reportada y terminada · 2 tickets abiertos" });
     const [s] = filas(S);
     expect(s?.fields).toMatchObject({
       [S.campos.unidad.id]: [unidad],
@@ -94,6 +94,14 @@ describe("Ruta de aseo", () => {
       [S.campos.video.id]: [{ url: "https://x.public.blob.vercel-storage.com/v.mp4", filename: "v.mp4" }],
     });
     expect(filas(L)[0]?.fields[L.campos.estado.id]).toBe("Terminado");
+    // Daños e implementos abren un ticket cada uno, enlazados a la unidad y al reporte.
+    const T = ESCRITURA.tickets;
+    const ts = filas(T).map((x) => x.fields);
+    expect(ts.map((f) => [f[T.campos.titulo.id], f[T.campos.prioridad.id], f[T.campos.fechaLimite.id]])).toEqual([
+      ["Daños en Torre Norte 603", "Alta", "2026-11-26"],
+      ["Implementos para Torre Norte 603", "Media", "2026-11-28"],
+    ]);
+    expect(ts[0]).toMatchObject({ [T.campos.unidad.id]: [unidad], [T.campos.origen.id]: [s!.id], [T.campos.creadoPor.id]: "Ruta de aseo", [T.campos.estado.id]: "Abierto" });
   });
 
   it("nadie fuera de la ruta escribe", async () => {

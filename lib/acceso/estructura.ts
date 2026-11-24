@@ -62,6 +62,7 @@ export const ESTRUCTURA: EmpresaBase[] = [
           { id: "host-liquidaciones", nombre: "Liquidaciones", descripcion: "Liquidaciones del mes, pólizas, servicios públicos y pago a propietarios", tipo: "liquidaciones" },
           { id: "host-alistamiento", nombre: "Alistamiento", descripcion: "Amoblamiento, lencería, setup y proveedores", tipo: "alistamiento" },
           { id: "host-comercial", nombre: "Comercial Host", descripcion: "Leads de propietarios, conjuntos y contenido", tipo: "comercial-host" },
+          { id: "host-tickets", nombre: "Tickets", descripcion: "Novedades de las unidades: daños, faltantes, implementos y mantenimiento", tipo: "tickets" },
         ],
       },
       {
