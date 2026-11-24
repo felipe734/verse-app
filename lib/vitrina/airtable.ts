@@ -50,7 +50,7 @@ function rutaVitrina(o: { campos: string[]; formula?: string }): RegistroAirtabl
       reg("recVITRINARES0004", { Unidad: "Torre Norte 805", Ingreso: d(1), Salida: d(4), "Hora Ingreso": "1:00 PM" }),
     ];
   }
-  if (o.formula?.includes("{Tipo Servicio}")) return Array.from({ length: 12 }, (_, i) => reg(`recVITRINAUNI${String(i).padStart(4, "0")}`, { Unidad: `Unidad ${i + 1}` }));
+  if (o.formula?.includes("{Producto}")) return Array.from({ length: 12 }, (_, i) => reg(`recVITRINAUNI${String(i).padStart(4, "0")}`, { Unidad: `Unidad ${i + 1}` }));
   return null;
 }
 
