@@ -26,7 +26,7 @@ export interface DiaPulso {
 
 export interface PulsoHost {
   ocupadas: number;
-  /** Unidades activas de alquiler (Estado Actual, servicio Operación 360 o Digital). null si no se pudo leer. */
+  /** Unidades activas de alquiler (Estado Actual y Producto Operación 360 o Digital). null si no se pudo leer. */
   activas: number | null;
   hoy: DiaPulso;
   manana: DiaPulso;
@@ -107,7 +107,7 @@ export async function pulsoHost(c: { airtable: ClienteAirtable; s: Sesion; estru
     c.airtable
       .consultar(U.idBase, U.idTabla, {
         campos: ["Unidad"],
-        formula: `AND({Estado} = 'Actual', OR({Tipo Servicio} = 'Operación 360', {Tipo Servicio} = 'Digital'))`,
+        formula: `AND({Estado} = 'Actual', OR({Producto} = 'Operación 360', {Producto} = 'Digital'))`,
         max: 300,
       })
       .then((f) => f.length)
