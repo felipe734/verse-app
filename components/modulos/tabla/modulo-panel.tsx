@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import { EncabezadoModulo } from "../encabezado";
 import { CrearFila } from "./crear-fila";
 import { campoPorNombre } from "@/lib/modulos/editar";
-import { leerPeriodo } from "@/lib/vistas/periodo";
+import { periodoInicial } from "@/lib/vistas/periodo";
 import { vistasDe } from "@/lib/vistas/guardadas";
 import { leerAlertas, ListaAlertas } from "@/components/inicio/alertas";
 import { VistaTabla } from "./vista-tabla";
@@ -115,7 +115,7 @@ export async function ModuloPanel({ sesion, u, pestana, p }: { sesion: Sesion; u
   const puedeEditar = Boolean(activa.tabla.editar?.campos.length) && puede(sesion, u.empresa, u.modulo.id, "editar");
   const ruta = `/${u.empresa}/${u.vertical.segmento}/${u.def.segmento}`;
   const hoy = hoyBogota();
-  const periodo = activa.tabla.periodo ? leerPeriodo(activa.tabla.periodo.unidad, p, hoy) : undefined;
+  const periodo = activa.tabla.periodo ? periodoInicial(activa.tabla.periodo, p, hoy) : undefined;
   const contador = crearContador();
   const airtable = clienteServidor(contador);
   let r: ResultadoTabla | null = null;

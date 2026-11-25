@@ -23,6 +23,8 @@ const fecha = (campo: string, etiqueta?: string): Columna => ({ campo, etiqueta,
 const estado = (campo: string, etiqueta?: string): Columna => ({ campo, etiqueta, tipo: "estado" });
 const plata = (campo: string, etiqueta?: string): Columna => ({ campo, etiqueta, tipo: "dinero", sensible: "cifras" });
 const tercero = (campo: string, etiqueta?: string): Columna => ({ campo, etiqueta, sensible: "terceros" });
+/** Enlace o adjunto: botón "Abrir en Drive" (o "Abrir") en la tabla y en el detalle. */
+const enlace = (campo: string, etiqueta?: string): Columna => ({ campo, etiqueta, tipo: "enlace" });
 
 
 const fondeos = (base: string, tabla: string): DefTabla => ({
@@ -57,8 +59,8 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
         ...ids("1. VL PRIVADO", "MOVIMIENTOS"),
         titulo: "Movimiento",
         columnas: [t("Movimiento"), fecha("Fecha"), estado("Banco"), estado("Categoría"), plata("Débito"), plata("Crédito"), estado("Estado"), estado("Revisar")],
-        detalle: [t("Descripción banco"), plata("Saldo"), t("Soporte"), t("Link soporte"), t("Motivo revisión"), t("Comentario")],
-        periodo: { unidad: "mes", campo: "Fecha" },
+        detalle: [t("Descripción banco"), plata("Saldo"), t("Soporte"), enlace("Link soporte", "Soporte en Drive"), t("Motivo revisión"), t("Comentario")],
+        periodo: { unidad: "mes", campo: "Fecha", inicio: "anterior" },
         filtros: ["Banco", "Categoría", "Estado", "Revisar"],
         indicadores: [
           { etiqueta: "Movimientos", tipo: "conteo" },
@@ -79,7 +81,7 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
       tabla: {
         ...ids("1. VL PRIVADO", "EXTRACTOS"),
         titulo: "ID",
-        columnas: [t("ID", "Extracto"), fecha("Fecha"), estado("Tipo", "Banco")],
+        columnas: [t("ID", "Extracto"), fecha("Fecha"), estado("Tipo", "Banco"), enlace("Archivo")],
         orden: { campo: "Fecha", desc: true },
         max: 36,
       },
@@ -91,7 +93,7 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
         ...ids("2. FACTURACION", "CRUCES"),
         titulo: "Concepto",
         columnas: [t("Concepto"), t("Mes"), fecha("Fecha"), tercero("Tercero"), plata("Valor"), estado("Estado")],
-        periodo: { unidad: "mes", campo: "Fecha" },
+        periodo: { unidad: "mes", campo: "Fecha", inicio: "anterior" },
         filtros: ["Estado"],
         indicadores: [{ etiqueta: "Cruces", tipo: "conteo" }, { etiqueta: "Valor", tipo: "suma", campo: "Valor" }],
         orden: { campo: "Fecha", desc: true },
@@ -106,7 +108,7 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
         titulo: "Item",
         columnas: [t("Item"), t("Mes"), estado("Categoria", "Categoría"), plata("Valor"), estado("Estado")],
         detalle: [t("Fuente")],
-        periodo: { unidad: "mes", campo: "Mes", mesTexto: true },
+        periodo: { unidad: "mes", campo: "Mes", mesTexto: true, inicio: "anterior" },
         filtros: ["Categoria", "Estado"],
         indicadores: [{ etiqueta: "Ítems", tipo: "conteo" }, { etiqueta: "Overhead", tipo: "suma", campo: "Valor" }],
         orden: { campo: "Mes", desc: true },
@@ -149,8 +151,8 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
       tabla: {
         ...ids("1. VL PRIVADO", "REPORTES"),
         titulo: "Nombre",
-        columnas: [t("Nombre", "Reporte"), fecha("Mes"), estado("Tipo")],
-        detalle: [t("Link Drive"), t("Resumen")],
+        columnas: [t("Nombre", "Reporte"), fecha("Mes"), estado("Tipo"), enlace("Link Drive", "Drive")],
+        detalle: [enlace("Archivo"), t("Resumen")],
         orden: { campo: "Mes", desc: true },
         max: 60,
       },
@@ -178,7 +180,7 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
       tabla: {
         ...ids("2. CONTABILIDAD", "EXTRACTOS"),
         titulo: "ID",
-        columnas: [t("ID", "Extracto"), fecha("Fecha"), estado("Tipo", "Banco")],
+        columnas: [t("ID", "Extracto"), fecha("Fecha"), estado("Tipo", "Banco"), enlace("Archivo")],
         orden: { campo: "Fecha", desc: true },
         max: 36,
       },

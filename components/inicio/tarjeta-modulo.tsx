@@ -7,7 +7,7 @@ import { crearContador } from "@/lib/medicion/contador";
 import { calcularIndicadores } from "@/lib/modulos/indicadores";
 import { leerTabla, type DefTabla } from "@/lib/modulos/tabla";
 import { clienteServidor } from "@/lib/servidor/airtable";
-import { leerPeriodo } from "@/lib/vistas/periodo";
+import { periodoInicial } from "@/lib/vistas/periodo";
 import { Icono } from "@/components/shell/iconos";
 
 /** "$ 269.000.000" → "$ 269 M" para que quepa en la tarjeta; lo demás igual. */
@@ -22,7 +22,7 @@ const corto = (v: string) => {
 /** Tarjeta de Inicio: el módulo con sus primeras cifras del período actual. Lee Airtable en el momento. */
 export async function TarjetaModulo({ sesion, empresa, vertical, nombre, icono, href, def }: { sesion: Sesion; empresa: string; vertical: string; nombre: string; icono: string; href: string; def: DefTabla }) {
   const hoy = hoyBogota();
-  const periodo = def.periodo ? leerPeriodo(def.periodo.unidad, undefined, hoy) : undefined;
+  const periodo = def.periodo ? periodoInicial(def.periodo, undefined, hoy) : undefined;
   let cifras: { etiqueta: string; valor: string }[] = [];
   let error = false;
   try {
