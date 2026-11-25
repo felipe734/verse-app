@@ -42,7 +42,7 @@ describe("clasificación de Hoy", () => {
     expect(seccionDe(t({ fechaLimite: HOY }), HOY)).toBe("hoy");
     expect(seccionDe(t({ fechaLimite: null }), HOY)).toBe("hoy");
     expect(seccionDe(t({ fechaLimite: "2026-11-29" }), HOY)).toBe("semana");
-    expect(seccionDe(t({ fechaLimite: "2026-11-30" }), HOY)).toBeNull();
+    expect(seccionDe(t({ fechaLimite: "2026-11-30" }), HOY)).toBe("luego");
   });
 
   it("no salen las Corridas, lo cerrado, lo Para aprobar ni lo En espera futuro", () => {
@@ -91,11 +91,17 @@ describe("Hoy desde la copia, con permisos", () => {
     ]);
   });
 
-  it("el Maestro ve todo lo abierto de las dos empresas, sin lo Para aprobar ni lo cerrado", async () => {
-    const h = await hoyDe(db, sesion({}, { maestro: true }), ["verse", "cyc"], AHORA);
+  it("el Maestro con Todos ve lo abierto de las dos empresas, sin lo Para aprobar ni lo cerrado", async () => {
+    const h = await hoyDe(db, sesion({}, { maestro: true }), ["verse", "cyc"], AHORA, "todos");
     const por = Object.fromEntries(h.secciones.map((s) => [s.id, s.items.map((i) => i.asunto)]));
-    expect(por).toEqual({ critico: ["Crítico de Felipe"], vencido: ["De Diana"], hoy: ["De Felipe", "Obra"], semana: [] });
+    expect(por).toEqual({ critico: ["Crítico de Felipe"], vencido: ["De Diana"], hoy: ["De Felipe", "Obra"], semana: [], luego: [] });
     expect(h.total).toBe(4);
+    expect(h.responsables.length).toBeGreaterThan(0);
+  });
+
+  it("por defecto Hoy es solo lo de quien entra, también para el Maestro", async () => {
+    const h = await hoyDe(db, sesion({}, { maestro: true }), ["verse", "cyc"], AHORA);
+    expect(h.secciones.flatMap((x) => x.items.map((i) => i.asunto))).toEqual(["De Diana", "Obra"]);
   });
 
   it("con alcance 'lo suyo' solo salen las filas donde es Responsable", async () => {

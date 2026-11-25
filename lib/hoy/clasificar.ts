@@ -8,13 +8,14 @@
  * - Antigüedad: días desde la Fecha límite; 3+ urgente, 7+ atascado, 14+ escalado.
  */
 
-export type Seccion = "critico" | "vencido" | "hoy" | "semana";
+export type Seccion = "critico" | "vencido" | "hoy" | "semana" | "luego";
 
 export const SECCIONES: { id: Seccion; titulo: string }[] = [
   { id: "critico", titulo: "Crítico" },
   { id: "vencido", titulo: "Vencido" },
   { id: "hoy", titulo: "Hoy" },
   { id: "semana", titulo: "Esta semana" },
+  { id: "luego", titulo: "Más adelante" },
 ];
 
 export interface TareaHoy {
@@ -67,7 +68,7 @@ export function etiquetaAtraso(dias: number): string | null {
   return null;
 }
 
-/** Sección de Hoy de una tarea, o null si no sale hoy (cerrada, para aprobar, más adelante). */
+/** Sección de Hoy de una tarea, o null si no sale (cerrada, para aprobar o en espera con fecha futura). */
 export function seccionDe(t: TareaHoy, hoy: string): Seccion | null {
   if (t.tipo !== "Pendiente" || !ABIERTOS.has(t.estado ?? "")) return null;
   if (esAprobar(t)) return null;
@@ -78,7 +79,7 @@ export function seccionDe(t: TareaHoy, hoy: string): Seccion | null {
   if (fecha < hoy) return "vencido";
   if (fecha === hoy) return "hoy";
   if (fecha <= finDeSemana(hoy)) return "semana";
-  return null;
+  return "luego";
 }
 
 /** Primera línea del Detalle, sin la etiqueta "Crítico: ". */

@@ -13,12 +13,12 @@ import { EncabezadoModulo } from "../encabezado";
 import { ListaHoy } from "./lista-hoy";
 
 /** Hoy de una empresa o de Todas. "Ver como" (solo Maestro) queda en AUDITORIA y es de solo lectura. */
-export async function ModuloHoy({ sesion, empresa, verComo }: { sesion: Sesion; empresa: string; verComo?: string }) {
+export async function ModuloHoy({ sesion, empresa, verComo, responsable }: { sesion: Sesion; empresa: string; verComo?: string; responsable?: string }) {
   const otra = sesion.maestro && verComo && verComo !== sesion.usuarioId ? await sesionPorId(db(), verComo) : null;
   if (otra) await auditar(db(), { autor: sesion.correo, accion: "acceso.ver_como", detalle: otra.correo });
   const quien = otra ?? sesion;
   const empresas = empresa === TODAS ? empresasVisibles(quien) : [empresa];
-  const hoy = await hoyDe(db(), quien, empresas);
+  const hoy = await hoyDe(db(), quien, empresas, new Date(), responsable);
   const secciones = hoy.secciones.map((s) => ({ id: s.id, titulo: s.titulo, filas: s.items.map((t) => aVista({ ...t, puedeEditar: t.puedeEditar && !otra })) }));
 
   return (
@@ -32,8 +32,8 @@ export async function ModuloHoy({ sesion, empresa, verComo }: { sesion: Sesion; 
           </Link>
         </p>
       )}
-      <EncabezadoModulo titulo="Hoy" descripcion={`${fechaLarga(hoy.hoy).replace(/^./, (c) => c.toUpperCase())} · ${hoy.total} ${hoy.total === 1 ? "pendiente" : "pendientes"}`} />
-      <ListaHoy secciones={secciones} hoy={hoy.hoy} conEmpresa={empresa === TODAS} ejecutar={accionPendiente} soloLectura={Boolean(otra)} />
+      <EncabezadoModulo titulo="Hoy" descripcion={`${fechaLarga(hoy.hoy).replace(/^./, (c) => c.toUpperCase())} · ${hoy.total} ${hoy.total === 1 ? "pendiente" : "pendientes"} esta semana`} />
+      <ListaHoy secciones={secciones} hoy={hoy.hoy} conEmpresa={empresa === TODAS} ejecutar={accionPendiente} soloLectura={Boolean(otra)} responsables={hoy.responsables} responsable={responsable || "mio"} yo={quien.nombreAirtable} />
     </>
   );
 }
