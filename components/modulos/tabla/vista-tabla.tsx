@@ -8,6 +8,7 @@ import { useMemo, useRef, useState } from "react";
 import { BarraControles } from "@/components/modulos/barra-controles";
 import { useShell } from "@/components/shell/contexto";
 import { Estado } from "@/components/modulos/estado";
+import { BotonEnlace } from "@/components/modulos/enlace";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -266,7 +267,8 @@ export function VistaTabla({
                           <dt className="sr-only">{etiqueta(c)}</dt>
                           <dd className={cn("truncate text-muted-foreground", derecha(c) && "tabular-nums")}>
                             <span className="text-muted-foreground/70">{etiqueta(c)}: </span>
-                            {f.celdas[c.campo]}
+                            {/* La tarjeta ya es un botón: el enlace se abre desde el detalle. */}
+                            {c.tipo === "enlace" ? "en el detalle" : f.celdas[c.campo]}
                           </dd>
                         </div>
                       ))}
@@ -306,6 +308,8 @@ export function VistaTabla({
                             </button>
                           ) : c.tipo === "estado" && v ? (
                             <Estado valor={v} />
+                          ) : c.tipo === "enlace" ? (
+                            <BotonEnlace valor={v} />
                           ) : (
                             v || <span className="text-muted-foreground">—</span>
                           )}
@@ -335,7 +339,9 @@ export function VistaTabla({
                   <div key={c.campo} className="grid grid-cols-[130px_1fr] gap-3">
                     <dt className="text-muted-foreground">{etiqueta(c)}</dt>
                     <dd className="whitespace-pre-line break-words">
-                      {c.tipo === "whatsapp" && enlaceWhatsapp(abierta.celdas[c.campo] ?? "") ? (
+                      {c.tipo === "enlace" ? (
+                        <BotonEnlace valor={abierta.celdas[c.campo] ?? ""} />
+                      ) : c.tipo === "whatsapp" && enlaceWhatsapp(abierta.celdas[c.campo] ?? "") ? (
                         <a className="font-medium text-primary underline-offset-4 hover:underline" href={enlaceWhatsapp(abierta.celdas[c.campo] ?? "")!} target="_blank" rel="noreferrer">
                           {abierta.celdas[c.campo]} · Escribir por WhatsApp
                         </a>

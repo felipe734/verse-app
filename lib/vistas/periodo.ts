@@ -93,6 +93,17 @@ export function periodoDe(unidad: UnidadPeriodo, fecha: string, hoy: string): Pe
 }
 
 /** Lee ?p= según la unidad del módulo; si falta o no es válido, el período actual. */
+/** "2026-11-25" → "2026-10": el mes anterior, para módulos que abren en el último mes cerrado. */
+export function mesAnterior(hoy: string): string {
+  const [a, m] = hoy.split("-").map(Number) as [number, number];
+  return m === 1 ? `${a - 1}-12` : `${a}-${String(m - 1).padStart(2, "0")}`;
+}
+
+/** Período pedido en la URL o, si no hay, el inicial del módulo (actual o el mes anterior). */
+export function periodoInicial(def: { unidad: UnidadPeriodo; inicio?: "anterior" }, p: string | undefined, hoy: string): Periodo {
+  return leerPeriodo(def.unidad, p ?? (def.inicio === "anterior" && def.unidad === "mes" ? mesAnterior(hoy) : undefined), hoy);
+}
+
 export function leerPeriodo(unidad: UnidadPeriodo, p: string | undefined, hoy: string): Periodo {
   const v = (p ?? "").trim();
   if (unidad === "dia" && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(aFecha(v).getTime())) return periodoDe("dia", v, hoy);

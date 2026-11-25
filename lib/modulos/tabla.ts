@@ -17,7 +17,7 @@ export interface Columna {
   etiqueta?: string;
   sensible?: Sensible;
   /** Alineación y ancho: los montos y números van a la derecha. */
-  tipo?: "texto" | "numero" | "dinero" | "fecha" | "estado" | "whatsapp";
+  tipo?: "texto" | "numero" | "dinero" | "fecha" | "estado" | "whatsapp" | "enlace";
 }
 
 
@@ -41,7 +41,7 @@ export interface DefTabla {
    * cae en el período; con `campoFin`, el rango [campo, campoFin] se cruza con él.
    * Reemplaza a `formula`.
    */
-  periodo?: { unidad: UnidadPeriodo; campo: string; campoFin?: string; /** campoFin es el día de salida (reservas): no cuenta como día del período. */ finEsSalida?: boolean; /** El campo es texto "AAAA-MM" (solo mes). */ mesTexto?: boolean };
+  periodo?: { unidad: UnidadPeriodo; campo: string; campoFin?: string; /** "anterior": abre en el mes pasado (Finanzas: lo cerrado, con extractos). */ inicio?: "anterior"; /** campoFin es el día de salida (reservas): no cuenta como día del período. */ finEsSalida?: boolean; /** El campo es texto "AAAA-MM" (solo mes). */ mesTexto?: boolean };
   /** Columna con la persona responsable: habilita el interruptor Mío / Todo. */
   persona?: string;
   /** Columnas por las que se filtra con chips (valores que aparecen en el período). */
