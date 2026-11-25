@@ -76,7 +76,7 @@ export const REGISTRO: DefModulo[] = [
   { tipo: "comercial-host", nombre: "Comercial Host", icono: "megaphone", segmento: "comercial", fuentes: ["LEADS", "CONJUNTOS"], construido: true, descripcion: "Leads de propietarios del mes", tabla: TABLAS_EQUIPO["comercial-host"] },
   { tipo: "tickets", nombre: "Tickets", icono: "wrench", segmento: "tickets", fuentes: ["TICKETS"], construido: true, descripcion: "Novedades abiertas y cerradas en 30 días", tabla: TABLAS_EQUIPO["tickets"] },
   { tipo: "unidades-living", nombre: "Unidades Living", icono: "building", segmento: "unidades", fuentes: ["UNIDADES (7. LIVING)"], construido: true, descripcion: "Unidades de Living y su ocupación", tabla: TABLAS_EQUIPO["unidades-living"] },
-  { tipo: "contratos", nombre: "Contratos", icono: "file-signature", segmento: "contratos", fuentes: ["CONTRATO", "FIRMAS", "ACTAS"], construido: true, descripcion: "Contratos activos en el mes", tabla: TABLAS_EQUIPO["contratos"] },
+  { tipo: "contratos", nombre: "Generación de contratos", icono: "file-signature", segmento: "contratos", fuentes: ["CONTRATO", "FIRMAS", "ACTAS"], construido: true, descripcion: "Contratos por elaborar, por firmar y firmados", tabla: TABLAS_EQUIPO["contratos"] },
   { tipo: "cobros", nombre: "Cobros", icono: "wallet", segmento: "cobros", fuentes: ["INGRESOS", "VL"], construido: true, descripcion: "Cánones del mes", tabla: TABLAS_EQUIPO["cobros"] },
   { tipo: "balcony", nombre: "Balcony PH", icono: "hotel", segmento: "balcony", fuentes: ["EDIFICIO BALCONY PH"], construido: false },
   { tipo: "comercial-living", nombre: "Comercial Living", icono: "megaphone", segmento: "comercial", fuentes: ["WEB LEADS"], construido: true, descripcion: "Leads de la web", tabla: TABLAS_EQUIPO["comercial-living"] },

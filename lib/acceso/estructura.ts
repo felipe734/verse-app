@@ -70,7 +70,7 @@ export const ESTRUCTURA: EmpresaBase[] = [
         nombre: "Living",
         modulos: [
           { id: "living-unidades", nombre: "Unidades Living", descripcion: "Unidades de Living y Balcony con su estado", tipo: "unidades-living" },
-          { id: "living-contratos", nombre: "Contratos", descripcion: "Contratos vigentes, firmas, renovaciones y actas", tipo: "contratos" },
+          { id: "living-contratos", nombre: "Generación de contratos", descripcion: "Contratos por elaborar, firmar y firmados", tipo: "contratos" },
           { id: "living-cobros", nombre: "Cobros", descripcion: "Cánones del mes, facturas CYC y fianzas", tipo: "cobros" },
           { id: "living-balcony", nombre: "Balcony PH", descripcion: "Administración, residentes, banco y balances de la PH", tipo: "balcony" },
           { id: "living-comercial", nombre: "Comercial Living", descripcion: "Leads de la web", tipo: "comercial-living" },

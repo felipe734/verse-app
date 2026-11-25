@@ -14,6 +14,8 @@ import { listarUsuarios } from "@/lib/acceso/admin";
 import { PLATFORM_NAME } from "@/lib/config";
 import { estadoModulos } from "@/lib/modulos/registro";
 import { ModuloSistema } from "@/components/modulos/sistema/modulo-sistema";
+import { ConectarAuco } from "@/components/ajustes/conectar-auco";
+import { aucoConfigurado } from "@/lib/firma/auco";
 import { cn } from "@/lib/utils";
 import { estadoConexiones, type Conexion } from "@/lib/correo/conexiones";
 import { composioServidor } from "@/lib/servidor/composio";
@@ -254,6 +256,7 @@ async function Conexiones({ error }: { error?: string }) {
       <p className="text-sm text-muted-foreground">
         La app usa su propio proyecto de Composio, separado del de Claude. Conecta cada cuenta una vez: el botón abre Google y vuelves aquí. La cuenta personal no entra.
       </p>
+      <ConectarAuco configurado={aucoConfigurado()} />
       {(error || falla) && (
         <p role="alert" className="rounded-md border border-destructive/40 px-3 py-2 text-sm text-destructive">
           {error ?? falla}

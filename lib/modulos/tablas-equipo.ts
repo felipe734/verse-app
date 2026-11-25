@@ -21,6 +21,7 @@ const num = (campo: string, etiqueta?: string): Columna => ({ campo, etiqueta, t
 const plata = (campo: string, etiqueta?: string): Columna => ({ campo, etiqueta, tipo: "dinero", sensible: "cifras" });
 const tercero = (campo: string, etiqueta?: string): Columna => ({ campo, etiqueta, sensible: "terceros" });
 const codigo = (campo: string, etiqueta?: string): Columna => ({ campo, etiqueta, sensible: "codigos" });
+const enlace = (campo: string, etiqueta?: string): Columna => ({ campo, etiqueta, tipo: "enlace" });
 
 export const TABLAS_EQUIPO: Record<string, DefTabla> = {
   operacion: {
@@ -175,20 +176,23 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     relacionados: [{ titulo: "Cobros de la unidad", tipo: "cobros", campo: "Unidad", columna: "Unidad", max: 6 }],
     rapidas: [{ etiqueta: "Firmado", campo: "estado", valor: "Firmado", columna: "Estado" }],
     editar: { tabla: "contratos", campos: [{ campo: "estado", etiqueta: "Estado" }] },
+    accionDetalle: "firma-contrato",
     ...ids("7. LIVING", "CONTRATO"),
     titulo: "Unidad",
-    columnas: [t("Unidad"), t("Edificio"), tercero("Nombre", "Arrendatario"), estado("Estado"), fecha("Fecha_Inicio", "Inicio"), fecha("Fecha_Finalización", "Fin"), plata("Canon_Servicios", "Canon y servicios")],
-    detalle: [t("Contrato_ID", "Contrato"), tercero("Celular"), tercero("Correo")],
+    columnas: [t("Unidad"), tercero("Nombre", "Arrendatario"), estado("Estado"), estado("Auco Estado", "Firma"), fecha("Fecha_Inicio", "Inicio"), fecha("Fecha_Finalización", "Fin"), t("Edificio")],
+    detalle: [t("Contrato_ID", "Contrato"), enlace("Contrato", "PDF"), plata("Canon_Servicios", "Canon y servicios"), tercero("Celular"), tercero("Correo"), t("Validación", "Revisión del documento")],
     orden: { campo: "Fecha_Inicio", desc: true },
     periodo: { unidad: "mes", campo: "Fecha_Inicio", campoFin: "Fecha_Finalización" },
-    filtros: ["Edificio", "Estado"],
+    filtros: ["Estado", "Auco Estado", "Edificio"],
     indicadores: [
-      { etiqueta: "Contratos en el mes", tipo: "conteo" },
-      { etiqueta: "Sin firmar", tipo: "conteo", donde: { campo: "Estado", valores: ["Pendiente", "Elaborado"] } },
-      { etiqueta: "Canon y servicios", tipo: "suma", campo: "Canon_Servicios" },
+      { etiqueta: "Contratos", tipo: "conteo" },
+      { etiqueta: "Por elaborar", tipo: "conteo", donde: { campo: "Estado", valores: ["Pendiente"] } },
+      { etiqueta: "Por firmar", tipo: "conteo", donde: { campo: "Estado", valores: ["Elaborado"] } },
+      { etiqueta: "Firmados", tipo: "conteo", donde: { campo: "Estado", valores: ["Firmado"] } },
     ],
     max: 300,
   },
+
   cobros: {
     relacionados: [{ titulo: "Contrato de la unidad", tipo: "contratos", campo: "Unidad", columna: "Unidad", max: 3 }],
     rapidas: [{ etiqueta: "Pagado", campo: "estado", valor: "PAGO", columna: "Estado" }],

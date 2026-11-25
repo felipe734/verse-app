@@ -18,6 +18,7 @@ import { enlaceWhatsapp } from "@/lib/modulos/whatsapp";
 import { leerFecha } from "@/lib/vistas/fechas";
 import { cambiarAccion } from "@/app/modulos/aseos";
 import { SoportePago } from "@/components/modulos/cobros/soporte-pago";
+import { FirmaContrato } from "@/components/modulos/contratos/firma-contrato";
 import type { Periodo } from "@/lib/vistas/periodo";
 import { cn } from "@/lib/utils";
 import type { RefModulo } from "@/app/modulos/editar";
@@ -97,7 +98,7 @@ export function VistaTabla({
   tablas?: string[];
   /** Acciones de un toque (solo si la persona edita el módulo). */
   rapidas?: { etiqueta: string; campo: string; valor: string; columna: string }[];
-  accionDetalle?: "soporte-pago";
+  accionDetalle?: "soporte-pago" | "firma-contrato";
   filtrosIniciales?: Record<string, string>;
   /** Campo editable del tablero: mover tarjetas lo cambia. */
   campoTablero?: string;
@@ -379,6 +380,11 @@ export function VistaTabla({
                       <Check className="size-4" aria-hidden /> {a.etiqueta}
                     </Button>
                   ))}
+                </div>
+              )}
+              {edicion && accionDetalle === "firma-contrato" && (
+                <div className="border-t p-4">
+                  <FirmaContrato key={`f${abierta.id}`} recId={abierta.id} estadoAuco={abierta.celdas["Auco Estado"] ?? ""} />
                 </div>
               )}
               {edicion && accionDetalle === "soporte-pago" && (
