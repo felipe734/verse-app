@@ -5,6 +5,7 @@ import type { ClienteAirtable } from "@/lib/airtable/cliente";
 import { encolar, procesarCola } from "@/lib/airtable/cola";
 import { ESCRITURA, TABLAS } from "@/lib/airtable/mapeo";
 import { puede, type Sesion } from "@/lib/acceso/permisos";
+import { hoyBogota } from "@/lib/hoy/clasificar";
 
 /**
  * Edición desde los módulos de tabla (plan aprobado por Felipe el 2026-11-23): estados y
@@ -25,8 +26,11 @@ export interface DefEdicion {
   /** Clave de la tabla en el mapeo (TABLAS o ESCRITURA). */
   tabla: string;
   campos: CampoEditable[];
-  /** Al poner `campo` en `valor`, también se escribe la fecha y hora actual en `fecha` (p. ej. Cerrado el). */
-  sello?: { campo: string; valor: string; fecha: string };
+  /**
+   * Al poner `campo` en `valor`, también se escribe la fecha y hora actual en `fecha` (p. ej. Cerrado el;
+   * si es un campo de solo fecha, el día de Bogotá) y, con `autor`, el nombre de quien lo hizo.
+   */
+  sello?: { campo: string; valor: string; fecha: string; autor?: string };
 }
 
 /** Tipos de Airtable que se editan aquí; un campo de otro tipo (fórmula, enlace) no se ofrece. */
@@ -151,7 +155,9 @@ export async function guardarEdicion(
   if (!Object.keys(campos_).length) return { ok: false, mensaje: "No hay cambios" };
   if (def.sello && cambios[def.sello.campo] === def.sello.valor) {
     const f = t.campos[def.sello.fecha];
-    if (f) campos_[f.id] = new Date().toISOString();
+    if (f) campos_[f.id] = f.tipo === "date" ? hoyBogota() : new Date().toISOString();
+    const a = def.sello.autor ? t.campos[def.sello.autor] : undefined;
+    if (a) campos_[a.id] = s.nombreAirtable || s.correo;
   }
   const id = await encolar(db, { idBase: t.idBase, idTabla: t.idTabla, recId, campos: campos_, esperado, autor: s.correo });
   await procesarCola(db, airtable);

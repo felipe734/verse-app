@@ -258,7 +258,7 @@ export const TABLAS_ESCRITURA = {
   ingresosLiving: {
     base: "7. LIVING",
     tabla: "INGRESOS",
-    campos: { estado: "Estado" },
+    campos: { estado: "Estado", fechaPago: "Fecha pago", soporte: "Soporte", marcadoPor: "Marcado por" },
   },
   actas: {
     base: "11. ACTAS OBRA",

@@ -65,6 +65,8 @@ export interface DefTabla {
   relacionados?: Relacion[];
   /** Campos que se editan desde el detalle, con el módulo en "editar" (lib/modulos/editar.ts). */
   editar?: DefEdicion;
+  /** Acción propia del módulo en el detalle, con el módulo en "editar". */
+  accionDetalle?: "soporte-pago";
 }
 
 export interface DefCalendario {

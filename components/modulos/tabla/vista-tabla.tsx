@@ -14,6 +14,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Columna, DefAgenda, DefCalendario, FilaTabla, Indicador, TipoVista } from "@/lib/modulos/tabla";
 import { enlaceWhatsapp } from "@/lib/modulos/whatsapp";
+import { SoportePago } from "@/components/modulos/cobros/soporte-pago";
 import type { Periodo } from "@/lib/vistas/periodo";
 import { cn } from "@/lib/utils";
 import type { RefModulo } from "@/app/modulos/editar";
@@ -58,6 +59,7 @@ export function VistaTabla({
   persona,
   tablas,
   rapidas = [],
+  accionDetalle,
   campoTablero,
   relacionados,
 }: {
@@ -91,6 +93,7 @@ export function VistaTabla({
   tablas?: string[];
   /** Acciones de un toque (solo si la persona edita el módulo). */
   rapidas?: { etiqueta: string; campo: string; valor: string; columna: string }[];
+  accionDetalle?: "soporte-pago";
   /** Campo editable del tablero: mover tarjetas lo cambia. */
   campoTablero?: string;
   /** Dónde está el módulo, para cargar los registros relacionados del detalle. */
@@ -361,6 +364,11 @@ export function VistaTabla({
                       <Check className="size-4" aria-hidden /> {a.etiqueta}
                     </Button>
                   ))}
+                </div>
+              )}
+              {edicion && accionDetalle === "soporte-pago" && (
+                <div className="border-t p-4">
+                  <SoportePago key={`s${abierta.id}`} recId={abierta.id} pagado={abierta.celdas["Estado"] === "PAGO"} alGuardar={() => setAbierta(null)} />
                 </div>
               )}
               {edicion && (

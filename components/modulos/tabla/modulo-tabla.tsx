@@ -81,6 +81,7 @@ export async function ModuloTabla({ sesion, u, p, programar }: { sesion: Sesion;
         tablas={[def.idTabla]}
         relacionados={def.relacionados?.length ? { empresa: u.empresa, vertical: u.vertical.segmento, modulo: u.def.segmento } : undefined}
         rapidas={puedeEditar ? def.rapidas : undefined}
+        accionDetalle={puedeEditar ? def.accionDetalle : undefined}
         campoTablero={puedeEditar ? (campoPorNombre(def.editar, def.tablero) ?? undefined) : undefined}
         persona={
           def.persona && sesion.nombreAirtable
