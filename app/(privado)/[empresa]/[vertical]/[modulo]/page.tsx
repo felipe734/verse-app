@@ -18,7 +18,7 @@ import { PLATFORM_NAME } from "@/lib/config";
 import { nombreDeRuta, ubicar } from "@/lib/modulos/registro";
 
 type Params = { empresa: string; vertical: string; modulo: string };
-type Busqueda = { verComo?: string; cuenta?: string; pestana?: string; p?: string; programar?: string; dia?: string };
+type Busqueda = { verComo?: string; cuenta?: string; pestana?: string; p?: string; programar?: string; dia?: string; resp?: string; v?: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
   const { empresa, vertical, modulo } = await params;
@@ -37,7 +37,7 @@ async function Contenido({ params, searchParams }: { params: Promise<Params>; se
   if (u.def.pestanas) return <ModuloPanel sesion={sesion} u={u} pestana={busqueda.pestana} p={busqueda.p} />;
   switch (u.def.tipo) {
     case "hoy":
-      return <ModuloHoy sesion={sesion} empresa={empresa} verComo={busqueda.verComo} />;
+      return <ModuloHoy sesion={sesion} empresa={empresa} verComo={busqueda.verComo} responsable={busqueda.resp} />;
     case "aprobar":
       return <ModuloAprobar sesion={sesion} empresa={empresa} />;
     case "correo":
