@@ -1,5 +1,5 @@
 import "server-only";
-import { issueSignedToken, presignUrl } from "@vercel/blob";
+import { issueSignedToken, presignUrl, put } from "@vercel/blob";
 import { handleUploadPresigned, type HandleUploadPresignedBody } from "@vercel/blob/client";
 import { NextResponse } from "next/server";
 
@@ -25,6 +25,12 @@ export async function urlDeLectura(ruta: string, ahora = Date.now()): Promise<st
   const token = await issueSignedToken({ pathname: ruta, operations: ["get"], validUntil });
   const { presignedUrl } = await presignUrl(token, { operation: "get", pathname: ruta, validUntil, access: "private" });
   return presignedUrl;
+}
+
+/** Guarda un archivo que arma el servidor (el PDF de un contrato) y devuelve su ruta en el almacén. */
+export async function guardarArchivo(ruta: string, datos: Buffer, contentType: string): Promise<string> {
+  const b = await put(ruta, datos, { access: "private", contentType, addRandomSuffix: true });
+  return b.pathname;
 }
 
 /** Atiende la subida directa: revisa el acceso y firma solo la ruta, el tipo y el tamaño pedidos. */

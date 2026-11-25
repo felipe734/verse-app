@@ -2004,6 +2004,204 @@ export const MAPEO = {
           "id": "fldeiURO8INV2Co3n",
           "nombre": "Estado",
           "tipo": "singleSelect"
+        },
+        "contratoId": {
+          "id": "fldPfcJzeX1WXBS8q",
+          "nombre": "Contrato_ID",
+          "tipo": "singleLineText"
+        },
+        "edificio": {
+          "id": "fldSUPzfmcwmKstio",
+          "nombre": "Edificio",
+          "tipo": "singleSelect"
+        },
+        "unidad": {
+          "id": "fldwDfCdi5tOlKKyO",
+          "nombre": "Unidad",
+          "tipo": "multipleRecordLinks"
+        },
+        "nombre": {
+          "id": "fldfIMDyoXx2dtFwx",
+          "nombre": "Nombre",
+          "tipo": "multipleRecordLinks"
+        },
+        "cedulaDe": {
+          "id": "fldRsTtiop6uuckq0",
+          "nombre": "Cédula_de",
+          "tipo": "singleLineText"
+        },
+        "mesesLetras": {
+          "id": "fldYZ4fNGZMqQNADn",
+          "nombre": "Meses_Letras",
+          "tipo": "singleLineText"
+        },
+        "diasTerminacion": {
+          "id": "fld5R8XHi6EKC5yze",
+          "nombre": "Días_Terminación",
+          "tipo": "number"
+        },
+        "diasTerminacionLetras": {
+          "id": "fldp4ZoQPo9LPXT5k",
+          "nombre": "Días_Terminación_Letras",
+          "tipo": "singleLineText"
+        },
+        "unidadContrato": {
+          "id": "fld3PewcjQs0omRbZ",
+          "nombre": "Unidad_Contrato",
+          "tipo": "singleLineText"
+        },
+        "direccionUnidad": {
+          "id": "fld2PnP3wGKwAAnIK",
+          "nombre": "Dirección_Unidad",
+          "tipo": "singleLineText"
+        },
+        "fechaInicio": {
+          "id": "fldkLWwqp4at5DwGT",
+          "nombre": "Fecha_Inicio",
+          "tipo": "date"
+        },
+        "fechaFin": {
+          "id": "fldwWKDnQ8BfduA0X",
+          "nombre": "Fecha_Finalización",
+          "tipo": "date"
+        },
+        "letrasCanon": {
+          "id": "fldAc5NW5UhgdnysJ",
+          "nombre": "Letras_Canon_Servicios",
+          "tipo": "singleLineText"
+        },
+        "letrasAdmin": {
+          "id": "fldzU5Xn911k1kqNB",
+          "nombre": "Letras_Admin",
+          "tipo": "singleLineText"
+        },
+        "tipoDocumento": {
+          "id": "fldvuQhJVsaMxe5C1",
+          "nombre": "Tipo Documento",
+          "tipo": "singleSelect"
+        },
+        "validacion": {
+          "id": "flduZ80PA0whJ31dD",
+          "nombre": "Validación",
+          "tipo": "multilineText"
+        },
+        "contrato": {
+          "id": "fld2GcSg3VehgOaH5",
+          "nombre": "Contrato",
+          "tipo": "multipleAttachments"
+        }
+      }
+    },
+    "datosLiving": {
+      "base": "7. LIVING",
+      "tabla": "DATOS",
+      "workspace": "Verse",
+      "idBase": "appzaNZaaYKfdZObP",
+      "idTabla": "tblVdiGt9HORiD9tn",
+      "campos": {
+        "nombreCompleto": {
+          "id": "fld34g6TZkXDqyGfR",
+          "nombre": "Nombre Completo",
+          "tipo": "formula"
+        },
+        "cedula": {
+          "id": "fldFxcWs6bK4R0kVp",
+          "nombre": "Cédula",
+          "tipo": "singleLineText"
+        },
+        "correo": {
+          "id": "fldCGcD9oOwkE01fc",
+          "nombre": "Correo",
+          "tipo": "singleLineText"
+        },
+        "celular": {
+          "id": "fld73MGirGgKYCUNN",
+          "nombre": "Celular",
+          "tipo": "singleLineText"
+        },
+        "frente": {
+          "id": "fldJIVFwB9fxnJ1m7",
+          "nombre": "Frente CC",
+          "tipo": "multipleAttachments"
+        },
+        "reverso": {
+          "id": "fldgiq77lK465YL7V",
+          "nombre": "Reverso CC",
+          "tipo": "multipleAttachments"
+        },
+        "fechaNacimiento": {
+          "id": "fld3T9hpUI5rryChd",
+          "nombre": "Fecha Nacimiento",
+          "tipo": "date"
+        },
+        "fecha": {
+          "id": "fldb30mqdLERVUulk",
+          "nombre": "Fecha",
+          "tipo": "date"
+        },
+        "contrato": {
+          "id": "fldueFJuLc5QxNSJY",
+          "nombre": "CONTRATO",
+          "tipo": "multipleRecordLinks"
+        }
+      }
+    },
+    "unidadesContrato": {
+      "base": "7. LIVING",
+      "tabla": "UNIDADES",
+      "workspace": "Verse",
+      "idBase": "appzaNZaaYKfdZObP",
+      "idTabla": "tblp0bqTnMi0LTezh",
+      "campos": {
+        "unidad": {
+          "id": "fld1ARcnvi8puoEGg",
+          "nombre": "Unidad",
+          "tipo": "singleLineText"
+        },
+        "estado": {
+          "id": "fldbUife8yOvLXceu",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        },
+        "canon": {
+          "id": "fldJmbbiFtN7ADTfC",
+          "nombre": "Canon",
+          "tipo": "currency"
+        },
+        "admin": {
+          "id": "fldB9tF2FzgrQrKRI",
+          "nombre": "Admin",
+          "tipo": "currency"
+        },
+        "duracion": {
+          "id": "fldlQDGhfIrqW4lu5",
+          "nombre": "Duración_Total",
+          "tipo": "number"
+        },
+        "referenciaPago": {
+          "id": "fldnJqfPyz5JOr7Jh",
+          "nombre": "Referencia_Pago",
+          "tipo": "singleLineText"
+        },
+        "matricula": {
+          "id": "fldOOoXss4yz0vRuB",
+          "nombre": "Matrícula Inmobiliaria",
+          "tipo": "singleLineText"
+        },
+        "cuentaEnel": {
+          "id": "fldPTDcczKC7kgu5L",
+          "nombre": "Cuenta ENEL",
+          "tipo": "singleLineText"
+        },
+        "cuentaEaab": {
+          "id": "fldQNMMmd8NitLxyU",
+          "nombre": "Cuenta EAAB",
+          "tipo": "singleLineText"
+        },
+        "contrato": {
+          "id": "fld5Cv3DSo7ACVKsJ",
+          "nombre": "Contrato",
+          "tipo": "multipleRecordLinks"
         }
       }
     },

@@ -16,6 +16,8 @@ import { ProgramacionAseos } from "@/components/modulos/aseos/programacion";
 import { puedeProgramar } from "@/lib/aseos/programacion";
 import { NuevoTicket } from "@/components/modulos/tickets/nuevo-ticket";
 import { puedeTickets } from "@/lib/tickets/tickets";
+import { NuevoContrato } from "@/components/modulos/contratos/nuevo-contrato";
+import { puedeContratos } from "@/lib/contratos/generar";
 import { ControlSemana } from "@/components/modulos/horas/control-semana";
 import { Suspense } from "react";
 
@@ -52,6 +54,7 @@ export async function ModuloTabla({ sesion, u, p, programar }: { sesion: Sesion;
       <EncabezadoModulo titulo={u.modulo.nombre} descripcion={u.def.descripcion}>
         {u.def.tipo === "limpiezas" && u.empresa === "verse" && puedeProgramar(sesion) && <ProgramacionAseos abrirAlInicio={programar} />}
         {u.def.tipo === "tickets" && u.empresa === "verse" && puedeTickets(sesion) && <NuevoTicket />}
+        {u.def.tipo === "contratos" && u.empresa === "verse" && puedeContratos(sesion) && <NuevoContrato maestro={sesion.maestro} />}
       </EncabezadoModulo>
       <div className="px-4 md:px-6">
         <ListaAlertas alertas={alertas} compacta />
