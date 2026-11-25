@@ -2,6 +2,7 @@ import { nivelCorreo, puede, type Sesion } from "@/lib/acceso/permisos";
 import type { ClienteComposio } from "./composio";
 import { CUENTAS, cuentasConectadas, type Cuenta, type IdCuenta } from "./cuentas";
 import { rutear, type Ruta } from "./ruteo";
+import { textoLegible } from "./texto";
 
 /**
  * Bandeja ruteada: lo que llegó en las últimas horas a las cuentas que la persona puede leer,
@@ -128,7 +129,7 @@ export interface MensajeHilo {
   adjuntos: string[];
 }
 
-/** Un hilo, en texto (nunca HTML del remitente en la pantalla). */
+/** Un hilo, en texto legible: el HTML se convierte a párrafos y nunca se pinta tal cual. */
 export async function hiloDe(cliente: ClienteComposio, s: Sesion, cuenta: string, hilo: string): Promise<{ mensajes: MensajeHilo[] } | { error: string }> {
   const c = cuentasLegibles(s).find((x) => x.id === cuenta);
   if (!c) return { error: "Sin acceso a esa cuenta." };
@@ -145,7 +146,7 @@ export async function hiloDe(cliente: ClienteComposio, s: Sesion, cuenta: string
       para: m.to ?? "",
       asunto: sinEntidades(m.subject ?? ""),
       fecha: m.messageTimestamp ?? "",
-      texto: sinEntidades(m.messageText || m.preview?.body || "").slice(0, 20_000),
+      texto: textoLegible(m.messageText || m.preview?.body || "").slice(0, 20_000),
       adjuntos: ((m.attachmentList ?? []) as { filename?: string }[]).map((a) => a.filename ?? "adjunto"),
     }))
     .sort((a, b) => a.fecha.localeCompare(b.fecha));

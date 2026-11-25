@@ -4,6 +4,7 @@ import { bandejaDe, cuentasLegibles } from "@/lib/correo/bandeja";
 import { cuentaPorId } from "@/lib/correo/cuentas";
 import { nivelEnCuenta } from "@/lib/correo/redactar";
 import { ErrorComposio } from "@/lib/correo/composio";
+import { clasificadorHaiku, paraResponder } from "@/lib/correo/atencion";
 import { composioServidor } from "@/lib/servidor/composio";
 import { EncabezadoModulo } from "../encabezado";
 import { Bandeja } from "./bandeja";
@@ -48,6 +49,11 @@ export async function ModuloCorreo({ sesion, empresa, cuenta }: { sesion: Sesion
       </>
     );
   }
+  const todos = b.colas.flatMap((q) => q.items);
+  const atencion = await paraResponder(
+    todos.map((x) => ({ id: x.id, de: x.de, asunto: x.asunto, vista: x.vista, responde: x.ruta.responde })),
+    clasificadorHaiku(),
+  );
   const colas = b.colas.map((q) => ({
     id: q.id,
     items: q.items.map((x) => ({
@@ -62,13 +68,14 @@ export async function ModuloCorreo({ sesion, empresa, cuenta }: { sesion: Sesion
       noLeido: x.noLeido,
       adjuntos: x.adjuntos,
       responde: x.ruta.responde,
+      atencion: atencion.has(x.id),
       tambienEn: x.tambienEn,
     })),
   }));
   const puedeRedactar = cuentas.some((c) => ["redactar", "enviar"].includes(nivelEnCuenta(sesion, c.id)));
   return (
     <>
-      <EncabezadoModulo titulo="Correo" descripcion={`Últimas ${b.horas} horas, ruteado por os-correo`} />
+      <EncabezadoModulo titulo="Correo" descripcion={`Últimas ${b.horas} horas · primero lo que necesita respuesta`} />
       <Bandeja colas={colas} cuentas={cuentas.map((c) => ({ id: c.id, correo: c.correo }))} cuenta={elegida} ruido={b.ruido} avisos={b.avisos} horas={b.horas} puedeRedactar={puedeRedactar} />
     </>
   );
