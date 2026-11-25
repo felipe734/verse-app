@@ -1,14 +1,13 @@
 "use client";
 
-import { ExternalLink, Inbox, Paperclip, PenSquare, Sparkles } from "lucide-react";
+import { ChevronRight, ExternalLink, Inbox, Paperclip, PenSquare, Search, Sparkles } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { leerHilo } from "@/app/modulos/correo";
 import { BarraControles } from "@/components/modulos/barra-controles";
 import { useShell } from "@/components/shell/contexto";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import type { MensajeHilo } from "@/lib/correo/bandeja";
 import { cn } from "@/lib/utils";
@@ -25,19 +24,10 @@ export interface CorreoVista {
   noLeido: boolean;
   adjuntos: number;
   responde: boolean;
+  /** Necesita atención y respuesta (lib/correo/atencion.ts). */
+  atencion: boolean;
   tambienEn: string[];
 }
-
-const COLAS: Record<string, string> = {
-  host: "Verse Host",
-  living: "Verse Living",
-  contabilidad: "Contabilidad",
-  comercial: "Comercial",
-  dirección: "Dirección",
-  sistema: "Sistema",
-  svmg: "SVMG",
-  obra: "Obra",
-};
 
 const remitente = (de: string) => de.replace(/<[^>]+>/, "").replace(/"/g, "").trim() || de;
 const hora = (iso: string) => {
@@ -47,6 +37,47 @@ const hora = (iso: string) => {
   return new Intl.DateTimeFormat("es-CO", hoy ? { timeZone: "America/Bogota", hour: "numeric", minute: "2-digit" } : { timeZone: "America/Bogota", day: "numeric", month: "short" }).format(d);
 };
 const fechaHilo = (iso: string) => (iso ? new Intl.DateTimeFormat("es-CO", { timeZone: "America/Bogota", dateStyle: "medium", timeStyle: "short" }).format(new Date(iso)) : "");
+
+function Grupo({ titulo, n, abierto, fijo, alternar, children }: { titulo: string; n: number; abierto: boolean; fijo?: boolean; alternar?: () => void; children: React.ReactNode }) {
+  return (
+    <section aria-label={titulo}>
+      <h2 className="sticky top-14 z-10 border-b bg-muted/60 text-xs font-medium text-muted-foreground backdrop-blur">
+        <button type="button" disabled={fijo} aria-expanded={abierto} onClick={alternar} className="flex w-full items-center gap-2 px-4 py-1.5 text-left enabled:hover:text-foreground md:px-6">
+          {!fijo && <ChevronRight className={cn("size-3.5 transition-transform", abierto && "rotate-90")} aria-hidden />}
+          {titulo}
+          <span className="tabular-nums">{n}</span>
+        </button>
+      </h2>
+      {abierto && children}
+    </section>
+  );
+}
+
+function Fila({ c, abrir }: { c: CorreoVista; abrir: (c: CorreoVista) => void }) {
+  return (
+    <li>
+      <button type="button" onClick={() => abrir(c)} className="flex w-full items-start gap-3 px-4 py-2.5 text-left hover:bg-muted/50 md:px-6">
+        <span aria-hidden className={cn("mt-1.5 size-2 shrink-0 rounded-full", c.noLeido ? "bg-acento" : "bg-transparent")} />
+        <span className="min-w-0 flex-1">
+          <span className="flex items-baseline justify-between gap-3">
+            <span className={cn("truncate text-sm", c.noLeido && "font-semibold")}>{remitente(c.de)}</span>
+            <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{hora(c.fecha)}</span>
+          </span>
+          <span className={cn("block truncate text-sm", c.noLeido ? "text-foreground" : "text-muted-foreground")}>{c.asunto}</span>
+          <span className="block truncate text-[13px] text-muted-foreground">{c.vista}</span>
+          <span className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+            <span>{c.correoCuenta}</span>
+            {c.adjuntos > 0 && (
+              <span className="inline-flex items-center gap-0.5">
+                <Paperclip className="size-3" aria-hidden /> {c.adjuntos}
+              </span>
+            )}
+          </span>
+        </span>
+      </button>
+    </li>
+  );
+}
 
 /** Bandeja ruteada: colas de os-correo, el hilo en panel lateral y el asistente para responder. */
 export function Bandeja({
@@ -86,35 +117,44 @@ export function Bandeja({
     router.push(`?${q}`);
   }
 
+  const [texto, setTexto] = useState("");
+  const [verResto, setVerResto] = useState(false);
   const total = colas.reduce((n, c) => n + c.items.length, 0);
+  const coincide = (c: CorreoVista) => !texto || `${c.de} ${c.asunto} ${c.vista}`.toLowerCase().includes(texto.toLowerCase());
+  const todos = colas.flatMap((q) => q.items).filter(coincide).sort((a, b) => b.fecha.localeCompare(a.fecha));
+  const importantes = todos.filter((c) => c.atencion);
+  const resto = todos.filter((c) => !c.atencion);
 
   return (
     <>
-      <BarraControles className="justify-end px-4 pt-1 md:px-6">
+      <BarraControles className="px-4 pt-1 md:px-6">
         {cuentas.length > 1 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8">
-                {cuenta ? cuentas.find((c) => c.id === cuenta)?.correo.split("@")[0] + "@" : "Todas las cuentas"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuRadioGroup value={cuenta ?? ""} onValueChange={elegirCuenta}>
-                <DropdownMenuRadioItem value="">Todas las cuentas</DropdownMenuRadioItem>
-                {cuentas.map((c) => (
-                  <DropdownMenuRadioItem key={c.id} value={c.id}>
-                    {c.correo}
-                  </DropdownMenuRadioItem>
-                ))}
-              </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div role="radiogroup" aria-label="Cuenta" className="flex max-w-full gap-1 overflow-x-auto rounded-md border p-0.5 [scrollbar-width:none]">
+            {[{ id: "", correo: "Todas" }, ...cuentas].map((c) => (
+              <button
+                key={c.id || "todas"}
+                type="button"
+                role="radio"
+                aria-checked={(cuenta ?? "") === c.id}
+                onClick={() => elegirCuenta(c.id)}
+                className={cn("shrink-0 rounded px-2 py-1 text-xs whitespace-nowrap", (cuenta ?? "") === c.id ? "bg-muted font-medium" : "text-muted-foreground hover:text-foreground")}
+              >
+                {c.id ? `${c.correo.split("@")[0]}@` : c.correo}
+              </button>
+            ))}
+          </div>
         )}
-        {puedeRedactar && asistenteHabilitado && (
-          <Button size="sm" className="h-8 gap-1.5 bg-acento text-acento-foreground hover:bg-acento/90" onClick={() => abrirAsistente("Redacta un correo ")}>
-            <PenSquare className="size-4" aria-hidden /> Redactar
-          </Button>
-        )}
+        <div className="ml-auto flex items-center gap-2 max-md:w-full">
+          <div className="relative min-w-0 flex-1 md:w-52 md:flex-none">
+            <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
+            <Input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Buscar" aria-label="Buscar correos" className="h-8 pl-8" />
+          </div>
+          {puedeRedactar && asistenteHabilitado && (
+            <Button size="sm" className="h-8 gap-1.5 bg-acento text-acento-foreground hover:bg-acento/90" onClick={() => abrirAsistente("Redacta un correo ")}>
+              <PenSquare className="size-4" aria-hidden /> Redactar
+            </Button>
+          )}
+        </div>
       </BarraControles>
 
       {avisos.map((a) => (
@@ -132,43 +172,20 @@ export function Bandeja({
           <p className="text-sm text-muted-foreground">{ruido ? `${ruido} correos de promociones o avisos no se listan.` : "Cuando llegue algo a tus cuentas, aparece aquí."}</p>
         </div>
       ) : (
-        colas.map((cola) => {
-          const [, nombre] = cola.id.split("·");
-          return (
-            <section key={cola.id} aria-labelledby={`cola-${cola.id}`}>
-              <h2 id={`cola-${cola.id}`} className="sticky top-14 z-10 flex items-center gap-2 border-b bg-muted/60 px-4 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur md:px-6">
-                {COLAS[nombre!] ?? nombre}
-                <span className="tabular-nums">{cola.items.length}</span>
-              </h2>
-              <ul className="divide-y">
-                {cola.items.map((c) => (
-                  <li key={`${c.cuenta}-${c.id}`}>
-                    <button type="button" onClick={() => abrir(c)} className="flex w-full items-start gap-3 px-4 py-2.5 text-left hover:bg-muted/50 md:px-6">
-                      <span aria-hidden className={cn("mt-1.5 size-2 shrink-0 rounded-full", c.noLeido ? "bg-acento" : "bg-transparent")} />
-                      <span className="min-w-0 flex-1">
-                        <span className="flex items-baseline justify-between gap-3">
-                          <span className={cn("truncate text-sm", c.noLeido && "font-semibold")}>{remitente(c.de)}</span>
-                          <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{hora(c.fecha)}</span>
-                        </span>
-                        <span className={cn("block truncate text-sm", c.noLeido ? "text-foreground" : "text-muted-foreground")}>{c.asunto}</span>
-                        <span className="block truncate text-[13px] text-muted-foreground">{c.vista}</span>
-                        <span className="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
-                          <span>{c.correoCuenta}</span>
-                          {c.adjuntos > 0 && (
-                            <span className="inline-flex items-center gap-0.5">
-                              <Paperclip className="size-3" aria-hidden /> {c.adjuntos}
-                            </span>
-                          )}
-                          {!c.responde && <Badge variant="secondary">No se responde</Badge>}
-                        </span>
-                      </span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          );
-        })
+        <>
+          <Grupo titulo="Para responder" n={importantes.length} abierto fijo>
+            {importantes.length === 0 ? (
+              <p className="px-4 py-3 text-sm text-muted-foreground md:px-6">Nada que responder ahora.</p>
+            ) : (
+              <ul className="divide-y">{importantes.map((c) => <Fila key={`${c.cuenta}-${c.id}`} c={c} abrir={abrir} />)}</ul>
+            )}
+          </Grupo>
+          {resto.length > 0 && (
+            <Grupo titulo="Informativo" n={resto.length} abierto={verResto || Boolean(texto)} alternar={() => setVerResto((v) => !v)}>
+              <ul className="divide-y">{resto.map((c) => <Fila key={`${c.cuenta}-${c.id}`} c={c} abrir={abrir} />)}</ul>
+            </Grupo>
+          )}
+        </>
       )}
       {total > 0 && ruido > 0 && <p className="px-4 py-4 text-xs text-muted-foreground md:px-6">{ruido} correos de promociones, boletines o firmas de AFFI no se listan.</p>}
 
@@ -194,7 +211,7 @@ export function Bandeja({
                       <header className="text-xs text-muted-foreground">
                         <span className="font-medium text-foreground">{remitente(m.de)}</span> · {fechaHilo(m.fecha)}
                       </header>
-                      {/* Texto plano: el HTML del remitente nunca se pinta en la app. */}
+                      {/* Texto legible: el HTML del remitente se convierte a párrafos y nunca se pinta tal cual. */}
                       <div className="whitespace-pre-wrap break-words leading-relaxed">{m.texto}</div>
                       {m.adjuntos.length > 0 && <p className="text-xs text-muted-foreground">Adjuntos: {m.adjuntos.join(", ")}</p>}
                     </article>
