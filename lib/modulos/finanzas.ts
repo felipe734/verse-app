@@ -167,7 +167,7 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
         titulo: "Proveedor",
         columnas: [t("Proveedor"), t("ID", "Factura"), fecha("Fecha Pago", "Pago"), estado("Centro de Costos", "Centro de costos"), plata("Valor"), estado("Estado"), t("Método de Pago", "Método")],
         detalle: [fecha("Fecha Emisión", "Emisión"), t("Comentario")],
-        periodo: { unidad: "mes", campo: "Fecha Emisión" },
+        periodo: { unidad: "mes", campo: "Fecha Emisión", inicio: "anterior" },
         filtros: ["Centro de Costos", "Estado"],
         indicadores: [{ etiqueta: "Pagos", tipo: "conteo" }, { etiqueta: "Valor", tipo: "suma", campo: "Valor" }],
         orden: { campo: "Fecha Emisión", desc: true },

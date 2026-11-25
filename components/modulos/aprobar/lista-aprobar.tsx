@@ -1,10 +1,12 @@
 "use client";
 
-import { CheckCheck, Clock } from "lucide-react";
+import { CheckCheck, Clock, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { BarraControles } from "@/components/modulos/barra-controles";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import type { Accion, ResultadoAccion } from "@/lib/hoy/acciones";
 import { PendienteDetalle } from "../pendiente-detalle";
@@ -46,7 +48,10 @@ export function ListaAprobar({ abiertas, enCurso, conEmpresa, ejecutar }: { abie
   const router = useRouter();
   const [quitadas, setQuitadas] = useState<Set<string>>(new Set());
   const [abierta, setAbierta] = useState<string | null>(null);
-  const visibles = abiertas.filter((a) => !quitadas.has(a.recId));
+  const [texto, setTexto] = useState("");
+  const coincide = (a: AprobacionVista) => !texto || `${a.asunto} ${a.cambio} ${a.proceso} ${a.numero}`.toLowerCase().includes(texto.toLowerCase());
+  const visibles = abiertas.filter((a) => !quitadas.has(a.recId) && coincide(a));
+  const curso = enCurso.filter(coincide);
   const detalle = [...abiertas, ...enCurso].find((a) => a.recId === abierta) ?? null;
 
   function responder(a: AprobacionVista, tipo: "aprobar" | "rechazar") {
@@ -69,12 +74,20 @@ export function ListaAprobar({ abiertas, enCurso, conEmpresa, ejecutar }: { abie
 
   return (
     <>
+      {abiertas.length + enCurso.length > 0 && (
+        <BarraControles className="px-4 pt-1 md:px-6">
+          <div className="relative ml-auto max-md:w-full">
+            <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
+            <Input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Buscar" aria-label="Buscar aprobaciones" className="h-8 pl-8 md:w-52" />
+          </div>
+        </BarraControles>
+      )}
       {visibles.length === 0 ? (
         <div className="mx-auto flex max-w-sm flex-col items-center gap-3 px-6 py-24 text-center">
           <span className="flex size-10 items-center justify-center rounded-full bg-muted">
             <CheckCheck className="size-5 text-muted-foreground" aria-hidden />
           </span>
-          <p className="font-medium">No hay cambios esperando tu respuesta</p>
+          <p className="font-medium">{texto ? "Nada con esa búsqueda" : "No hay cambios esperando tu respuesta"}</p>
           <p className="text-sm text-muted-foreground">Cuando Verse OS proponga un cambio con &ldquo;Aprobar:&rdquo;, aparece aquí.</p>
         </div>
       ) : (
@@ -99,13 +112,13 @@ export function ListaAprobar({ abiertas, enCurso, conEmpresa, ejecutar }: { abie
           </ul>
         </section>
       )}
-      {enCurso.length > 0 && (
+      {curso.length > 0 && (
         <section aria-labelledby="sec-curso" className="mt-6">
           <h2 id="sec-curso" className="flex items-center gap-2 border-y bg-muted/60 px-4 py-1.5 text-xs font-medium text-muted-foreground md:px-6">
-            <Clock className="size-3.5" aria-hidden /> Aprobadas, esperando a Verse OS <span className="tabular-nums">{enCurso.length}</span>
+            <Clock className="size-3.5" aria-hidden /> Aprobadas, esperando a Verse OS <span className="tabular-nums">{curso.length}</span>
           </h2>
           <ul className="divide-y">
-            {enCurso.map((a) => (
+            {curso.map((a) => (
               <li key={a.recId}>
                 <button type="button" onClick={() => setAbierta(a.recId)} className="w-full px-4 py-2.5 text-left text-sm hover:bg-muted/50 md:px-6">
                   <span className="font-medium">{a.asunto}</span> <span className="text-muted-foreground">· {a.cambio}</span>
