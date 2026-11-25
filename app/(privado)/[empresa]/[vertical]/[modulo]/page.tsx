@@ -15,16 +15,14 @@ import { hoyBogota } from "@/lib/hoy/clasificar";
 import { registrarUso } from "@/lib/medicion/uso";
 import { ESTRUCTURA } from "@/lib/acceso/estructura";
 import { PLATFORM_NAME } from "@/lib/config";
-import { REGISTRO, ubicar } from "@/lib/modulos/registro";
-
-const defPorSegmento = (segmento: string) => REGISTRO.find((d) => d.segmento === segmento);
+import { nombreDeRuta, ubicar } from "@/lib/modulos/registro";
 
 type Params = { empresa: string; vertical: string; modulo: string };
 type Busqueda = { verComo?: string; cuenta?: string; pestana?: string; p?: string; programar?: string; dia?: string };
 
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const { modulo } = await params;
-  const nombre = defPorSegmento(modulo)?.nombre ?? "Módulo";
+  const { empresa, vertical, modulo } = await params;
+  const nombre = nombreDeRuta(ESTRUCTURA, empresa, vertical, modulo) ?? "Módulo";
   return { title: `${nombre} · ${PLATFORM_NAME}` };
 }
 

@@ -27,11 +27,11 @@ describe("registro de módulos", () => {
     const g = navegacion(maestro, ESTRUCTURA, "verse");
     expect(g.map((x) => x.nombre)).toEqual(["General", "Host", "Living"]);
     expect(hrefs(maestro, "verse")).toEqual([
-      "/verse/general/hoy", "/verse/general/aprobar", "/verse/general/correo", "/verse/general/finanzas", "/verse/general/equipo", "/verse/general/sistema",
-      "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/ruta", "/verse/host/unidades", "/verse/host/liquidaciones", "/verse/host/alistamiento", "/verse/host/comercial", "/verse/host/tickets",
+      "/verse/general/hoy", "/verse/general/aprobar", "/verse/general/correo", "/verse/general/finanzas", "/verse/general/equipo",
+      "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/ruta", "/verse/host/unidades", "/verse/host/liquidaciones", "/verse/host/comercial", "/verse/host/tickets",
       "/verse/living/unidades", "/verse/living/contratos", "/verse/living/cobros", "/verse/living/comercial",
     ]);
-    expect(hrefs(maestro, "cyc")).toEqual(["/cyc/general/hoy", "/cyc/general/aprobar", "/cyc/general/correo", "/cyc/general/finanzas", "/cyc/general/sistema", "/cyc/obra/actas", "/cyc/obra/pagos", "/cyc/obra/contratistas", "/cyc/obra/calidad"]);
+    expect(hrefs(maestro, "cyc")).toEqual(["/cyc/general/hoy", "/cyc/general/aprobar", "/cyc/general/correo", "/cyc/general/finanzas", "/cyc/obra/actas", "/cyc/obra/pagos", "/cyc/obra/contratistas", "/cyc/obra/calidad"]);
   });
 
   it("un módulo sin construir no aparece en la barra ni se puede abrir, pero sí en Ajustes como no disponible", () => {
@@ -42,6 +42,11 @@ describe("registro de módulos", () => {
     expect(obra.modulos.find((m) => m.tipo === "actas")?.disponible).toBe(true);
   });
 
+  it("Sistema no va en la barra (vive en Ajustes) pero su ruta sigue existiendo", () => {
+    expect(hrefs(maestro, "verse")).not.toContain("/verse/general/sistema");
+    expect(ubicar(maestro, ESTRUCTURA, "verse", "general", "sistema")).not.toBeNull();
+  });
+
   it("Todas solo trae Hoy y Para aprobar", () => {
     expect(hrefs(maestro, TODAS)).toEqual(["/todas/general/hoy", "/todas/general/aprobar"]);
     expect(ubicar(maestro, ESTRUCTURA, TODAS, "general", "correo")).toBeNull();
@@ -50,8 +55,8 @@ describe("registro de módulos", () => {
   describe("por plantilla, nada fuera de su acceso", () => {
     const esperado: Record<string, string[]> = {
       "administrador-verse": [
-        "/verse/general/hoy", "/verse/general/correo", "/verse/general/finanzas", "/verse/general/sistema",
-        "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/ruta", "/verse/host/unidades", "/verse/host/liquidaciones", "/verse/host/alistamiento", "/verse/host/comercial", "/verse/host/tickets",
+        "/verse/general/hoy", "/verse/general/correo", "/verse/general/finanzas",
+        "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/ruta", "/verse/host/unidades", "/verse/host/liquidaciones", "/verse/host/comercial", "/verse/host/tickets",
         "/verse/living/unidades", "/verse/living/contratos", "/verse/living/cobros", "/verse/living/comercial",
       ],
       "coordinacion-aseo": ["/verse/general/hoy", "/verse/host/operacion", "/verse/host/limpiezas", "/verse/host/ruta", "/verse/host/unidades", "/verse/host/tickets"],

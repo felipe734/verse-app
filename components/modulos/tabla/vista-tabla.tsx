@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { cambiarRapido } from "@/app/modulos/editar";
 import { useMemo, useRef, useState } from "react";
-import { AccionesModulo } from "@/components/shell/barra-superior";
+import { BarraControles } from "@/components/modulos/barra-controles";
 import { useShell } from "@/components/shell/contexto";
-import { Badge } from "@/components/ui/badge";
+import { Estado } from "@/components/modulos/estado";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -116,7 +116,6 @@ export function VistaTabla({
   const { abrirAsistente, asistenteHabilitado } = useShell();
   const params = useSearchParams();
   const refFiltro = useRef<HTMLInputElement>(null);
-  const refFiltroMovil = useRef<HTMLInputElement>(null);
   const activos = useMemo(() => filtrosDeUrl(new URLSearchParams(params.toString()), filtros), [params, filtros]);
   const tableroVisible = tablero && columnas.some((c) => c.campo === tablero) ? tablero : undefined;
   const opciones: TipoVista[] = [
@@ -160,34 +159,24 @@ export function VistaTabla({
 
   return (
     <>
-      <AccionesModulo>
-        <div className="relative max-md:hidden">
-          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
-          <Input ref={refFiltro} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Filtrar  /" aria-label={`Filtrar ${modulo}`} className="h-8 w-48 pl-8" />
-        </div>
-      </AccionesModulo>
-      <Atajos periodo={periodo} opciones={opciones} inicial={opciones.includes(vistaInicial) ? vistaInicial : "lista"} alFiltrar={() => (refFiltro.current?.offsetParent ? refFiltro.current : refFiltroMovil.current)?.focus()} />
+      <Atajos periodo={periodo} opciones={opciones} inicial={opciones.includes(vistaInicial) ? vistaInicial : "lista"} alFiltrar={() => refFiltro.current?.focus()} />
       <div className="px-4 pb-10 md:px-6">
-        {(periodo || opciones.length > 1 || vistas || personaVisible || tablas) && (
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2 print:[&>div]:hidden">
-            {periodo ? <SelectorPeriodo periodo={periodo} /> : <span />}
-            {/* En el celular: período arriba y una sola fila de controles; los de texto quedan como íconos. */}
-            <div className="flex items-center gap-2 max-md:w-full">
-              {personaVisible && <InterruptorMio mio={mio} porDefecto={personaVisible.porDefecto} />}
-              <SelectorVista vista={vista} opciones={opciones} inicial={opciones.includes(vistaInicial) ? vistaInicial : "lista"} />
-              <div className="flex items-center gap-1.5 max-md:ml-auto">
-                {tablas && <Actualizar tablas={tablas} />}
-                {!error && <Exportar nombre={modulo} columnas={columnas} filas={visibles} />}
-                {vistas && <MenuVistas vistas={vistas} />}
-              </div>
+        {/* Una sola fila: período y filtros a la izquierda; buscar, vista y acciones a la derecha. */}
+        <BarraControles>
+          {periodo && <SelectorPeriodo periodo={periodo} />}
+          {filtros.length > 0 && !error && <Filtros campos={filtros} columnas={columnas} filas={propias} activos={activos} />}
+          <div className="ml-auto flex min-w-0 items-center gap-2 max-md:w-full">
+            <div className="relative min-w-0 flex-1 md:w-52 md:flex-none">
+              <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <Input ref={refFiltro} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Buscar  /" aria-label={`Buscar en ${modulo}`} className="h-8 pl-8" />
             </div>
+            {personaVisible && <InterruptorMio mio={mio} porDefecto={personaVisible.porDefecto} />}
+            {opciones.length > 1 && <SelectorVista vista={vista} opciones={opciones} inicial={opciones.includes(vistaInicial) ? vistaInicial : "lista"} />}
+            {tablas && <Actualizar tablas={tablas} />}
+            {!error && <Exportar nombre={modulo} columnas={columnas} filas={visibles} />}
+            {vistas && <MenuVistas vistas={vistas} />}
           </div>
-        )}
-        {filtros.length > 0 && !error && (
-          <div className="mb-3 [scrollbar-width:none] max-md:-mx-4 max-md:overflow-x-auto max-md:px-4 max-md:[&>div]:flex-nowrap">
-            <Filtros campos={filtros} columnas={columnas} filas={propias} activos={activos} />
-          </div>
-        )}
+        </BarraControles>
         {indicadores.length > 0 && !error && (
           <div className="mb-3 md:mb-4">
             <Indicadores indicadores={indicadores} columnas={columnas} filas={visibles} />
@@ -202,7 +191,6 @@ export function VistaTabla({
               <EyeOff className="size-3.5" aria-hidden /> Tu acceso no incluye {ocultos.join(", ")}.
             </span>
           )}
-          <Input ref={refFiltroMovil} value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Filtrar" aria-label={`Filtrar ${modulo}`} className="h-8 min-w-0 flex-1 basis-40 md:hidden" />
         </div>
         {error ? (
           <p role="alert" className="rounded-md border px-3 py-6 text-center text-sm">
@@ -266,7 +254,7 @@ export function VistaTabla({
                   <button type="button" onClick={() => setAbierta(f)} className="w-full rounded-lg border bg-card p-3 text-left">
                     <div className="flex items-start justify-between gap-2">
                       <p className="min-w-0 flex-1 truncate font-medium">{(primera && f.celdas[primera.campo]) || "—"}</p>
-                      {estado && <Badge variant="secondary">{f.celdas[estado.campo]}</Badge>}
+                      {estado && <Estado valor={f.celdas[estado.campo] ?? ""} />}
                     </div>
                     <dl className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs">
                       {otras.map((c) => (
@@ -313,7 +301,7 @@ export function VistaTabla({
                               {v || "—"}
                             </button>
                           ) : c.tipo === "estado" && v ? (
-                            <Badge variant="secondary">{v}</Badge>
+                            <Estado valor={v} />
                           ) : (
                             v || <span className="text-muted-foreground">—</span>
                           )}

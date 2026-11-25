@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { actualizarTablas } from "@/app/modulos/actualizar";
 import { borrarVista, guardarVista } from "@/app/modulos/vistas";
 import { Badge } from "@/components/ui/badge";
+import { Estado } from "@/components/modulos/estado";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -268,7 +269,7 @@ export function Tablero({
           }
         >
           <h3 className="flex items-center justify-between px-1 pb-2 text-sm font-medium">
-            {valor} <Badge variant="secondary">{items.length}</Badge>
+            <Estado valor={valor} /> <Badge variant="secondary">{items.length}</Badge>
           </h3>
           <ul className="space-y-2">
             {items.map((f) => (

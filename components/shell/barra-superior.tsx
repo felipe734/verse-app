@@ -3,8 +3,6 @@
 import { Bell, ChevronRight, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { createPortal } from "react-dom";
-import { useMontado } from "@/hooks/use-montado";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Kbd } from "@/components/ui/kbd";
@@ -13,15 +11,6 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useShell } from "./contexto";
 import type { DatosShell } from "./tipos";
-
-const ID_ACCIONES = "acciones-modulo";
-
-/** Un módulo pone sus acciones en la barra superior con este componente. */
-export function AccionesModulo({ children }: { children: React.ReactNode }) {
-  const montado = useMontado();
-  const destino = montado ? document.getElementById(ID_ACCIONES) : null;
-  return destino ? createPortal(children, destino) : null;
-}
 
 function Ruta({ d }: { d: DatosShell }) {
   const ruta = usePathname();
@@ -97,7 +86,7 @@ function Avisos({ d }: { d: DatosShell }) {
   );
 }
 
-/** Barra superior: menú, ruta, acciones del módulo, avisos y asistente. */
+/** Barra superior: menú, ruta y lo transversal (avisos y asistente). Los controles de cada módulo van en su contenido. */
 export function BarraSuperior({ d }: { d: DatosShell }) {
   const { alternarAsistente, asistente, asistenteHabilitado } = useShell();
   return (
@@ -105,7 +94,7 @@ export function BarraSuperior({ d }: { d: DatosShell }) {
       <SidebarTrigger className="-ml-1" aria-label="Abrir o cerrar el menú" />
       <Separator orientation="vertical" className="mr-1 data-[orientation=vertical]:h-4" />
       <Ruta d={d} />
-      <div id={ID_ACCIONES} className="ml-auto flex items-center gap-2" />
+      <div className="ml-auto" />
       <Avisos d={d} />
       {asistenteHabilitado && (
         <Tooltip>

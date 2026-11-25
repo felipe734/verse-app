@@ -86,7 +86,7 @@ test("el administrador de Verse solo lee contabilidad@ y contacto@", async ({ pa
 
 test("Sistema muestra indicadores y corridas", async ({ page }) => {
   await page.goto("/sistema");
-  await expect(page).toHaveURL(/\/verse\/general\/sistema$/);
+  await expect(page).toHaveURL(/\/ajustes\?vista=sistema$/);
   await expect(page.getByText("Fallas en 7 días")).toBeVisible();
 });
 
@@ -192,7 +192,7 @@ test("con Finanzas solo en ver no aparece Nuevo gasto", async ({ page, baseURL }
   await expect(page.getByRole("button", { name: "Nuevo gasto" })).toHaveCount(0);
 });
 
-test("las vistas abren en el período actual, filtran, cambian a tablero y se guardan", async ({ page, isMobile }) => {
+test("las vistas abren en el período actual, filtran, cambian a lista y se guardan", async ({ page, isMobile }) => {
   await page.goto("/verse/host/limpiezas");
   const periodo = page.getByRole("group", { name: "Período" });
   await expect(periodo).toBeVisible();
@@ -205,8 +205,8 @@ test("las vistas abren en el período actual, filtran, cambian a tablero y se gu
   await page.getByRole("button", { name: /Estado:/ }).first().click();
   await page.getByRole("menuitemcheckbox", { name: "Pendiente" }).click();
   await expect(page).toHaveURL(/f\.Estado=Pendiente/);
-  await page.getByRole("radio", { name: "Tablero" }).click();
-  await expect(page.getByLabel("Tablero por Estado")).toBeVisible();
+  await page.getByRole("radio", { name: "Lista" }).click();
+  await expect(page).toHaveURL(/v=lista/);
 
   if (!isMobile) {
     await page.getByRole("button", { name: "Vistas" }).click();
@@ -231,13 +231,17 @@ test("Operación abre en el calendario del mes y Limpiezas en la agenda de la se
   await expect(page.getByLabel(isMobile ? "Agenda por día" : "Agenda de la semana")).toBeVisible();
 });
 
-test("Living: contratos en calendario del mes y cobros en tablero", async ({ page, isMobile }) => {
+test("Living: contratos y cobros en tabla, sin tablero ni calendario", async ({ page }) => {
   await page.goto("/verse/living/contratos");
-  await expect(page.getByRole("radio", { name: "Calendario" })).toHaveAttribute("aria-checked", "true");
-  if (!isMobile) await expect(page.getByText("Terminan hoy")).toBeVisible();
+  await expect(page.getByRole("radio", { name: "Calendario" })).toHaveCount(0);
   await page.goto("/verse/living/cobros");
-  await expect(page.getByRole("radio", { name: "Tablero" })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByRole("radio", { name: "Tablero" })).toHaveCount(0);
   await expect(page.getByRole("definition").filter({ hasText: "$" }).first()).toBeVisible();
+});
+
+test("el tablero solo queda en los embudos comerciales", async ({ page }) => {
+  await page.goto("/verse/living/comercial");
+  await expect(page.getByRole("radio", { name: "Tablero" })).toHaveAttribute("aria-checked", "true");
 });
 
 test("Inicio muestra lo de hoy y una tarjeta por módulo con sus cifras", async ({ page }) => {
@@ -271,14 +275,14 @@ test("el Maestro abre en Todo", async ({ page }) => {
   await expect(page.getByRole("radio", { name: "Todo" })).toHaveAttribute("aria-checked", "true");
 });
 
-test("acciones de un toque: Terminada en la agenda y en el detalle; el tablero se puede arrastrar", async ({ page, isMobile }) => {
+test("acciones de un toque: Terminada en la agenda y en el detalle; el tablero comercial se puede arrastrar", async ({ page, isMobile }) => {
   await page.goto("/verse/host/limpiezas");
   if (!isMobile) await expect(page.getByRole("button", { name: /^Terminada: / }).first()).toBeVisible();
   await page.goto("/verse/host/limpiezas?v=lista");
   await page.locator("table:not(.sr-only) tbody tr:visible, ul[aria-label$=', lista'] > li > button:visible").first().click();
   await expect(page.getByRole("dialog").getByRole("button", { name: "Terminada" })).toBeVisible();
   await page.keyboard.press("Escape");
-  await page.goto("/verse/host/limpiezas?v=tablero");
+  await page.goto("/verse/host/comercial?v=tablero");
   await expect(page.getByLabel("Tablero por Estado").getByRole("button").first()).toHaveAttribute("draggable", "true");
 });
 

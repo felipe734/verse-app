@@ -1,9 +1,10 @@
 "use client";
 
-import { Check, ChevronsUpDown, House, LogOut, Monitor, Moon, Search, Settings, Sun } from "lucide-react";
+import { Check, ChevronRight, ChevronsUpDown, House, LogOut, Monitor, Moon, Search, Settings, Sun } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +16,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Kbd } from "@/components/ui/kbd";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -34,6 +36,34 @@ import { useShell } from "./contexto";
 import { Icono } from "./iconos";
 import { LogoEmpresa } from "./logo-empresa";
 import type { DatosShell } from "./tipos";
+
+const CLAVE_PLEGADAS = "verse-menu-plegadas";
+
+/** Verticales plegadas en la barra lateral, recordadas en este navegador. */
+function usePlegadas(): [Record<string, boolean>, (vertical: string, plegada: boolean) => void] {
+  const [plegadas, setPlegadas] = useState<Record<string, boolean>>({});
+  useEffect(() => {
+    void Promise.resolve().then(() => {
+      try {
+        const guardado = JSON.parse(localStorage.getItem(CLAVE_PLEGADAS) ?? "{}") as Record<string, boolean>;
+        setPlegadas(guardado);
+      } catch {
+        /* sin almacenamiento: todo con su valor por defecto */
+      }
+    });
+  }, []);
+  const plegar = (vertical: string, plegada: boolean) =>
+    setPlegadas((p) => {
+      const n = { ...p, [vertical]: plegada };
+      try {
+        localStorage.setItem(CLAVE_PLEGADAS, JSON.stringify(n));
+      } catch {
+        /* sin almacenamiento */
+      }
+      return n;
+    });
+  return [plegadas, plegar];
+}
 
 function SelectorEmpresa({ d }: { d: DatosShell }) {
   const router = useRouter();
@@ -134,7 +164,8 @@ function MenuUsuario({ d, salir }: { d: DatosShell; salir: () => Promise<void> }
 export function BarraLateral({ d, salir }: { d: DatosShell; salir: () => Promise<void> }) {
   const ruta = usePathname();
   const { setComandos } = useShell();
-  const { setOpenMobile, isMobile } = useSidebar();
+  const { setOpenMobile, isMobile, state } = useSidebar();
+  const [plegadas, plegar] = usePlegadas();
   const cerrarEnCelular = () => isMobile && setOpenMobile(false);
   const contador = (c?: string) => (c === "hoy" ? d.contadores.hoy : c === "aprobar" ? d.contadores.aprobar : 0);
 
@@ -168,33 +199,47 @@ export function BarraLateral({ d, salir }: { d: DatosShell; salir: () => Promise
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {d.grupos.map((g) => (
-          <SidebarGroup key={g.vertical}>
-            <SidebarGroupLabel>{g.nombre}</SidebarGroupLabel>
-            <SidebarMenu>
-              {g.items.map((i) => {
-                const activo = ruta === i.href || ruta.startsWith(`${i.href}/`);
-                const n = contador(i.contador);
-                return (
-                  <SidebarMenuItem key={i.id}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={activo}
-                      tooltip={i.nombre}
-                      className="data-[active=true]:bg-acento-suave data-[active=true]:font-medium data-[active=true]:text-foreground [&[data-active=true]>svg]:text-acento"
-                    >
-                      <Link href={i.href} onClick={cerrarEnCelular} aria-current={activo ? "page" : undefined}>
-                        <Icono nombre={i.icono} className="size-4" />
-                        <span>{i.nombre}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    {n > 0 && <SidebarMenuBadge className="tabular-nums text-muted-foreground">{n}</SidebarMenuBadge>}
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroup>
-        ))}
+        {d.grupos.map((g) => {
+          const conActivo = g.items.some((i) => ruta === i.href || ruta.startsWith(`${i.href}/`));
+          // Con la barra en íconos no hay títulos que tocar: todo abierto.
+          const abierto = state === "collapsed" || conActivo || (plegadas[g.vertical] === undefined ? g.vertical.endsWith("-general") : !plegadas[g.vertical]);
+          return (
+            <Collapsible key={g.vertical} open={abierto} onOpenChange={(v) => plegar(g.vertical, !v)} asChild>
+              <SidebarGroup>
+                <SidebarGroupLabel asChild>
+                  <CollapsibleTrigger className="group/titulo flex w-full items-center gap-1 hover:text-sidebar-foreground" disabled={conActivo}>
+                    <span className="flex-1 text-left">{g.nombre}</span>
+                    {!conActivo && <ChevronRight className="size-3.5 transition-transform group-data-[state=open]/titulo:rotate-90" aria-hidden />}
+                  </CollapsibleTrigger>
+                </SidebarGroupLabel>
+                <CollapsibleContent>
+                  <SidebarMenu>
+                    {g.items.map((i) => {
+                      const activo = ruta === i.href || ruta.startsWith(`${i.href}/`);
+                      const n = contador(i.contador);
+                      return (
+                        <SidebarMenuItem key={i.id}>
+                          <SidebarMenuButton
+                            asChild
+                            isActive={activo}
+                            tooltip={i.nombre}
+                            className="data-[active=true]:bg-acento-suave data-[active=true]:font-medium data-[active=true]:text-foreground [&[data-active=true]>svg]:text-acento"
+                          >
+                            <Link href={i.href} onClick={cerrarEnCelular} aria-current={activo ? "page" : undefined}>
+                              <Icono nombre={i.icono} className="size-4" />
+                              <span>{i.nombre}</span>
+                            </Link>
+                          </SidebarMenuButton>
+                          {n > 0 && <SidebarMenuBadge className="tabular-nums text-muted-foreground">{n}</SidebarMenuBadge>}
+                        </SidebarMenuItem>
+                      );
+                    })}
+                  </SidebarMenu>
+                </CollapsibleContent>
+              </SidebarGroup>
+            </Collapsible>
+          );
+        })}
         {d.grupos.length === 0 && <p className="px-4 py-2 text-sm text-muted-foreground">Todavía no tienes módulos aquí.</p>}
       </SidebarContent>
       <SidebarFooter>

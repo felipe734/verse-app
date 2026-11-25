@@ -36,15 +36,15 @@ function Bloque({ titulo, children, accion }: { titulo: string; children: React.
 }
 
 /** Sistema: fallas, sincronización, respaldo, costo y corridas de la empresa. */
-export async function ModuloSistema({ sesion, empresa }: { sesion: Sesion; empresa: string }) {
+export async function ModuloSistema({ sesion, empresa, enAjustes = false }: { sesion: Sesion; empresa: string; enAjustes?: boolean }) {
   const s = await sistemaDe(db(), sesion, empresa);
-  if (!s) return <EncabezadoModulo titulo="Sistema" descripcion="Tu acceso no incluye Sistema en esta empresa." />;
+  if (!s) return enAjustes ? <p className="text-sm text-muted-foreground">Sin datos de Sistema para esta empresa.</p> : <EncabezadoModulo titulo="Sistema" descripcion="Tu acceso no incluye Sistema en esta empresa." />;
   const ultimo = s.app?.respaldos[0];
 
   return (
     <>
-      <EncabezadoModulo titulo="Sistema" descripcion="Salud de la sincronización, respaldos, costo y corridas de los últimos 7 días" />
-      <div className="space-y-4 px-4 pb-10 md:px-6">
+      {!enAjustes && <EncabezadoModulo titulo="Sistema" descripcion="Salud de la sincronización, respaldos, costo y corridas de los últimos 7 días" />}
+      <div className={enAjustes ? "space-y-4" : "space-y-4 px-4 pb-10 md:px-6"}>
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Indicador titulo="Fallas en 7 días" valor={String(s.fallas.length)} nota={s.fallas.length ? "Revisa la lista de fallas" : "Todo en orden"} />
           {s.app && <Indicador titulo="Noches cuadrando" valor={`${s.app.nochesSeguidas} de 3`} nota="Copia contra Airtable" />}

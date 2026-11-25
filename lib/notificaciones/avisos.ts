@@ -73,7 +73,7 @@ export function avisoDe(t: TareaHoy): Aviso | null {
       recId: t.recId,
       titulo: `${t.estado} · ${t.asunto ?? ""}`,
       cuerpo: t.proceso ?? "",
-      url: `/sistema?empresa=${empresa}`,
+      url: `/ajustes?vista=sistema&empresa=${empresa}`,
       para: (s) => puede(s, empresa, modulo, "ver"),
     };
   }
@@ -82,7 +82,7 @@ export function avisoDe(t: TareaHoy): Aviso | null {
 
 /** Falla de la propia app (respaldo o sincronización), para quien ve Sistema de Verse. */
 export function avisoDeFallaApp(clave: string, titulo: string, cuerpo: string): Aviso {
-  return { clave: `falla-app:${clave}`, tipo: "falla", recId: null, titulo, cuerpo, url: "/sistema", para: (s) => puede(s, "verse", "verse-sistema", "ver") };
+  return { clave: `falla-app:${clave}`, tipo: "falla", recId: null, titulo, cuerpo, url: "/ajustes?vista=sistema", para: (s) => puede(s, "verse", "verse-sistema", "ver") };
 }
 
 async function sesionesActivas(db: Db): Promise<Sesion[]> {

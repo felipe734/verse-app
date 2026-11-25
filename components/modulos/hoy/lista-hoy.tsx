@@ -4,7 +4,7 @@ import { CalendarClock, Check, MoreHorizontal, Search, X } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
-import { AccionesModulo } from "@/components/shell/barra-superior";
+import { BarraControles } from "@/components/modulos/barra-controles";
 import { useShell } from "@/components/shell/contexto";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -231,8 +231,8 @@ export function ListaHoy({ secciones, hoy, conEmpresa, ejecutar, soloLectura }: 
 
   return (
     <>
-      <AccionesModulo>
-        <div className="relative max-md:hidden">
+      <BarraControles className="justify-end px-4 pt-1 md:px-6">
+        <div className="relative">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
           <Input value={texto} onChange={(e) => setTexto(e.target.value)} placeholder="Filtrar" aria-label="Filtrar pendientes" className="h-8 w-44 pl-8" />
         </div>
@@ -257,7 +257,7 @@ export function ListaHoy({ secciones, hoy, conEmpresa, ejecutar, soloLectura }: 
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-      </AccionesModulo>
+      </BarraControles>
 
       {total === 0 ? (
         <div className="mx-auto flex max-w-sm flex-col items-center gap-3 px-6 py-24 text-center">

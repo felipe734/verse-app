@@ -42,7 +42,6 @@ const cajaGlobal = (base: string, tabla: string, tercero_: string): DefTabla => 
   detalle: [t("Tipo Soporte", "Soporte"), t("Arqueo"), t("Comentario"), tercero("NIT / CC")],
   periodo: { unidad: "mes", campo: "Fecha" },
   filtros: ["Tipo", "Estado", tercero_],
-  tablero: "Estado",
   indicadores: [{ etiqueta: "Movimientos", tipo: "conteo" }, { etiqueta: "Egresos", tipo: "suma", campo: "Egreso" }, { etiqueta: "Ingresos", tipo: "suma", campo: "Ingreso" }],
   orden: { campo: "Fecha", desc: true },
   max: 400,
@@ -61,7 +60,6 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
         detalle: [t("Descripción banco"), plata("Saldo"), t("Soporte"), t("Link soporte"), t("Motivo revisión"), t("Comentario")],
         periodo: { unidad: "mes", campo: "Fecha" },
         filtros: ["Banco", "Categoría", "Estado", "Revisar"],
-        tablero: "Estado",
         indicadores: [
           { etiqueta: "Movimientos", tipo: "conteo" },
           { etiqueta: "Por revisar", tipo: "conteo", donde: { campo: "Estado", valores: ["Por identificar", "Sin soporte"] } },
@@ -169,7 +167,6 @@ export const PESTANAS: Record<"finanzas" | "finanzas-cyc", Pestana[]> = {
         detalle: [fecha("Fecha Emisión", "Emisión"), t("Comentario")],
         periodo: { unidad: "mes", campo: "Fecha Emisión" },
         filtros: ["Centro de Costos", "Estado"],
-        tablero: "Estado",
         indicadores: [{ etiqueta: "Pagos", tipo: "conteo" }, { etiqueta: "Valor", tipo: "suma", campo: "Valor" }],
         orden: { campo: "Fecha Emisión", desc: true },
         max: 300,
