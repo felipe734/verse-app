@@ -1964,6 +1964,35 @@ export const MAPEO = {
         }
       }
     },
+    "leadsLiving": {
+      "base": "7. LIVING",
+      "tabla": "WEB LEADS",
+      "workspace": "Verse",
+      "idBase": "appzaNZaaYKfdZObP",
+      "idTabla": "tblRP0GDeFPtURNK9",
+      "campos": {
+        "estado": {
+          "id": "fldTsKMZAiiKf059k",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        },
+        "responsable": {
+          "id": "fldyDW917z6uKl8fy",
+          "nombre": "Responsable",
+          "tipo": "singleLineText"
+        },
+        "contactadoEl": {
+          "id": "fldBrycSPOMCeakiu",
+          "nombre": "Contactado el",
+          "tipo": "dateTime"
+        },
+        "notas": {
+          "id": "flduBlFiWriDSgmO0",
+          "nombre": "Notas",
+          "tipo": "multilineText"
+        }
+      }
+    },
     "contratos": {
       "base": "7. LIVING",
       "tabla": "CONTRATO",

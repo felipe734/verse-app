@@ -17,8 +17,9 @@ export interface Columna {
   etiqueta?: string;
   sensible?: Sensible;
   /** Alineación y ancho: los montos y números van a la derecha. */
-  tipo?: "texto" | "numero" | "dinero" | "fecha" | "estado";
+  tipo?: "texto" | "numero" | "dinero" | "fecha" | "estado" | "whatsapp";
 }
+
 
 export interface DefTabla {
   idBase: string;
