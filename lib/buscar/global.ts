@@ -1,3 +1,4 @@
+import { esMio } from "@/lib/vistas/mio";
 import { and, ilike, inArray, or } from "drizzle-orm";
 import type { Db } from "@/db/cliente";
 import { tareas, unidades } from "@/db/esquema";
@@ -47,7 +48,8 @@ export async function buscarGlobal(db: Db, s: Sesion, texto: string, airtable?: 
         id: f.recId,
         titulo: f.asunto ?? "Sin asunto",
         detalle: [f.numero ? `#${f.numero}` : null, f.responsable, accion(f)].filter(Boolean).join(" · "),
-        href: `/${empresa}/general/hoy?fila=${f.recId}`,
+        // Hoy muestra lo de cada quien: si el pendiente es de otra persona, el Maestro lo abre con Todos.
+        href: `/${empresa}/general/hoy?fila=${f.recId}${s.maestro && !esMio(f.responsable ?? undefined, s.nombreAirtable) ? "&resp=todos" : ""}`,
       });
     }
   }
