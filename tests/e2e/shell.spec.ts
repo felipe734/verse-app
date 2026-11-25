@@ -40,7 +40,7 @@ test("⌘K busca pendientes y lleva a la fila", async ({ page, isMobile }) => {
 });
 
 test("Todas junta Verse y C&C en Hoy", async ({ page }) => {
-  await page.goto("/todas/general/hoy");
+  await page.goto("/todas/general/hoy?resp=todos");
   await expect(page.getByText("Acta de corte 7")).toBeVisible();
   await expect(page.getByText("Póliza de la unidad 603")).toBeVisible();
 });
