@@ -164,7 +164,11 @@ export function VistaTabla({
         {/* Una sola fila: período y filtros a la izquierda; buscar, vista y acciones a la derecha. */}
         <BarraControles>
           {periodo && <SelectorPeriodo periodo={periodo} />}
-          {filtros.length > 0 && !error && <Filtros campos={filtros} columnas={columnas} filas={propias} activos={activos} />}
+          {filtros.length > 0 && !error && (
+            <div className="max-md:order-last max-md:-mx-4 max-md:w-[calc(100%+2rem)] max-md:overflow-x-auto max-md:px-4 max-md:[scrollbar-width:none] max-md:[&>div]:flex-nowrap">
+              <Filtros campos={filtros} columnas={columnas} filas={propias} activos={activos} />
+            </div>
+          )}
           <div className="ml-auto flex min-w-0 items-center gap-2 max-md:w-full">
             <div className="relative min-w-0 flex-1 md:w-52 md:flex-none">
               <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
@@ -256,7 +260,7 @@ export function VistaTabla({
                       <p className="min-w-0 flex-1 truncate font-medium">{(primera && f.celdas[primera.campo]) || "—"}</p>
                       {estado && <Estado valor={f.celdas[estado.campo] ?? ""} />}
                     </div>
-                    <dl className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5 text-xs">
+                    <dl className="mt-1.5 grid grid-cols-1 gap-y-0.5 text-xs">
                       {otras.map((c) => (
                         <div key={c.campo} className="min-w-0">
                           <dt className="sr-only">{etiqueta(c)}</dt>
