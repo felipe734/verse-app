@@ -262,7 +262,7 @@ test("aseo entra directo a su ruta desde Inicio", async ({ page, baseURL }) => {
 
 test("con alcance 'lo suyo' los módulos abren en Mío y se puede ver Todo", async ({ page, baseURL }) => {
   await page.context().addCookies([{ name: "vitrina_usuario", value: "aseo@vitrina.test", url: baseURL! }]);
-  await page.goto("/verse/host/limpiezas?v=lista");
+  await page.goto("/verse/host/tickets");
   await expect(page.getByRole("radio", { name: "Mío" })).toHaveAttribute("aria-checked", "true");
   await expect(page.getByText("0 filas")).toBeVisible();
   await page.getByRole("radio", { name: "Todo" }).click();
@@ -271,12 +271,13 @@ test("con alcance 'lo suyo' los módulos abren en Mío y se puede ver Todo", asy
 });
 
 test("el Maestro abre en Todo", async ({ page }) => {
-  await page.goto("/verse/host/limpiezas?v=lista");
+  await page.goto("/verse/host/tickets");
   await expect(page.getByRole("radio", { name: "Todo" })).toHaveAttribute("aria-checked", "true");
 });
 
 test("acciones de un toque: Terminada en la agenda y en el detalle; el tablero comercial se puede arrastrar", async ({ page, isMobile }) => {
   await page.goto("/verse/host/limpiezas");
+  await expect(page.getByRole("radio", { name: "Mío" })).toHaveCount(0);
   if (!isMobile) await expect(page.getByRole("button", { name: /^Terminada: / }).first()).toBeVisible();
   await page.goto("/verse/host/limpiezas?v=lista");
   await page.locator("table:not(.sr-only) tbody tr:visible, ul[aria-label$=', lista'] > li > button:visible").first().click();

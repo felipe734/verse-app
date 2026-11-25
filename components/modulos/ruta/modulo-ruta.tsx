@@ -6,7 +6,7 @@ import { puedeProgramar } from "@/lib/aseos/programacion";
 import { hoyBogota } from "@/lib/hoy/clasificar";
 import { fechaLarga } from "@/lib/hoy/fechas";
 import { crearContador } from "@/lib/medicion/contador";
-import { funcionariaDe, funcionarias, rutaDe, sinFuncionaria, turnoAbierto, type Parada, type Turno } from "@/lib/ruta/ruta";
+import { fichasDe, funcionariaDe, funcionarias, rutaDe, sinFuncionaria, turnoAbierto, type FichaUnidad, type Parada, type Turno } from "@/lib/ruta/ruta";
 import { clienteServidor } from "@/lib/servidor/airtable";
 import { subidasActivas } from "@/lib/servidor/blob";
 import { sumarDias } from "@/lib/vistas/periodo";
@@ -18,7 +18,7 @@ import { RutaFuncionaria } from "./ruta-funcionaria";
 const RUTA = "/verse/host/ruta";
 const avance = (ps: Parada[]) => `${ps.filter((p) => p.terminada).length} de ${ps.length}`;
 
-function ListaParadas({ paradas, vacio }: { paradas: Parada[]; vacio: string }) {
+function ListaParadas({ paradas, vacio, fichas = {} }: { paradas: Parada[]; vacio: string; fichas?: Record<string, FichaUnidad> }) {
   if (!paradas.length) return <p className="text-sm text-muted-foreground">{vacio}</p>;
   return (
     <ul className="divide-y rounded-lg border bg-card">
@@ -27,6 +27,11 @@ function ListaParadas({ paradas, vacio }: { paradas: Parada[]; vacio: string }) 
           <span className="w-20 shrink-0 tabular-nums whitespace-nowrap text-muted-foreground">{p.hora || "—"}</span>
           <span className="min-w-0 flex-1">
             <span className="block truncate font-medium">{p.unidad}</span>
+            {fichas[p.unidad] && (fichas[p.unidad]!.edificio || fichas[p.unidad]!.metodo) && (
+              <span className="block truncate text-xs text-muted-foreground">
+                {[fichas[p.unidad]!.edificio, fichas[p.unidad]!.metodo && `Ingreso: ${fichas[p.unidad]!.metodo}`].filter(Boolean).join(" · ")}
+              </span>
+            )}
             {p.comentario && <span className="block truncate text-xs text-muted-foreground">{p.comentario}</span>}
           </span>
           <Badge variant={p.terminada ? "secondary" : "outline"}>{p.estado || "Sin estado"}</Badge>
@@ -63,6 +68,7 @@ export async function ModuloRuta({ sesion, manana = false }: { sesion: Sesion; m
   const airtable = clienteServidor(contador, { fresco: true });
   let error: string | undefined;
   let propia: { nombre: string; paradas: Parada[]; turno: Turno | null; manana: Parada[] } | null = null;
+  let fichas: Record<string, FichaUnidad> = {};
   let equipo: { nombre: string; paradas: Parada[] }[] = [];
   let sinAsignar: Parada[] = [];
   try {
@@ -70,6 +76,7 @@ export async function ModuloRuta({ sesion, manana = false }: { sesion: Sesion; m
     if (f) {
       const [paradas, turno, siguientes] = await Promise.all([rutaDe(airtable, f, hoy), turnoAbierto(airtable, f, hoy), rutaDe(airtable, f, sumarDias(hoy, 1))]);
       propia = { nombre: f.nombre, paradas, turno, manana: siguientes };
+      fichas = await fichasDe(airtable, siguientes.map((p) => p.unidad)).catch(() => ({}));
     } else {
       const activas = (await funcionarias(airtable)).filter((x) => x.activa);
       [equipo, sinAsignar] = await Promise.all([
@@ -104,7 +111,8 @@ export async function ModuloRuta({ sesion, manana = false }: { sesion: Sesion; m
           <h2 className="text-sm font-medium">
             Mañana <span className="text-muted-foreground">· {propia.manana.length === 1 ? "1 limpieza" : `${propia.manana.length} limpiezas`}</span>
           </h2>
-          <ListaParadas paradas={propia.manana} vacio="Sin limpiezas mañana." />
+          <ListaParadas paradas={propia.manana} vacio="Sin limpiezas mañana." fichas={fichas} />
+          {propia.manana.length > 0 && <p className="text-xs text-muted-foreground">Los códigos, el candado y el wifi se abren mañana con el turno iniciado.</p>}
         </section>
       </>
     );
