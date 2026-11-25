@@ -71,7 +71,7 @@ export interface DefTabla {
   /** Gráfica del año corrido por mes encima de la tabla (Liquidaciones). */
   tendencia?: DefTendencia;
   /** Acción propia del módulo en el detalle, con el módulo en "editar". */
-  accionDetalle?: "soporte-pago";
+  accionDetalle?: "soporte-pago" | "firma-contrato";
 }
 
 export interface DefCalendario {

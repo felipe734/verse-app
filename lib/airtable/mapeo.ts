@@ -2089,6 +2089,120 @@ export const MAPEO = {
           "id": "fld2GcSg3VehgOaH5",
           "nombre": "Contrato",
           "tipo": "multipleAttachments"
+        },
+        "aucoCode": {
+          "id": "fldUb57xbrcs2o1J6",
+          "nombre": "Auco Code",
+          "tipo": "singleLineText"
+        },
+        "aucoEstado": {
+          "id": "fldTV3FaGLOnnrJCA",
+          "nombre": "Auco Estado",
+          "tipo": "singleSelect"
+        },
+        "aucoLog": {
+          "id": "fldD9KnuquyAw2Zp2",
+          "nombre": "Auco Log",
+          "tipo": "multilineText"
+        },
+        "tipoDoc": {
+          "id": "fldvuQhJVsaMxe5C1",
+          "nombre": "Tipo Documento",
+          "tipo": "singleSelect"
+        },
+        "paisDocumento": {
+          "id": "fldOsy3FehuuSUbVB",
+          "nombre": "País Documento",
+          "tipo": "singleLineText"
+        },
+        "cedula": {
+          "id": "fldjY0Vxx6Ey4af7Z",
+          "nombre": "Cédula",
+          "tipo": "multipleLookupValues"
+        },
+        "celular": {
+          "id": "fldmxOwAGdunrkI1J",
+          "nombre": "Celular",
+          "tipo": "multipleLookupValues"
+        },
+        "correo": {
+          "id": "fldgo5r9s3GRXmNWc",
+          "nombre": "Correo",
+          "tipo": "multipleLookupValues"
+        }
+      }
+    },
+    "firmas": {
+      "base": "7. LIVING",
+      "tabla": "FIRMAS",
+      "workspace": "Verse",
+      "idBase": "appzaNZaaYKfdZObP",
+      "idTabla": "tblQ5Wy5aO95sBgq8",
+      "campos": {
+        "documento": {
+          "id": "fldWA2ktDGISaoNns",
+          "nombre": "Documento",
+          "tipo": "singleLineText"
+        },
+        "fecha": {
+          "id": "fldxHVJrXTVn1Bw2P",
+          "nombre": "Fecha",
+          "tipo": "dateTime"
+        },
+        "resultado": {
+          "id": "fldWmq2Dfgh945eiW",
+          "nombre": "Resultado",
+          "tipo": "singleSelect"
+        },
+        "estado": {
+          "id": "fldif0vzKsqGFn5je",
+          "nombre": "Estado",
+          "tipo": "singleSelect"
+        },
+        "tipo": {
+          "id": "fldoU8wqMlv7fWpKs",
+          "nombre": "Tipo",
+          "tipo": "singleLineText"
+        },
+        "empresa": {
+          "id": "fldfJwToa4pOu58xV",
+          "nombre": "Empresa",
+          "tipo": "singleSelect"
+        },
+        "contraparte": {
+          "id": "fld4j4PjXfxO7qiLL",
+          "nombre": "Contraparte",
+          "tipo": "singleLineText"
+        },
+        "hallazgos": {
+          "id": "fldIW8d3aJXd09pXi",
+          "nombre": "Hallazgos",
+          "tipo": "multilineText"
+        },
+        "resumen": {
+          "id": "fldRi9FEd3EG45pTb",
+          "nombre": "Resumen",
+          "tipo": "multilineText"
+        },
+        "subidoPor": {
+          "id": "fldWxd9IiFtWmumWu",
+          "nombre": "Subido por",
+          "tipo": "singleLineText"
+        },
+        "hash": {
+          "id": "fldAVLLqEtYQ96GGN",
+          "nombre": "Hash PDF",
+          "tipo": "singleLineText"
+        },
+        "aucoCode": {
+          "id": "fldWk5LbJ2n7mzXzc",
+          "nombre": "Auco Code",
+          "tipo": "singleLineText"
+        },
+        "log": {
+          "id": "fldBrY6EFAbTzYdHM",
+          "nombre": "Log",
+          "tipo": "multilineText"
         }
       }
     },
@@ -2202,6 +2316,11 @@ export const MAPEO = {
           "id": "fld5Cv3DSo7ACVKsJ",
           "nombre": "Contrato",
           "tipo": "multipleRecordLinks"
+        },
+        "contratoArriendo": {
+          "id": "fldgPCGslk9pkp37e",
+          "nombre": "Contrato Arriendo",
+          "tipo": "multipleAttachments"
         }
       }
     },
