@@ -67,7 +67,7 @@ export const REGISTRO: DefModulo[] = [
     pestanas: PESTANAS["finanzas"],
   },
   { tipo: "equipo", nombre: "Equipo", icono: "users", segmento: "equipo", fuentes: ["CONTROL HORAS", "OBJETIVOS", "NOMINA"], construido: true, descripcion: "Turnos de la semana", tabla: TABLAS_EQUIPO["equipo"] },
-  { tipo: "operacion", nombre: "Operación", icono: "calendar-days", segmento: "operacion", fuentes: ["RESERVAS", "HUESPEDES", "ADICIONALES"], construido: true, descripcion: "Reservas del mes", tabla: TABLAS_EQUIPO["operacion"] },
+  { tipo: "operacion", nombre: "Operación", icono: "calendar-days", segmento: "operacion", fuentes: ["RESERVAS", "HUESPEDES", "ADICIONALES"], construido: true, descripcion: "Reservas: calendario continuo desde hace dos semanas", tabla: TABLAS_EQUIPO["operacion"] },
   { tipo: "limpiezas", nombre: "Limpiezas", icono: "sparkles", segmento: "limpiezas", fuentes: ["LIMPIEZA", "SERVICIOS"], construido: true, descripcion: "Limpiezas de la semana", tabla: TABLAS_EQUIPO["limpiezas"] },
   { tipo: "ruta", nombre: "Ruta de aseo", icono: "route", segmento: "ruta", fuentes: ["FUNCIONARIAS", "LIMPIEZA", "SERVICIOS", "CONTROL HORAS"], construido: true },
   { tipo: "unidades-host", nombre: "Unidades Host", icono: "building-2", segmento: "unidades", fuentes: ["UNIDADES", "EDIFICIOS", "PROPIETARIOS"], construido: true, descripcion: "Unidades de Verse Host con su edificio, propietario y estado", tabla: TABLAS_EQUIPO["unidades-host"] },

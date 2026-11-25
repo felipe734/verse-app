@@ -125,6 +125,32 @@ export async function rutaDe(airtable: ClienteAirtable, f: Pick<Funcionaria, "no
     .sort((a, b) => minutos(a.hora) - minutos(b.hora));
 }
 
+export interface FichaUnidad {
+  edificio: string;
+  metodo: string;
+}
+
+/**
+ * Lo que la aseadora necesita saber de cada apartamento antes de ir (edificio y cómo se entra).
+ * Códigos, candado y wifi siguen detrás del turno (datosIngreso).
+ */
+export async function fichasDe(airtable: ClienteAirtable, unidades: string[]): Promise<Record<string, FichaUnidad>> {
+  const nombres = [...new Set(unidades.filter(Boolean))];
+  if (!nombres.length) return {};
+  const c = U.campos;
+  const filas = await airtable.consultar(U.idBase, U.idTabla, {
+    campos: [c.und.nombre, c.unidad.nombre, c.edificio.nombre, c.metodo.nombre],
+    formula: `OR(${nombres.map((n) => `{${c.und.nombre}} = '${literal(n)}', {${c.unidad.nombre}} = '${literal(n)}'`).join(", ")})`,
+    max: 50,
+  });
+  const r: Record<string, FichaUnidad> = {};
+  for (const f of filas) {
+    const ficha = { edificio: texto(f.fields[c.edificio.nombre]), metodo: texto(f.fields[c.metodo.nombre]) };
+    for (const k of [texto(f.fields[c.und.nombre]), texto(f.fields[c.unidad.nombre])]) if (k) r[k] = ficha;
+  }
+  return r;
+}
+
 /** Limpiezas de un día sin funcionaria enlazada (para quien coordina). */
 export async function sinFuncionaria(airtable: ClienteAirtable, fecha: string): Promise<Parada[]> {
   const f = L.campos.fecha.nombre;

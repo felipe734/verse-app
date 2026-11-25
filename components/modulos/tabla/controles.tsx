@@ -46,6 +46,7 @@ export function useParametros() {
 /** ‹ noviembre 2026 › con "Hoy" cuando no se está en el período actual. */
 export function SelectorPeriodo({ periodo }: { periodo: Periodo }) {
   const { params, ruta } = useParametros();
+  if (periodo.unidad === "continuo") return null;
   const href = (clave: string | null) => {
     const p = new URLSearchParams(params.toString());
     if (clave) p.set("p", clave);
@@ -129,8 +130,11 @@ export function InterruptorMio({ mio, porDefecto }: { mio: boolean; porDefecto: 
 }
 
 /** Filtros activos desde la URL: { campo: valor }. */
-export function filtrosDeUrl(params: URLSearchParams, campos: string[]): Record<string, string> {
-  return Object.fromEntries(campos.map((c) => [c, params.get(`${PREFIJO_FILTRO}${c}`) ?? ""]).filter(([, v]) => v));
+/** Valor en la URL que quiere decir "Todos" en un filtro que tiene valor inicial (Estado: Actual). */
+export const TODOS = "*";
+
+export function filtrosDeUrl(params: URLSearchParams, campos: string[], iniciales: Record<string, string> = {}): Record<string, string> {
+  return Object.fromEntries(campos.map((c) => [c, params.get(`${PREFIJO_FILTRO}${c}`) ?? iniciales[c] ?? ""]).filter(([, v]) => v && v !== TODOS));
 }
 
 export function aplicarFiltros(filas: FilaTabla[], activos: Record<string, string>): FilaTabla[] {
@@ -139,7 +143,7 @@ export function aplicarFiltros(filas: FilaTabla[], activos: Record<string, strin
 }
 
 /** Un chip por filtro: "Edificio: Todos ▾" con los valores que hay en el período. */
-export function Filtros({ campos, columnas, filas, activos }: { campos: string[]; columnas: Columna[]; filas: FilaTabla[]; activos: Record<string, string> }) {
+export function Filtros({ campos, columnas, filas, activos, iniciales = {} }: { campos: string[]; columnas: Columna[]; filas: FilaTabla[]; activos: Record<string, string>; iniciales?: Record<string, string> }) {
   const { cambiar } = useParametros();
   const visibles = campos.filter((c) => columnas.some((x) => x.campo === c));
   if (!visibles.length) return null;
@@ -158,11 +162,11 @@ export function Filtros({ campos, columnas, filas, activos }: { campos: string[]
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="max-h-72 w-56 overflow-y-auto">
-              <DropdownMenuCheckboxItem checked={!activo} onCheckedChange={() => cambiar({ [`${PREFIJO_FILTRO}${c}`]: null })}>
+              <DropdownMenuCheckboxItem checked={!activo} onCheckedChange={() => cambiar({ [`${PREFIJO_FILTRO}${c}`]: iniciales[c] ? TODOS : null })}>
                 Todos
               </DropdownMenuCheckboxItem>
               {valores.map((v) => (
-                <DropdownMenuCheckboxItem key={v} checked={activo === v} onCheckedChange={() => cambiar({ [`${PREFIJO_FILTRO}${c}`]: v })}>
+                <DropdownMenuCheckboxItem key={v} checked={activo === v} onCheckedChange={() => cambiar({ [`${PREFIJO_FILTRO}${c}`]: v === iniciales[c] ? null : v })}>
                   <span className="truncate">{v}</span>
                 </DropdownMenuCheckboxItem>
               ))}
@@ -171,7 +175,7 @@ export function Filtros({ campos, columnas, filas, activos }: { campos: string[]
         );
       })}
       {Object.keys(activos).length > 0 && (
-        <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs" onClick={() => cambiar(Object.fromEntries(Object.keys(activos).map((c) => [`${PREFIJO_FILTRO}${c}`, null])))}>
+        <Button variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs" onClick={() => cambiar(Object.fromEntries(Object.keys(activos).map((c) => [`${PREFIJO_FILTRO}${c}`, iniciales[c] ? TODOS : null])))}>
           <X className="size-3" aria-hidden /> Quitar filtros
         </Button>
       )}

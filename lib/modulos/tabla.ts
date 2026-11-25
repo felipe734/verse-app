@@ -3,6 +3,7 @@ import { sensibles, type Sesion } from "@/lib/acceso/permisos";
 import { formulaCruza, formulaDentro, type Periodo, type UnidadPeriodo } from "@/lib/vistas/periodo";
 import type { DefEdicion } from "./editar";
 import type { Relacion } from "./relacionados";
+import type { DefTendencia } from "./tendencia";
 
 /**
  * Módulo de tabla: una lista densa sobre una tabla de Airtable, leída en el momento y solo
@@ -46,6 +47,8 @@ export interface DefTabla {
   persona?: string;
   /** Columnas por las que se filtra con chips (valores que aparecen en el período). */
   filtros?: string[];
+  /** Filtros con los que abre el módulo (Unidades: Estado Actual). "Todos" los quita. */
+  filtrosIniciales?: Record<string, string>;
   /** Columna que arma el tablero (una columna por valor). */
   tablero?: string;
   /** Vista de calendario tipo Airbnb (filas × días). */
@@ -65,11 +68,15 @@ export interface DefTabla {
   relacionados?: Relacion[];
   /** Campos que se editan desde el detalle, con el módulo en "editar" (lib/modulos/editar.ts). */
   editar?: DefEdicion;
+  /** Gráfica del año corrido por mes encima de la tabla (Liquidaciones). */
+  tendencia?: DefTendencia;
   /** Acción propia del módulo en el detalle, con el módulo en "editar". */
   accionDetalle?: "soporte-pago";
 }
 
 export interface DefCalendario {
+  /** En la vista de calendario, una ventana continua alrededor de hoy (sin flechas de mes). */
+  continuo?: boolean;
   /** Campo con la fecha de inicio (Ingreso). */
   inicio: string;
   /** Campo con la fecha de fin (Salida). La noche de salida no cuenta. */
@@ -85,6 +92,8 @@ export interface DefCalendario {
 }
 
 export interface DefAgenda {
+  /** "aseos": arrastrar una tarjeta a otro día la reprograma (LIMPIEZA, misma hora). */
+  mover?: "aseos";
   /** Campo con fecha y hora (Fecha). */
   fecha: string;
   /** Encabezado de las filas; por defecto, el nombre del campo. */

@@ -28,7 +28,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
       { titulo: "Limpiezas de la unidad", tipo: "limpiezas", campo: "Unidad", columna: "Unidad" },
       { titulo: "Liquidaciones de la unidad", tipo: "liquidaciones", campo: "Unidad", columna: "Unidad", max: 4 },
     ],
-    calendario: { inicio: "Ingreso", fin: "Salida", fila: "Unidad", color: "Plataforma" },
+    calendario: { continuo: true, inicio: "Ingreso", fin: "Salida", fila: "Unidad", color: "Plataforma" },
     vistaInicial: "calendario",
     editar: { tabla: "reservas", campos: [{ campo: "novedades", etiqueta: "Novedades" }, { campo: "comentario", etiqueta: "Comentario" }, { campo: "requiereLimpieza", etiqueta: "Requiere limpieza" }] },
     ...ids("6. OPERACION 360", "RESERVAS"),
@@ -45,8 +45,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
   limpiezas: {
     relacionados: [{ titulo: "Reservas de la unidad", tipo: "operacion", campo: "Unidad", columna: "Unidad" }],
     rapidas: [{ etiqueta: "Terminada", campo: "estado", valor: "Terminado", columna: "Estado" }],
-    persona: "Funcionario",
-    agenda: { fecha: "Fecha", fila: "Funcionario", etiquetaFila: "Funcionaria", titulo: "Unidad", estado: "Estado" },
+    agenda: { mover: "aseos", fecha: "Fecha", fila: "Funcionario", etiquetaFila: "Funcionaria", titulo: "Unidad", estado: "Estado" },
     vistaInicial: "agenda",
     editar: { tabla: "limpieza", campos: [{ campo: "estado", etiqueta: "Estado" }, { campo: "comentario", etiqueta: "Comentario" }] },
     ...ids("6. OPERACION 360", "LIMPIEZA"),
@@ -67,11 +66,13 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     editar: { tabla: "unidadesHost", campos: [{ campo: "estado", etiqueta: "Estado" }] },
     ...ids("5. INVENTARIO", "UNIDADES"),
     titulo: "Unidad",
-    columnas: [t("Unidad"), t("Edificio"), t("Propietario"), estado("Estado"), t("Producto"), t("Tipo Servicio", "Servicio"), t("Canal")],
-    detalle: [plata("Valor Limpieza"), plata("Precio Base"), plata("Precio Tope"), codigo("Metodo Ingreso", "Método de ingreso"), codigo("Codigo", "Código"), codigo("WIFI Red"), codigo("WIFI Contraseña")],
+    // Lista con lo básico para entrar; el detalle trae todo lo demás.
+    columnas: [t("Unidad"), t("Edificio"), t("Propietario"), estado("Estado"), codigo("WIFI Red", "Wifi"), codigo("Metodo Ingreso", "Cómo se entra")],
+    detalle: [t("Producto"), t("Tipo Servicio", "Servicio"), t("Canal"), codigo("Codigo", "Código"), codigo("WIFI Contraseña", "Clave del wifi"), plata("Valor Limpieza"), plata("Precio Base"), plata("Precio Tope")],
     orden: { campo: "Unidad", desc: false },
     max: 300,
-    filtros: ["Edificio", "Estado", "Producto", "Canal"],
+    filtros: ["Estado", "Edificio", "Producto", "Canal"],
+    filtrosIniciales: { Estado: "Actual" },
     indicadores: [{ etiqueta: "Unidades", tipo: "conteo" }, { etiqueta: "Edificios", tipo: "distintos", campo: "Edificio" }],
   },
   liquidaciones: {
@@ -84,6 +85,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 300,
     periodo: { unidad: "mes", campo: "Fecha" },
     filtros: ["Estado", "Tipo Modelo"],
+    tendencia: { fecha: "Fecha", series: [{ campo: "Factura_General", etiqueta: "Facturado" }, { campo: "Neto Propietario", etiqueta: "Neto propietarios" }] },
     indicadores: [{ etiqueta: "Liquidaciones", tipo: "conteo" }, { etiqueta: "Facturado", tipo: "suma", campo: "Factura_General" }, { etiqueta: "Neto propietarios", tipo: "suma", campo: "Neto Propietario" }],
   },
   alistamiento: {
@@ -111,6 +113,7 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     indicadores: [{ etiqueta: "Leads", tipo: "conteo" }],
   },
   tickets: {
+    persona: "Responsable",
     relacionados: [{ titulo: "Reservas de la unidad", tipo: "operacion", campo: "Unidad", columna: "Unidad" }],
     rapidas: [{ etiqueta: "Cerrar", campo: "estado", valor: "Cerrado", columna: "Estado" }],
     editar: {

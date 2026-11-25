@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { DefAgenda, DefCalendario, FilaTabla } from "@/lib/modulos/tabla";
 import type { Periodo } from "@/lib/vistas/periodo";
 import { leerFecha } from "@/lib/vistas/fechas";
@@ -22,6 +22,7 @@ const dias = (p: Pick<Periodo, "inicio" | "fin">) => {
 };
 
 const LETRA = ["D", "L", "M", "M", "J", "V", "S"];
+const MES_CORTO = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 const DIA_SEMANA = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 const diaDe = (t: string) => new Date(`${t}T12:00:00Z`).getUTCDay();
 
@@ -36,6 +37,12 @@ const tonoDe = (valores: string[], v: string) => TONOS[Math.max(0, valores.index
  */
 export function Calendario({ def, filas, periodo, hoy, alAbrir }: { def: DefCalendario; filas: FilaTabla[]; periodo: Periodo; hoy: string; alAbrir: (f: FilaTabla) => void }) {
   const ds = useMemo(() => dias(periodo), [periodo]);
+  const caja = useRef<HTMLDivElement>(null);
+  // Ventana continua: arranca mostrando desde un par de días antes de hoy; lo demás, con scroll.
+  useEffect(() => {
+    const i = ds.indexOf(hoy);
+    if (caja.current && i > 2) caja.current.scrollLeft = (i - 2) * 36;
+  }, [ds, hoy]);
   const reservas = useMemo(
     () =>
       filas
@@ -92,12 +99,12 @@ export function Calendario({ def, filas, periodo, hoy, alAbrir }: { def: DefCale
       </div>
 
       {/* Computador: cuadrícula unidades × días */}
-      <div className="overflow-x-auto rounded-lg border max-md:hidden" role="grid" aria-label="Calendario de reservas">
+      <div ref={caja} className="overflow-x-auto rounded-lg border max-md:hidden" role="grid" aria-label="Calendario de reservas">
         <div className="grid min-w-max" style={{ gridTemplateColumns: `11rem repeat(${ds.length}, 2.25rem)` }}>
           <div className="sticky left-0 z-10 border-b bg-card px-3 py-2 text-xs font-medium">Unidad</div>
           {ds.map((d) => (
             <div key={d} className={cn("border-b border-l px-0.5 py-1 text-center text-[11px] leading-tight", d === hoy && "bg-acento-suave font-semibold", [0, 6].includes(diaDe(d)) && "bg-muted/40")}>
-              <div className="text-muted-foreground">{LETRA[diaDe(d)]}</div>
+              <div className={cn("text-muted-foreground", (d.endsWith("-01") || d === ds[0]) && "font-semibold text-foreground")}>{d.endsWith("-01") || d === ds[0] ? MES_CORTO[Number(d.slice(5, 7)) - 1] : LETRA[diaDe(d)]}</div>
               <div className="tabular-nums">{Number(d.slice(8))}</div>
             </div>
           ))}
@@ -176,8 +183,26 @@ export function Calendario({ def, filas, periodo, hoy, alAbrir }: { def: DefCale
 
 
 /** Agenda de la semana: una fila por funcionaria y una columna por día, con la hora de cada servicio. */
-export function Agenda({ def, filas, periodo, hoy, alAbrir, accion }: { def: DefAgenda; filas: FilaTabla[]; periodo: Periodo; hoy: string; alAbrir: (f: FilaTabla) => void; accion?: (f: FilaTabla) => React.ReactNode }) {
+export function Agenda({
+  def,
+  filas,
+  periodo,
+  hoy,
+  alAbrir,
+  accion,
+  mover,
+}: {
+  def: DefAgenda;
+  filas: FilaTabla[];
+  periodo: Periodo;
+  hoy: string;
+  alAbrir: (f: FilaTabla) => void;
+  accion?: (f: FilaTabla) => React.ReactNode;
+  /** Arrastrar una tarjeta a otro día la mueve (misma hora). */
+  mover?: (f: FilaTabla, fecha: string) => void;
+}) {
   const ds = useMemo(() => dias(periodo), [periodo]);
+  const [encima, setEncima] = useState<string | null>(null);
   const items = useMemo(
     () =>
       filas
@@ -190,7 +215,17 @@ export function Agenda({ def, filas, periodo, hoy, alAbrir, accion }: { def: Def
   const tarjeta = (x: (typeof items)[number]) => {
     const terminado = def.estado && /termin|hech/i.test(x.f.celdas[def.estado] ?? "");
     return (
-      <div key={x.f.id} className={cn("flex items-center gap-1 rounded-md border bg-card pr-1 hover:border-foreground/20", terminado && "opacity-60")}>
+      <div
+        key={x.f.id}
+        draggable={Boolean(mover) && !terminado}
+        onDragStart={(e) => e.dataTransfer.setData("text/plain", x.f.id)}
+        className={cn(
+          "flex items-center gap-1 rounded-md border bg-card pr-1 hover:border-foreground/20",
+          terminado && "border-emerald-500/30 bg-emerald-500/10",
+          !terminado && x.fila === "Sin asignar" && "border-red-500/40 bg-red-500/5",
+          mover && !terminado && "cursor-grab active:cursor-grabbing",
+        )}
+      >
         <button type="button" onClick={() => alAbrir(x.f)} className="min-w-0 flex-1 px-2 py-1.5 text-left text-xs">
           <span className="tabular-nums text-muted-foreground">{x.cuando.hora || "—"}</span> <span className="font-medium">{x.f.celdas[def.titulo] || "—"}</span>
         </button>
@@ -219,7 +254,23 @@ export function Agenda({ def, filas, periodo, hoy, alAbrir, accion }: { def: Def
                   {p}
                 </th>
                 {ds.map((d) => (
-                  <td key={d} className={cn("border-b border-l p-1.5 align-top", d === hoy && "bg-acento-suave/50")}>
+                  <td
+                    key={d}
+                    onDragOver={(e) => {
+                      if (!mover || d < hoy) return;
+                      e.preventDefault();
+                      setEncima(`${p}|${d}`);
+                    }}
+                    onDragLeave={() => setEncima((x) => (x === `${p}|${d}` ? null : x))}
+                    onDrop={(e) => {
+                      setEncima(null);
+                      const id = e.dataTransfer.getData("text/plain");
+                      const f = filas.find((x) => x.id === id);
+                      const cuando = f ? leerFecha(f.celdas[def.fecha]) : null;
+                      if (f && mover && cuando && cuando.fecha !== d && d >= hoy) mover(f, d);
+                    }}
+                    className={cn("border-b border-l p-1.5 align-top", d === hoy && "bg-acento-suave/50", encima === `${p}|${d}` && "bg-acento-suave")}
+                  >
                     <div className="space-y-1">{items.filter((x) => x.fila === p && x.cuando.fecha === d).map(tarjeta)}</div>
                   </td>
                 ))}

@@ -8,7 +8,8 @@ import { diaAirtable, numeroDia } from "@/lib/airtable/formulas";
  * Las fechas son de Bogotá (AAAA-MM-DD) y `fin` es exclusivo.
  */
 
-export type UnidadPeriodo = "dia" | "semana" | "mes";
+/** "continuo": una ventana fija alrededor de hoy (dos semanas atrás, cuatro meses adelante), sin flechas: el calendario de reservas se recorre con scroll. */
+export type UnidadPeriodo = "dia" | "semana" | "mes" | "continuo";
 
 export interface Periodo {
   unidad: UnidadPeriodo;
@@ -61,6 +62,11 @@ const claveSemana = (t: string) => {
 
 /** Construye el período que contiene `fecha`. */
 export function periodoDe(unidad: UnidadPeriodo, fecha: string, hoy: string): Periodo {
+  if (unidad === "continuo") {
+    const inicio = sumarDias(hoy, -14);
+    const fin = sumarDias(hoy, 120);
+    return { unidad, clave: "", inicio, fin, etiqueta: "De hace dos semanas a cuatro meses", anterior: "", siguiente: "", actual: true };
+  }
   if (unidad === "dia") {
     const d = aFecha(fecha);
     return {

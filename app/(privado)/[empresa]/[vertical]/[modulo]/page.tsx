@@ -33,7 +33,7 @@ async function Contenido({ params, searchParams }: { params: Promise<Params>; se
   const u = ubicar(sesion, sesion.estructura ?? ESTRUCTURA, empresa, vertical, modulo);
   if (!u) notFound();
   await registrarUso(db(), sesion.usuarioId, `/${u.empresa}/${u.vertical.segmento}/${u.def.segmento}`, hoyBogota());
-  if (u.def.tabla) return <ModuloTabla sesion={sesion} u={u} p={busqueda.p} programar={busqueda.programar === "1"} />;
+  if (u.def.tabla) return <ModuloTabla sesion={sesion} u={u} p={busqueda.p} v={busqueda.v} programar={busqueda.programar === "1"} />;
   if (u.def.pestanas) return <ModuloPanel sesion={sesion} u={u} pestana={busqueda.pestana} p={busqueda.p} />;
   switch (u.def.tipo) {
     case "hoy":

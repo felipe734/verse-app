@@ -15,6 +15,8 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Columna, DefAgenda, DefCalendario, FilaTabla, Indicador, TipoVista } from "@/lib/modulos/tabla";
 import { enlaceWhatsapp } from "@/lib/modulos/whatsapp";
+import { leerFecha } from "@/lib/vistas/fechas";
+import { cambiarAccion } from "@/app/modulos/aseos";
 import { SoportePago } from "@/components/modulos/cobros/soporte-pago";
 import type { Periodo } from "@/lib/vistas/periodo";
 import { cn } from "@/lib/utils";
@@ -61,6 +63,7 @@ export function VistaTabla({
   tablas,
   rapidas = [],
   accionDetalle,
+  filtrosIniciales,
   campoTablero,
   relacionados,
 }: {
@@ -95,6 +98,7 @@ export function VistaTabla({
   /** Acciones de un toque (solo si la persona edita el módulo). */
   rapidas?: { etiqueta: string; campo: string; valor: string; columna: string }[];
   accionDetalle?: "soporte-pago";
+  filtrosIniciales?: Record<string, string>;
   /** Campo editable del tablero: mover tarjetas lo cambia. */
   campoTablero?: string;
   /** Dónde está el módulo, para cargar los registros relacionados del detalle. */
@@ -113,11 +117,23 @@ export function VistaTabla({
       router.refresh();
     } else toast.error(r.mensaje);
   }
+  async function moverAseo(f: FilaTabla, fecha: string) {
+    const cuando = agenda ? leerFecha(f.celdas[agenda.fecha]) : null;
+    const m = cuando?.hora.match(/^(\d{1,2}):(\d{2}) ([ap])/);
+    const hora = m ? `${String((Number(m[1]) % 12) + (m[3] === "p" ? 12 : 0)).padStart(2, "0")}:${m[2]}` : "08:00";
+    setOcupado(f.id);
+    const r = await cambiarAccion({ recId: f.id, fecha, hora });
+    setOcupado(null);
+    if (r.ok) {
+      toast.success(`${f.celdas[agenda?.titulo ?? ""] ?? "Aseo"} movido`);
+      router.refresh();
+    } else toast.error(r.mensaje);
+  }
   const aplicables = (f: FilaTabla) => (edicion ? rapidas.filter((a) => (f.celdas[a.columna] ?? "") !== a.valor) : []);
   const { abrirAsistente, asistenteHabilitado } = useShell();
   const params = useSearchParams();
   const refFiltro = useRef<HTMLInputElement>(null);
-  const activos = useMemo(() => filtrosDeUrl(new URLSearchParams(params.toString()), filtros), [params, filtros]);
+  const activos = useMemo(() => filtrosDeUrl(new URLSearchParams(params.toString()), filtros, filtrosIniciales), [params, filtros, filtrosIniciales]);
   const tableroVisible = tablero && columnas.some((c) => c.campo === tablero) ? tablero : undefined;
   const opciones: TipoVista[] = [
     ...(calendario && periodo ? (["calendario"] as const) : []),
@@ -167,7 +183,7 @@ export function VistaTabla({
           {periodo && <SelectorPeriodo periodo={periodo} />}
           {filtros.length > 0 && !error && (
             <div className="max-md:order-last max-md:-mx-4 max-md:w-[calc(100%+2rem)] max-md:overflow-x-auto max-md:px-4 max-md:[scrollbar-width:none] max-md:[&>div]:flex-nowrap">
-              <Filtros campos={filtros} columnas={columnas} filas={propias} activos={activos} />
+              <Filtros campos={filtros} columnas={columnas} filas={propias} activos={activos} iniciales={filtrosIniciales} />
             </div>
           )}
           <div className="ml-auto flex min-w-0 items-center gap-2 max-md:w-full">
@@ -182,7 +198,7 @@ export function VistaTabla({
             {vistas && <MenuVistas vistas={vistas} />}
           </div>
         </BarraControles>
-        {indicadores.length > 0 && !error && (
+        {indicadores.length > 0 && !error && periodo?.unidad !== "continuo" && (
           <div className="mb-3 md:mb-4">
             <Indicadores indicadores={indicadores} columnas={columnas} filas={visibles} />
           </div>
@@ -222,6 +238,7 @@ export function VistaTabla({
             periodo={periodo}
             hoy={hoy ?? periodo.inicio}
             alAbrir={setAbierta}
+            mover={agenda.mover === "aseos" && edicion ? (f, fecha) => void moverAseo(f, fecha) : undefined}
             accion={(f) => {
               const a = aplicables(f)[0];
               return a ? (
