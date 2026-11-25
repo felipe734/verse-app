@@ -2089,6 +2089,21 @@ export const MAPEO = {
           "id": "fld2GcSg3VehgOaH5",
           "nombre": "Contrato",
           "tipo": "multipleAttachments"
+        },
+        "aucoCode": {
+          "id": "fldUb57xbrcs2o1J6",
+          "nombre": "Auco Code",
+          "tipo": "singleLineText"
+        },
+        "aucoEstado": {
+          "id": "fldTV3FaGLOnnrJCA",
+          "nombre": "Auco Estado",
+          "tipo": "singleSelect"
+        },
+        "aucoLog": {
+          "id": "fldD9KnuquyAw2Zp2",
+          "nombre": "Auco Log",
+          "tipo": "multilineText"
         }
       }
     },

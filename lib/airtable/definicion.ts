@@ -272,6 +272,9 @@ export const TABLAS_ESCRITURA = {
       tipoDocumento: "Tipo Documento",
       validacion: "Validación",
       contrato: "Contrato",
+      aucoCode: "Auco Code",
+      aucoEstado: "Auco Estado",
+      aucoLog: "Auco Log",
     },
   },
   datosLiving: {

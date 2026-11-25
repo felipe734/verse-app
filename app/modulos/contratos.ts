@@ -5,6 +5,7 @@ import { z } from "zod";
 import { db } from "@/db/cliente";
 import { sesionActual } from "@/lib/acceso/actual";
 import { lectorHaiku } from "@/lib/contratos/cedula";
+import { conexionVerseDocs, enviarAFirma, revisarContrato } from "@/lib/contratos/firma";
 import { borrador, generarContrato, opcionesContrato, puedeContratos, type Resultado } from "@/lib/contratos/generar";
 import { llenar, MODELOS, TIPOS_DOC, type DatosContrato } from "@/lib/contratos/llenar";
 import { pdfContrato } from "@/lib/contratos/pdf";
@@ -84,5 +85,27 @@ export async function generarContratoAccion(unidadRecId: string, datosRecId: str
     return r;
   } catch (e) {
     return { ok: false, mensaje: fallo(e, "generar") };
+  }
+}
+
+export async function revisarContratoAccion(recId: string) {
+  const s = await sesionActual();
+  try {
+    return await conCliente((a) => revisarContrato(db(), a, s, String(recId), conexionVerseDocs()));
+  } catch (e) {
+    console.error("[contratos/revisar]", e instanceof Error ? e.message : e);
+    return { ok: false, mensaje: "verse-docs no respondió. Intenta de nuevo" };
+  }
+}
+
+export async function enviarAFirmaAccion(recId: string, token: string, modo: "whatsapp" | "enlaces") {
+  const s = await sesionActual();
+  try {
+    const r = await conCliente((a) => enviarAFirma(db(), a, s, String(recId), String(token), modo === "enlaces" ? "enlaces" : "whatsapp", conexionVerseDocs()));
+    if (r.ok) revalidatePath(RUTA);
+    return r;
+  } catch (e) {
+    console.error("[contratos/enviar]", e instanceof Error ? e.message : e);
+    return { ok: false, mensaje: "verse-docs no respondió. Revisa en Contratos si quedó enviado antes de reintentar" };
   }
 }
