@@ -68,4 +68,16 @@ describe("alertas de la operación", () => {
     expect(a).toMatchObject({ id: "leads-living-sin-contacto", nivel: "alta", cuenta: 1, detalle: "Liliana Prueba", href: "/verse/living/comercial?v=lista&f.Estado=Nuevo" });
     expect(at.consultas.at(-1)?.formula).toContain("{Estado} = 'Nuevo'");
   });
+
+  it("renovaciones sin decidir: a 60 días en rojo, a 90 como aviso", async () => {
+    const at = new AirtableFalso();
+    const U = ids("7. LIVING", "UNIDADES");
+    at.poner(U.idBase, U.idTabla, { Unidad: "VL 301_03", "Fecha Salida": "10/1/2027" });
+    at.poner(U.idBase, U.idTabla, { Unidad: "EB 402_01", "Fecha Salida": "15/2/2027" });
+    const r = await alertasDe({ airtable: at, s: maestro, estructura: ESTRUCTURA, hoy: HOY }, "unidades-living");
+    expect(r[0]).toMatchObject({ id: "renovaciones-60d", nivel: "alta", detalle: "VL 301_03 (10/1/2027)", href: "/verse/living/unidades?v=lista&f.Estado=Actual" });
+    expect(r[1]).toMatchObject({ id: "renovaciones-90d", nivel: "media", detalle: "EB 402_01 (15/2/2027)" });
+    expect(at.consultas.at(-1)?.formula).toContain("{Renovación} = 'Pendiente'");
+  });
 });
+

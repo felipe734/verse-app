@@ -152,14 +152,24 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
       { titulo: "Contratos", tipo: "contratos", campo: "Unidad", columna: "Unidad", max: 4 },
       { titulo: "Cobros", tipo: "cobros", campo: "Unidad", columna: "Unidad", max: 6 },
     ],
-    editar: { tabla: "unidadesLiving", campos: [{ campo: "estado", etiqueta: "Estado" }] },
+    rapidas: [
+      { etiqueta: "Renueva", campo: "renovacion", valor: "Renovado", columna: "Renovación" },
+      { etiqueta: "No renueva", campo: "renovacion", valor: "Terminación", columna: "Renovación" },
+    ],
+    editar: {
+      tabla: "unidadesLiving",
+      campos: [
+        { campo: "estado", etiqueta: "Estado" },
+        { campo: "renovacion", etiqueta: "Renovación" },
+      ],
+    },
     ...ids("7. LIVING", "UNIDADES"),
     titulo: "Unidad",
-    columnas: [t("Unidad"), estado("Estado"), tercero("Nombre", "Arrendatario"), fecha("Fecha Salida", "Salida"), num("Días Restantes", "Días"), plata("Total")],
+    columnas: [t("Unidad"), estado("Estado"), tercero("Nombre", "Arrendatario"), fecha("Fecha Salida", "Salida"), num("Días Restantes", "Días"), estado("Renovación"), plata("Total")],
     detalle: [plata("Canon"), plata("Admin"), plata("Servicios"), tercero("Celular"), tercero("Correo")],
     orden: { campo: "Unidad", desc: false },
     max: 300,
-    filtros: ["Estado"],
+    filtros: ["Estado", "Renovación"],
     tablero: "Estado",
     indicadores: [
       { etiqueta: "Unidades", tipo: "conteo" },
