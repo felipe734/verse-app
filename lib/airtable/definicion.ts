@@ -245,6 +245,11 @@ export const TABLAS_ESCRITURA = {
     tabla: "LEADS",
     campos: { estado: "Estado" },
   },
+  leadsLiving: {
+    base: "7. LIVING",
+    tabla: "WEB LEADS",
+    campos: { estado: "Estado", responsable: "Responsable", contactadoEl: "Contactado el", notas: "Notas" },
+  },
   contratos: {
     base: "7. LIVING",
     tabla: "CONTRATO",

@@ -59,4 +59,13 @@ describe("alertas de la operación", () => {
     expect(a).toMatchObject({ id: "leads-sin-contacto", nivel: "alta", cuenta: 1, href: "/verse/host/comercial?v=lista&f.Estado=Lead" });
     expect(at.consultas.at(-1)?.formula).toContain("DATEADD(NOW(), -48, 'hours')");
   });
+
+  it("leads de Living sin contactar más de 48 h", async () => {
+    const at = new AirtableFalso();
+    const T = ids("7. LIVING", "WEB LEADS");
+    at.poner(T.idBase, T.idTabla, { Nombre: "Liliana Prueba" });
+    const [a] = await alertasDe({ airtable: at, s: maestro, estructura: ESTRUCTURA, hoy: HOY }, "comercial-living");
+    expect(a).toMatchObject({ id: "leads-living-sin-contacto", nivel: "alta", cuenta: 1, detalle: "Liliana Prueba", href: "/verse/living/comercial?v=lista&f.Estado=Nuevo" });
+    expect(at.consultas.at(-1)?.formula).toContain("{Estado} = 'Nuevo'");
+  });
 });

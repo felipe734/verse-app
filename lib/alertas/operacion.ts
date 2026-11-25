@@ -165,6 +165,28 @@ async function leadsSinContacto(c: Contexto): Promise<Alerta | null> {
   };
 }
 
+/** Leads de Living (web) en "Nuevo" o sin estado más de 48 horas después de llegar. Últimos 30 días. */
+async function leadsLivingSinContacto(c: Contexto): Promise<Alerta | null> {
+  const href = lugar(c, "verse", "comercial-living", "?v=lista&f.Estado=Nuevo");
+  if (!href) return null;
+  const T = ids("7. LIVING", "WEB LEADS");
+  const filas = await c.airtable.consultar(T.idBase, T.idTabla, {
+    campos: ["Nombre"],
+    formula: `AND(OR({Estado} = 'Nuevo', {Estado} = BLANK()), IS_BEFORE({Fecha}, DATEADD(NOW(), -48, 'hours')), IS_AFTER({Fecha}, DATEADD(NOW(), -30, 'days')))`,
+    max: 50,
+  });
+  if (!filas.length) return null;
+  return {
+    id: "leads-living-sin-contacto",
+    modulo: "comercial-living",
+    nivel: "alta",
+    titulo: filas.length === 1 ? "1 lead de Living sin contactar hace más de 48 h" : `${filas.length} leads de Living sin contactar hace más de 48 h`,
+    detalle: lista(filas.map((f) => texto(f.fields["Nombre"]) || "Sin nombre")),
+    cuenta: filas.length,
+    href,
+  };
+}
+
 /** Cánones POR PAGAR con fecha ya pasada: más de 5 días de atraso en rojo, el resto como aviso. */
 async function cobrosVencidos(c: Contexto): Promise<Alerta[]> {
   const href = lugar(c, "verse", "cobros", "?v=lista&f.Estado=POR%20PAGAR");
@@ -279,6 +301,7 @@ const REGLAS: { modulo: string; f: Regla }[] = [
   { modulo: "limpiezas", f: reservasSinLimpieza },
   { modulo: "limpiezas", f: limpiezasSinFuncionaria },
   { modulo: "comercial-host", f: leadsSinContacto },
+  { modulo: "comercial-living", f: leadsLivingSinContacto },
   { modulo: "tickets", f: ticketsVencidos },
   { modulo: "cobros", f: cobrosVencidos },
   { modulo: "contratos", f: contratosPorTerminar },

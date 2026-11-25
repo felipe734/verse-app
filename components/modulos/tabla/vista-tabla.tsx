@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Columna, DefAgenda, DefCalendario, FilaTabla, Indicador, TipoVista } from "@/lib/modulos/tabla";
+import { enlaceWhatsapp } from "@/lib/modulos/whatsapp";
 import type { Periodo } from "@/lib/vistas/periodo";
 import { cn } from "@/lib/utils";
 import type { RefModulo } from "@/app/modulos/editar";
@@ -338,7 +339,15 @@ export function VistaTabla({
                 {[...columnas.slice(1), ...detalle].map((c) => (
                   <div key={c.campo} className="grid grid-cols-[130px_1fr] gap-3">
                     <dt className="text-muted-foreground">{etiqueta(c)}</dt>
-                    <dd className="whitespace-pre-line break-words">{abierta.celdas[c.campo] || "—"}</dd>
+                    <dd className="whitespace-pre-line break-words">
+                      {c.tipo === "whatsapp" && enlaceWhatsapp(abierta.celdas[c.campo] ?? "") ? (
+                        <a className="font-medium text-primary underline-offset-4 hover:underline" href={enlaceWhatsapp(abierta.celdas[c.campo] ?? "")!} target="_blank" rel="noreferrer">
+                          {abierta.celdas[c.campo]} · Escribir por WhatsApp
+                        </a>
+                      ) : (
+                        abierta.celdas[c.campo] || "—"
+                      )}
+                    </dd>
                   </div>
                 ))}
               </dl>
