@@ -274,6 +274,49 @@ async function contratosPorTerminar(c: Contexto): Promise<Alerta | null> {
   };
 }
 
+/**
+ * Contratos de Living sin decisión de renovación (fase 2.5): unidad en Actual con Fecha Salida
+ * en los próximos 90 días y Renovación vacía o Pendiente. A 60 días o menos, en rojo: el preaviso
+ * de vivienda es de 90 días y la decisión tiene que estar antes.
+ */
+async function renovacionesSinDecidir(c: Contexto): Promise<Alerta[]> {
+  const href = lugar(c, "verse", "unidades-living", "?v=lista&f.Estado=Actual");
+  if (!href) return [];
+  const U = ids("7. LIVING", "UNIDADES");
+  const filas = await c.airtable.consultar(U.idBase, U.idTabla, {
+    campos: ["Unidad", "Fecha Salida"],
+    formula: `AND({Estado} = 'Actual', OR({Renovación} = BLANK(), {Renovación} = 'Pendiente'), {Fecha Salida}, ${dia("Fecha Salida")} >= ${num(c.hoy)}, ${dia("Fecha Salida")} <= ${num(sumarDias(c.hoy, 90))})`,
+    max: 50,
+    orden: { campo: "Fecha Salida" },
+  });
+  const salidas = filas.map((f) => ({ unidad: texto(f.fields["Unidad"]), fecha: leerFecha(texto(f.fields["Fecha Salida"]))?.fecha ?? "", txt: texto(f.fields["Fecha Salida"]) }));
+  const limite = sumarDias(c.hoy, 60);
+  const urgentes = salidas.filter((x) => x.fecha && x.fecha <= limite);
+  const proximas = salidas.filter((x) => !(x.fecha && x.fecha <= limite));
+  const r: Alerta[] = [];
+  if (urgentes.length)
+    r.push({
+      id: "renovaciones-60d",
+      modulo: "unidades-living",
+      nivel: "alta",
+      titulo: urgentes.length === 1 ? "1 contrato vence en 60 días sin decidir renovación" : `${urgentes.length} contratos vencen en 60 días sin decidir renovación`,
+      detalle: lista(urgentes.map((x) => `${x.unidad} (${x.txt})`)),
+      cuenta: urgentes.length,
+      href,
+    });
+  if (proximas.length)
+    r.push({
+      id: "renovaciones-90d",
+      modulo: "unidades-living",
+      nivel: "media",
+      titulo: proximas.length === 1 ? "1 contrato vence en 90 días sin decidir renovación" : `${proximas.length} contratos vencen en 90 días sin decidir renovación`,
+      detalle: lista(proximas.map((x) => `${x.unidad} (${x.txt})`)),
+      cuenta: proximas.length,
+      href,
+    });
+  return r;
+}
+
 /** Movimientos bancarios del mes sin identificar o sin soporte. */
 async function movimientosSinSoporte(c: Contexto): Promise<Alerta | null> {
   const href = lugar(c, "verse", "finanzas", "?pestana=movimientos&v=lista");
@@ -305,6 +348,7 @@ const REGLAS: { modulo: string; f: Regla }[] = [
   { modulo: "tickets", f: ticketsVencidos },
   { modulo: "cobros", f: cobrosVencidos },
   { modulo: "contratos", f: contratosPorTerminar },
+  { modulo: "unidades-living", f: renovacionesSinDecidir },
   { modulo: "finanzas", f: movimientosSinSoporte },
 ];
 
