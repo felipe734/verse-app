@@ -186,6 +186,7 @@ export async function ModuloPanel({ sesion, u, pestana, p }: { sesion: Sesion; u
         hoy={hoy}
         tablas={[activa.tabla.idTabla]}
         rapidas={puedeEditar ? activa.tabla.rapidas : undefined}
+        accionDetalle={puedeEditar ? activa.tabla.accionDetalle : undefined}
         campoTablero={puedeEditar ? (campoPorNombre(activa.tabla.editar, activa.tabla.tablero) ?? undefined) : undefined}
         persona={
           activa.tabla.persona && sesion.nombreAirtable

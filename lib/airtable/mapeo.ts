@@ -2018,6 +2018,21 @@ export const MAPEO = {
           "id": "fldRb7d840duChklm",
           "nombre": "Estado",
           "tipo": "singleSelect"
+        },
+        "fechaPago": {
+          "id": "fld4tKttlbfDKkJv2",
+          "nombre": "Fecha pago",
+          "tipo": "date"
+        },
+        "soporte": {
+          "id": "fldQSQfKo2PTK1WSZ",
+          "nombre": "Soporte",
+          "tipo": "multipleAttachments"
+        },
+        "marcadoPor": {
+          "id": "fld5NWj8E4tE7bEw9",
+          "nombre": "Marcado por",
+          "tipo": "singleLineText"
         }
       }
     },

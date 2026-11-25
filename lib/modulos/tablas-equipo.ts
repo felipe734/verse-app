@@ -193,10 +193,12 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
   cobros: {
     relacionados: [{ titulo: "Contrato de la unidad", tipo: "contratos", campo: "Unidad", columna: "Unidad", max: 3 }],
     rapidas: [{ etiqueta: "Pagado", campo: "estado", valor: "PAGO", columna: "Estado" }],
-    editar: { tabla: "ingresosLiving", campos: [{ campo: "estado", etiqueta: "Estado" }] },
+    editar: { tabla: "ingresosLiving", campos: [{ campo: "estado", etiqueta: "Estado" }], sello: { campo: "estado", valor: "PAGO", fecha: "fechaPago", autor: "marcadoPor" } },
+    accionDetalle: "soporte-pago",
     ...ids("7. LIVING", "INGRESOS"),
     titulo: "Unidad",
     columnas: [t("Unidad"), fecha("Fecha"), t("Edificio"), tercero("Arrendatario"), estado("Estado"), plata("Canon"), plata("Total")],
+    detalle: [fecha("Fecha pago"), t("Marcado por"), t("Comentario")],
     orden: { campo: "Fecha", desc: true },
     max: 300,
     periodo: { unidad: "mes", campo: "Fecha" },
