@@ -184,11 +184,11 @@ export function Indicadores({ indicadores, columnas, filas }: { indicadores: Ind
   const items = calcularIndicadores(indicadores, columnas, filas);
   if (!items.length) return null;
   return (
-    <dl className="flex gap-2 [scrollbar-width:none] max-md:-mx-4 max-md:overflow-x-auto max-md:px-4 sm:grid sm:grid-cols-4" aria-label="Indicadores">
+    <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4" aria-label="Indicadores">
       {items.map((i) => (
-        <div key={i.etiqueta} className="shrink-0 rounded-lg border bg-card px-3 py-2 max-sm:min-w-28 sm:py-2.5">
+        <div key={i.etiqueta} className="min-w-0 rounded-lg border bg-card px-3 py-2 sm:py-2.5">
           <dt className="text-xs text-muted-foreground">{i.etiqueta}</dt>
-          <dd className="mt-0.5 text-base font-semibold whitespace-nowrap tabular-nums sm:text-lg">{i.valor}</dd>
+          <dd className="mt-0.5 truncate text-base font-semibold tabular-nums sm:text-lg">{i.valor}</dd>
         </div>
       ))}
     </dl>
