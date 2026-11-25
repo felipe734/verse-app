@@ -191,7 +191,7 @@ function AccionesDetalle({ f, hoy, actuar }: { f: FilaVista; hoy: string; actuar
 }
 
 const CLAVE_PLEGADAS = "verse-hoy-plegadas";
-const PLEGADAS_INICIO: Record<string, boolean> = { semana: true, luego: true };
+const PLEGADAS_INICIO: Record<string, boolean> = { luego: true };
 
 /** Grupos plegados de Hoy, recordados en el navegador. "Hoy" nunca se pliega. */
 function usePlegadas(): [Record<string, boolean>, (id: string) => void] {
