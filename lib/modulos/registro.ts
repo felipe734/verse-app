@@ -30,6 +30,8 @@ export interface DefModulo {
   visible?: (s: Sesion, empresa: string, moduloId: string) => boolean;
   /** Aparece en la vista Todas (cruza empresas). */
   enTodas?: boolean;
+  /** false: existe pero no va en la barra lateral (Sistema vive en Ajustes). */
+  enMenu?: boolean;
   /** Una línea bajo el título del módulo. */
   descripcion?: string;
   /** Módulo de tabla: lista sobre una tabla de Airtable leída en el momento (lib/modulos/tabla.ts). */
@@ -53,7 +55,7 @@ export const REGISTRO: DefModulo[] = [
     visible: (s, empresa, moduloId) => veAprobar(s, empresa) || puede(s, empresa, moduloId, "ver"),
   },
   { tipo: "correo", nombre: "Correo", icono: "mail", segmento: "correo", fuentes: ["Gmail por Composio"], construido: true },
-  { tipo: "sistema", nombre: "Sistema", icono: "activity", segmento: "sistema", fuentes: ["TRAZABILIDAD", "Postgres"], construido: true },
+  { tipo: "sistema", nombre: "Sistema", icono: "activity", segmento: "sistema", fuentes: ["TRAZABILIDAD", "Postgres"], construido: true, enMenu: false },
   {
     tipo: "finanzas",
     nombre: "Finanzas",
@@ -70,7 +72,7 @@ export const REGISTRO: DefModulo[] = [
   { tipo: "ruta", nombre: "Ruta de aseo", icono: "route", segmento: "ruta", fuentes: ["FUNCIONARIAS", "LIMPIEZA", "SERVICIOS", "CONTROL HORAS"], construido: true },
   { tipo: "unidades-host", nombre: "Unidades Host", icono: "building-2", segmento: "unidades", fuentes: ["UNIDADES", "EDIFICIOS", "PROPIETARIOS"], construido: true, descripcion: "Unidades de Verse Host con su edificio, propietario y estado", tabla: TABLAS_EQUIPO["unidades-host"] },
   { tipo: "liquidaciones", nombre: "Liquidaciones", icono: "receipt", segmento: "liquidaciones", fuentes: ["F_CORTAS", "F_LIMPIEZA", "POLIZAS", "PAGOS"], construido: true, descripcion: "Liquidaciones del mes", tabla: TABLAS_EQUIPO["liquidaciones"] },
-  { tipo: "alistamiento", nombre: "Alistamiento", icono: "package", segmento: "alistamiento", fuentes: ["PROY_AMOB", "ITEMS_AMOB", "COT LENCERIA"], construido: true, descripcion: "Pedidos de amoblamiento por unidad", tabla: TABLAS_EQUIPO["alistamiento"] },
+  { tipo: "alistamiento", nombre: "Alistamiento", icono: "package", segmento: "alistamiento", fuentes: ["PROY_AMOB", "ITEMS_AMOB", "COT LENCERIA"], construido: false, descripcion: "Pedidos de amoblamiento por unidad", tabla: TABLAS_EQUIPO["alistamiento"] },
   { tipo: "comercial-host", nombre: "Comercial Host", icono: "megaphone", segmento: "comercial", fuentes: ["LEADS", "CONJUNTOS"], construido: true, descripcion: "Leads de propietarios del mes", tabla: TABLAS_EQUIPO["comercial-host"] },
   { tipo: "tickets", nombre: "Tickets", icono: "wrench", segmento: "tickets", fuentes: ["TICKETS"], construido: true, descripcion: "Novedades abiertas y cerradas en 30 días", tabla: TABLAS_EQUIPO["tickets"] },
   { tipo: "unidades-living", nombre: "Unidades Living", icono: "building", segmento: "unidades", fuentes: ["UNIDADES (7. LIVING)"], construido: true, descripcion: "Unidades de Living y su ocupación", tabla: TABLAS_EQUIPO["unidades-living"] },
@@ -131,7 +133,7 @@ export function navegacion(s: Sesion, estructura: EmpresaBase[], empresa: string
       const seg = segmentoVertical(empresa, v.id);
       const items = v.modulos.flatMap((m) => {
         const def = m.tipo ? defDe(m.tipo) : undefined;
-        if (!def?.construido || !visible(s, empresa, m.id, def)) return [];
+        if (!def?.construido || def.enMenu === false || !visible(s, empresa, m.id, def)) return [];
         return [{ id: m.id, tipo: def.tipo, nombre: m.nombre || def.nombre, icono: def.icono, href: `/${empresa}/${seg}/${def.segmento}`, contador: def.contador }];
       });
       return { vertical: v.id, nombre: v.nombre, items };
@@ -174,6 +176,15 @@ export function ubicar(s: Sesion, estructura: EmpresaBase[], empresa: string, ve
     }
   }
   return null;
+}
+
+/** Nombre del módulo de una ruta, para el título de la pestaña (Unidades Living, no Unidades Host). */
+export function nombreDeRuta(estructura: EmpresaBase[], empresa: string, vertical: string, segmento: string): string | null {
+  const e = estructura.find((x) => x.id === empresa);
+  const v = e?.verticales.find((x) => segmentoVertical(empresa, x.id) === vertical);
+  const m = v?.modulos.find((x) => x.tipo && defDe(x.tipo)?.segmento === segmento);
+  if (m) return m.nombre || defDe(m.tipo!)!.nombre;
+  return REGISTRO.find((d) => d.segmento === segmento)?.nombre ?? null;
 }
 
 /** Primera pantalla de la persona: Hoy de su primera empresa, o el primer módulo que vea. */

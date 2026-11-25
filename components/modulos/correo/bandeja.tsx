@@ -4,7 +4,7 @@ import { ExternalLink, Inbox, Paperclip, PenSquare, Sparkles } from "lucide-reac
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useTransition } from "react";
 import { leerHilo } from "@/app/modulos/correo";
-import { AccionesModulo } from "@/components/shell/barra-superior";
+import { BarraControles } from "@/components/modulos/barra-controles";
 import { useShell } from "@/components/shell/contexto";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -90,7 +90,7 @@ export function Bandeja({
 
   return (
     <>
-      <AccionesModulo>
+      <BarraControles className="justify-end px-4 pt-1 md:px-6">
         {cuentas.length > 1 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -115,7 +115,7 @@ export function Bandeja({
             <PenSquare className="size-4" aria-hidden /> Redactar
           </Button>
         )}
-      </AccionesModulo>
+      </BarraControles>
 
       {avisos.map((a) => (
         <p key={a} role="status" className="mx-4 mb-3 rounded-md border bg-muted/50 px-3 py-2 text-sm md:mx-6">

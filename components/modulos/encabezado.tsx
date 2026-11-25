@@ -3,7 +3,7 @@ export function EncabezadoModulo({ titulo, descripcion, children }: { titulo: st
   return (
     <div className="flex flex-wrap items-end justify-between gap-3 px-4 pt-6 pb-4 md:px-6">
       <div className="min-w-0">
-        <h1 className="text-xl font-semibold tracking-tight">{titulo}</h1>
+        <h1 className="font-marca text-2xl font-bold tracking-tight">{titulo}</h1>
         {descripcion && <p className="mt-1 text-sm text-muted-foreground">{descripcion}</p>}
       </div>
       {children}

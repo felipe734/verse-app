@@ -13,6 +13,7 @@ import { sesionActual } from "@/lib/acceso/actual";
 import { listarUsuarios } from "@/lib/acceso/admin";
 import { PLATFORM_NAME } from "@/lib/config";
 import { estadoModulos } from "@/lib/modulos/registro";
+import { ModuloSistema } from "@/components/modulos/sistema/modulo-sistema";
 import { cn } from "@/lib/utils";
 import { estadoConexiones, type Conexion } from "@/lib/correo/conexiones";
 import { composioServidor } from "@/lib/servidor/composio";
@@ -26,14 +27,15 @@ const VISTAS = [
   ["empresas", "Empresas y módulos"],
   ["plantillas", "Plantillas"],
   ["conexiones", "Conexiones"],
+  ["sistema", "Sistema"],
 ] as const;
 type Vista = (typeof VISTAS)[number][0];
 type Estructura = NonNullable<Awaited<ReturnType<typeof sesionActual>>["estructura"]>;
 
-async function Panel({ searchParams }: { searchParams: Promise<{ vista?: string; error?: string }> }) {
+async function Panel({ searchParams }: { searchParams: Promise<{ vista?: string; error?: string; empresa?: string }> }) {
   const sesion = await sesionActual();
   if (!sesion.maestro) return <EncabezadoModulo titulo="Ajustes" descripcion="Ajustes es solo para el Maestro." />;
-  const { vista: pedida, error } = await searchParams;
+  const { vista: pedida, error, empresa: empresaPedida } = await searchParams;
   const vista: Vista = VISTAS.some(([v]) => v === pedida) ? (pedida as Vista) : "usuarios";
   const estructura = sesion.estructura ?? [];
 
@@ -76,6 +78,7 @@ async function Panel({ searchParams }: { searchParams: Promise<{ vista?: string;
         {vista === "empresas" && <Empresas estructura={estructura} />}
         {vista === "plantillas" && <Plantillas estructura={estructura} />}
         {vista === "conexiones" && <Conexiones error={error} />}
+        {vista === "sistema" && <SistemaAjustes sesion={sesion} estructura={estructura} empresa={empresaPedida} />}
       </div>
     </>
   );
@@ -281,6 +284,30 @@ async function Conexiones({ error }: { error?: string }) {
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+/** Sistema (antes en el menú): salud, sincronización, respaldos y corridas, por empresa. */
+function SistemaAjustes({ sesion, estructura, empresa }: { sesion: Awaited<ReturnType<typeof sesionActual>>; estructura: Estructura; empresa?: string }) {
+  const empresas = estructura.map((e) => ({ id: e.id, nombre: e.nombre }));
+  const activa = empresas.some((e) => e.id === empresa) ? empresa! : (empresas[0]?.id ?? "verse");
+  return (
+    <div className="space-y-4">
+      <div role="tablist" aria-label="Empresa" className="inline-flex gap-1 rounded-lg bg-muted p-1">
+        {empresas.map((e) => (
+          <Link
+            key={e.id}
+            href={`/ajustes?vista=sistema&empresa=${e.id}`}
+            role="tab"
+            aria-selected={e.id === activa}
+            className={cn("rounded-md px-3 py-1 text-sm", e.id === activa ? "bg-background font-medium shadow-sm" : "text-muted-foreground")}
+          >
+            {e.nombre}
+          </Link>
+        ))}
+      </div>
+      <ModuloSistema sesion={sesion} empresa={activa} enAjustes />
     </div>
   );
 }

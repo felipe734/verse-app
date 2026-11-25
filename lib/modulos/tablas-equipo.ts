@@ -56,7 +56,6 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     vacio: "No hay limpiezas en estas tres semanas",
     periodo: { unidad: "semana", campo: "Fecha" },
     filtros: ["Funcionario", "Estado", "Estado Pago"],
-    tablero: "Estado",
     indicadores: [{ etiqueta: "Limpiezas", tipo: "conteo" }, { etiqueta: "Terminadas", tipo: "conteo", donde: { campo: "Estado", valores: ["Terminado"] } }, { etiqueta: "Total", tipo: "suma", campo: "Total" }],
   },
   "unidades-host": {
@@ -73,8 +72,6 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     orden: { campo: "Unidad", desc: false },
     max: 300,
     filtros: ["Edificio", "Estado", "Producto", "Canal"],
-    tablero: "Edificio",
-    vistaInicial: "tablero",
     indicadores: [{ etiqueta: "Unidades", tipo: "conteo" }, { etiqueta: "Edificios", tipo: "distintos", campo: "Edificio" }],
   },
   liquidaciones: {
@@ -87,8 +84,6 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 300,
     periodo: { unidad: "mes", campo: "Fecha" },
     filtros: ["Estado", "Tipo Modelo"],
-    tablero: "Estado",
-    vistaInicial: "tablero",
     indicadores: [{ etiqueta: "Liquidaciones", tipo: "conteo" }, { etiqueta: "Facturado", tipo: "suma", campo: "Factura_General" }, { etiqueta: "Neto propietarios", tipo: "suma", campo: "Neto Propietario" }],
   },
   alistamiento: {
@@ -98,8 +93,6 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     columnas: [t("Unidad"), t("Categoria", "Categoría"), t("Proveedor"), estado("Estado Pedido", "Pedido"), estado("Estado Pago", "Pago"), plata("Total"), plata("Pendiente")],
     max: 300,
     filtros: ["Estado Pedido", "Estado Pago", "Categoria"],
-    tablero: "Estado Pedido",
-    vistaInicial: "tablero",
     indicadores: [{ etiqueta: "Pedidos", tipo: "conteo" }, { etiqueta: "Total", tipo: "suma", campo: "Total" }, { etiqueta: "Pendiente", tipo: "suma", campo: "Pendiente" }],
   },
   "comercial-host": {
@@ -139,8 +132,6 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     formula: () => "OR({Estado} != 'Cerrado', IS_AFTER({Cerrado el}, DATEADD(NOW(), -30, 'days')))",
     vacio: "No hay tickets abiertos",
     filtros: ["Estado", "Tipo", "Prioridad", "Responsable"],
-    tablero: "Estado",
-    vistaInicial: "tablero",
     indicadores: [
       { etiqueta: "Abiertos", tipo: "conteo", donde: { campo: "Estado", valores: ["Abierto"] } },
       { etiqueta: "En curso", tipo: "conteo", donde: { campo: "Estado", valores: ["En curso"] } },
@@ -170,14 +161,12 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     orden: { campo: "Unidad", desc: false },
     max: 300,
     filtros: ["Estado", "Renovación"],
-    tablero: "Estado",
     indicadores: [
       { etiqueta: "Unidades", tipo: "conteo" },
       { etiqueta: "Ocupadas", tipo: "conteo", donde: { campo: "Estado", valores: ["Actual", "Salida"] } },
       { etiqueta: "Con salida", tipo: "conteo", donde: { campo: "Estado", valores: ["Salida"] } },
       { etiqueta: "Vacías", tipo: "conteo", donde: { campo: "Estado", valores: ["Vacío"] } },
     ],
-    vistaInicial: "tablero",
   },
   contratos: {
     relacionados: [{ titulo: "Cobros de la unidad", tipo: "cobros", campo: "Unidad", columna: "Unidad", max: 6 }],
@@ -190,14 +179,11 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     orden: { campo: "Fecha_Inicio", desc: true },
     periodo: { unidad: "mes", campo: "Fecha_Inicio", campoFin: "Fecha_Finalización" },
     filtros: ["Edificio", "Estado"],
-    tablero: "Estado",
     indicadores: [
       { etiqueta: "Contratos en el mes", tipo: "conteo" },
       { etiqueta: "Sin firmar", tipo: "conteo", donde: { campo: "Estado", valores: ["Pendiente", "Elaborado"] } },
       { etiqueta: "Canon y servicios", tipo: "suma", campo: "Canon_Servicios" },
     ],
-    calendario: { inicio: "Fecha_Inicio", fin: "Fecha_Finalización", fila: "Unidad", color: "Estado", textos: { entran: "Empiezan hoy", salen: "Terminan hoy", ocupacion: "Ocupación del mes por contratos" } },
-    vistaInicial: "calendario",
     max: 300,
   },
   cobros: {
@@ -213,14 +199,12 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 300,
     periodo: { unidad: "mes", campo: "Fecha" },
     filtros: ["Edificio", "Estado"],
-    tablero: "Estado",
     indicadores: [
       { etiqueta: "Cobros", tipo: "conteo" },
       { etiqueta: "Por pagar", tipo: "conteo", donde: { campo: "Estado", valores: ["POR PAGAR"] } },
       { etiqueta: "Cobrado", tipo: "suma", campo: "Total", donde: { campo: "Estado", valores: ["PAGO"] } },
       { etiqueta: "Por cobrar", tipo: "suma", campo: "Total", donde: { campo: "Estado", valores: ["POR PAGAR"] } },
     ],
-    vistaInicial: "tablero",
   },
   "comercial-living": {
     persona: "Responsable",
@@ -274,8 +258,6 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 200,
     periodo: { unidad: "mes", campo: "Fecha" },
     filtros: ["Contratista", "Fase", "Estado"],
-    tablero: "Contratista",
-    vistaInicial: "tablero",
     indicadores: [{ etiqueta: "Actas", tipo: "conteo" }, { etiqueta: "Total corte", tipo: "suma", campo: "Total Corte" }, { etiqueta: "A pagar", tipo: "suma", campo: "A pagar" }],
   },
   "pagos-obra": {
@@ -288,7 +270,6 @@ export const TABLAS_EQUIPO: Record<string, DefTabla> = {
     max: 300,
     periodo: { unidad: "mes", campo: "Fecha Pago" },
     filtros: ["Contratista", "Fuente", "Estado"],
-    tablero: "Estado",
     indicadores: [{ etiqueta: "Pagos", tipo: "conteo" }, { etiqueta: "Monto", tipo: "suma", campo: "Monto" }],
   },
   contratistas: {

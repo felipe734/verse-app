@@ -1,11 +1,21 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import { Tema } from "@/components/tema";
 import { PLATFORM_NAME } from "@/lib/config";
 import "./globals.css";
 
 const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+// Gantari, la voz de la marca VERSE (OFL), solo para títulos: identidad sin perder lectura.
+const gantari = localFont({
+  variable: "--font-gantari",
+  src: [
+    { path: "./fuentes/gantari-600.ttf", weight: "600" },
+    { path: "./fuentes/gantari-700.ttf", weight: "700" },
+  ],
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: PLATFORM_NAME,
@@ -25,7 +35,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" suppressHydrationWarning className={`${geist.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="es" suppressHydrationWarning className={`${geist.variable} ${geistMono.variable} ${gantari.variable} h-full antialiased`}>
       <body className="min-h-full font-sans">
         <Tema>{children}</Tema>
       </body>
